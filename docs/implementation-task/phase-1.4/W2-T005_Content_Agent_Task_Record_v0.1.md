@@ -9,8 +9,8 @@
 | Package | `W2-T005-TP-v0.1` |
 | Branch | `agent/w2-t005-content-agent` |
 | Ownership | Agent Layer / Content Agent interface |
-| State | Ready for Assignment |
-| Coding | Not Started |
+| State | Integration Review Passed |
+| Coding | Complete within bounded scope |
 
 ## Gates
 
@@ -26,3 +26,12 @@
 ## Expected Result
 
 Exact Knowledge produces committed Course / Episode Plans; exact Knowledge plus those committed Plans produces a grounded, reviewable Script Version and supports immutable exact-prior revision without owning Commit or Workflow.
+
+## Completion Evidence
+
+- Exact `luna-worker` implementation route completed without fallback.
+- Course / Episode Plan Candidates commit externally with exact Knowledge lineage.
+- Script Candidate commits with exact Knowledge + Plan lineage; exact-prior revision produces Version 2 and preserves Version 1.
+- Simplified Chinese, six-Scene, duration, format, grounding, malformed output and runtime failure tests passed.
+- Full suite: 51 tests passed; compile, diff and import checks passed.
+- Integration review: `W2-T005_Content_Agent_Integration_Review_v0.1.md`.
