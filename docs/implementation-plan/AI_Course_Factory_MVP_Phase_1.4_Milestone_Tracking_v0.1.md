@@ -34,9 +34,9 @@ Only the next bounded outcome is instantiated. Later outcomes remain ordering ma
 
 | Order | Outcome | State | Parallel Rule |
 | --- | --- | --- | --- |
-| 1 | Artifact Commit Boundary: Candidate validation, immutable Version, exact Reference and duplicate-commit behavior | Integration Review Passed — `W1-T001` | Must merge before downstream Artifact consumers |
-| 2 | Artifact Storage Adapter seam | Pending | May begin only after core Artifact interface from outcome 1 is stable |
-| 3 | Minimal Workflow control state and Command / Result | Pending | Cannot redefine exact Reference established by outcome 1 |
+| 1 | Artifact Commit Boundary: Candidate validation, immutable Version, exact Reference and duplicate-commit behavior | Complete — Issue #1 / PR #2 merged | Must merge before downstream Artifact consumers |
+| 2 | Artifact Storage Adapter seam | Deferred beyond first in-memory Vertical Slice | Persistent replacement must keep the accepted Artifact interface |
+| 3 | Minimal Workflow control state and Command / Result | Active Task Preparation — `W1-T002` | Cannot redefine exact Reference established by outcome 1 |
 | 4 | Checkpoint / Resume at Human Interrupt | Pending | Requires Workflow control state and exact Reference behavior |
 | 5 | W1 integration evidence | Pending | Join after all required M1 outcomes |
 
