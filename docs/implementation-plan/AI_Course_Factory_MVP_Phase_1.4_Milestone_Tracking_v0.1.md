@@ -9,7 +9,7 @@
 | Tracking Date | 2026-08-10 |
 | Active Milestone | M2 — Source to Approved Script |
 | Active Wave | W2 — Grounded Script Slice |
-| Coding | In Progress — W2-T003 ready for PR review |
+| Coding | In Progress — W2-T004 integration review passed |
 | External Provider Calls | Closed |
 
 This tracker is a projection of accepted Milestone and Wave contracts. It does not redefine M0–M8 or W0–W8.
@@ -46,8 +46,8 @@ Only the current bounded outcome may be instantiated; later outcomes remain orde
 
 1. Public GitHub Source validation and exact-commit acquisition — complete; Issue #5 / PR #6 merged; 24-test post-merge suite.
 2. Source normalization and provenance — complete; Issue #7 / PR #8 merged; 31-test post-merge suite.
-3. Source Record Candidate and exact Commit integration — W2-T003 integration review passed; pending PR merge.
-4. Knowledge Agent Candidate and Commit.
+3. Source Record Candidate and exact Commit integration — complete; Issue #9 / PR #10 merged; 37-test post-merge suite.
+4. Knowledge Agent Candidate and Commit — W2-T004 Issue #11; integration review passed with 42-test suite.
 5. Content Agent Plan / Script Candidates and Commit.
 6. Script grounding / completeness guard.
 7. Mandatory Script Review interrupt.
@@ -66,7 +66,7 @@ Only the current bounded outcome may be instantiated; later outcomes remain orde
 | Git / GitHub execution target | Passed | Local `main` repository bound to public `JettxonHo/AI-Course-Factory` |
 | External Side-effect Gate | Scoped | Public GitHub read allowed for W2-T001; credentials, paid Provider and media calls remain closed |
 | G4 — W1 Exit | Passed | W1 Exit Record; PR #4 merged; 17 / 17 post-merge suite |
-| G5 — W2 Entry | Passed with scope | One accepted bounded W2 outcome at a time; W2-T003 is current |
+| G5 — W2 Entry | Passed with scope | One accepted bounded W2 outcome at a time; W2-T004 review passed |
 
 ## 6. Update Rule
 
