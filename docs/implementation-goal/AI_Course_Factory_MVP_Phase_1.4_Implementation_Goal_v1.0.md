@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Goal ID | `GOAL-P1.4-VS-001` |
-| Status | Blocked — GitHub Issue creation authorization required |
+| Status | Active |
 | Initialized | 2026-08-10 |
 | Owner | Product Owner |
 | Coordinator | ORCHESTRATOR_REVIEWER |
@@ -115,4 +115,4 @@ Stop and escalate if the Goal requires:
 
 ## 9. Current Next Action
 
-W1 and `W1-T001` preparation are complete, and the execution repository is now `JettxonHo/AI-Course-Factory`. Resume implementation only after the Product Owner authorizes creating the real GitHub Issue from the approved Issue Specification; the Issue-bound Task Package and formal assignment follow that action.
+W1-T001 is the active bounded implementation task. Its exact public test seam is Artifact Commit plus exact-reference retrieval; Workflow, Source and Agent behavior remain outside this task.

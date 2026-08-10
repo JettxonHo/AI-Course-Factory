@@ -11,7 +11,7 @@
 | Primary Ownership | Artifact Layer / Artifact Commit seam |
 | Verification Target | Validated Candidate commits to immutable exact Reference; duplicate logical Commit returns the same result |
 | Responsible Agent | exact `luna-worker` after Assignment Readiness |
-| Task State | Created — Not Assigned |
+| Task State | Ready for Assignment |
 | Coding | Not Started |
 
 ## 2. Lineage
@@ -49,9 +49,9 @@ Implementation and evidence review
 | Single Ownership | Passed |
 | Single Verification Target | Passed |
 | Bounded Task Contract | Created and readiness reviewed |
-| Issue Specification | Created; external Issue not created |
+| Issue Specification | Created; GitHub Issue #1 exists |
 | Git / GitHub target | Passed — public `JettxonHo/AI-Course-Factory` |
-| Task Package | Not created; valid Issue binding unavailable |
+| Task Package | `W1-T001-TP-v0.1` created and bound to Issue #1 |
 | luna-worker route | `RUNTIME_ROUTE_VERIFIED_READ_ONLY` |
 | luna-worker implementation assignment | Not attempted; no complete Package |
 
@@ -63,17 +63,15 @@ The task instance is valid and created, but it is not assignable yet.
 TASK INSTANCE: CREATED
 TASK CONTRACT: READY
 ISSUE SPECIFICATION: COMPLETE
-GITHUB ISSUE: NOT CREATED
-TASK PACKAGE: NOT CREATED
+GITHUB ISSUE: #1 CREATED
+TASK PACKAGE: W1-T001-TP-v0.1 READY
 LUNA ASSIGNMENT: NOT STARTED
 CODING: NOT STARTED
-BLOCKER: GITHUB ISSUE CREATION AUTHORIZATION REQUIRED
+BLOCKER: NONE — READY FOR EXACT LUNA ASSIGNMENT
 ```
 
 The read-only route check confirmed the exact `luna-worker` configuration and bounded Contract comprehension without editing files or starting implementation. It does not substitute for an Issue-bound Task Package or implementation assignment.
 
 ## 5. Next Required Decision
 
-The execution target is established. Product Owner must now explicitly authorize creating the real GitHub Issue from `W1-T001_Artifact_Commit_Boundary_Issue_Specification_v0.1.md`.
-
-After that authorization, ORCHESTRATOR_REVIEWER will create the Issue, assemble the exact Issue-bound Task Package, verify the `luna-worker` implementation route and only then start bounded Coding.
+Assign the complete `W1-T001-TP-v0.1` to exact `luna-worker`. Coding remains restricted to that Package until evidence review.
