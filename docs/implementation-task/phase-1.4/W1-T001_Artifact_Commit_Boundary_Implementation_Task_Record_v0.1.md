@@ -11,7 +11,7 @@
 | Primary Ownership | Artifact Layer / Artifact Commit seam |
 | Verification Target | Validated Candidate commits to immutable exact Reference; duplicate logical Commit returns the same result |
 | Responsible Agent | exact `luna-worker` after Assignment Readiness |
-| Task State | Ready for PR Review |
+| Task State | Complete — Issue Closed |
 | Coding | Complete — Integration Review Passed |
 
 ## 2. Lineage
@@ -75,7 +75,8 @@ The read-only route check confirmed the exact `luna-worker` configuration and bo
 
 ## 5. Next Required Decision
 
-Create a single-Issue PR from `agent/w1-t001-artifact-commit`, preserving Issue #1, Package `W1-T001-TP-v0.1` and the Integration Review evidence.
+Issue #1 is closed after PR #2 merged to `main` at merge commit `e1434ea525b9dce8da57e302938e50a3c514b210` and the 10-test post-merge verification passed.
+
 
 ## 6. Implementation Evidence
 
