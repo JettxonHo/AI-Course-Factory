@@ -7,6 +7,7 @@ from .normalization import (
     NormalizedSourceUnit,
     SourceNormalizer,
 )
+from .source_record import SourceRecordBuilder, SourceRecordFailure
 from .source import SourceAcquisitionResult, SourceConnectorFailure, SourceFile
 
 __all__ = [
@@ -18,4 +19,6 @@ __all__ = [
     "SourceConnectorFailure",
     "SourceFile",
     "SourceNormalizer",
+    "SourceRecordBuilder",
+    "SourceRecordFailure",
 ]
