@@ -5,12 +5,12 @@
 | Field | Value |
 | --- | --- |
 | Goal ID | `GOAL-P1.4-VS-001` |
-| Status | Active |
+| Status | Complete |
 | Initialized | 2026-08-10 |
 | Owner | Product Owner |
 | Coordinator | ORCHESTRATOR_REVIEWER |
 | Scope Authorization | Granted with Vertical-Slice scope |
-| Coding | Not Started |
+| Coding | Complete within authorized Vertical-Slice scope |
 
 ## 2. Objective
 
@@ -56,8 +56,8 @@ Approved exact Script Version
 | Milestone | Goal Contribution | Current State |
 | --- | --- | --- |
 | M0 — Planning and Coding Gate | Accept Step 1–12, resolve Gate order and grant scoped authorization. | Complete |
-| M1 — Artifact and Workflow Control Spine | Establish only the control seams required by the target Slice. | In Progress — task preparation |
-| M2 — Source to Approved Script | Deliver the end-to-end Creator-verifiable closure. | Pending M1 evidence |
+| M1 — Artifact and Workflow Control Spine | Establish only the control seams required by the target Slice. | Complete — W1 Exit passed |
+| M2 — Source to Approved Script | Deliver the end-to-end Creator-verifiable closure. | Complete — W2 Exit passed |
 | M3–M8 | Remaining full-MVP outcomes. | Outside this Goal |
 
 ## 6. Completion Criteria
@@ -113,6 +113,8 @@ Stop and escalate if the Goal requires:
 - implicit latest, silent overwrite or Artifact payload in Workflow State;
 - implementation without an approved bounded task and eligible execution route.
 
-## 9. Current Next Action
+## 9. Completion Record
 
-W1-T001 is the active bounded implementation task. Its exact public test seam is Artifact Commit plus exact-reference retrieval; Workflow, Source and Agent behavior remain outside this task.
+The Goal completion criteria passed on 2026-08-10. W1 and W2 Exit Records, the 66-test final suite and the Phase 1.4 Vertical Slice Goal Acceptance Record are the authoritative evidence.
+
+No M3–M8 work, full-MVP continuation, external model / media Provider execution or deployment is authorized by Goal completion.
