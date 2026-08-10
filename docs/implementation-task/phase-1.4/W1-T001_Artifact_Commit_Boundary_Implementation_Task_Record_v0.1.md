@@ -11,8 +11,8 @@
 | Primary Ownership | Artifact Layer / Artifact Commit seam |
 | Verification Target | Validated Candidate commits to immutable exact Reference; duplicate logical Commit returns the same result |
 | Responsible Agent | exact `luna-worker` after Assignment Readiness |
-| Task State | Ready for Assignment |
-| Coding | Not Started |
+| Task State | Ready for PR Review |
+| Coding | Complete — Integration Review Passed |
 
 ## 2. Lineage
 
@@ -53,7 +53,7 @@ Implementation and evidence review
 | Git / GitHub target | Passed — public `JettxonHo/AI-Course-Factory` |
 | Task Package | `W1-T001-TP-v0.1` created and bound to Issue #1 |
 | luna-worker route | `RUNTIME_ROUTE_VERIFIED_READ_ONLY` |
-| luna-worker implementation assignment | Not attempted; no complete Package |
+| luna-worker implementation assignment | Complete — `READY_FOR_INTEGRATION_REVIEW` |
 
 ## 4. Assignment Decision
 
@@ -65,13 +65,32 @@ TASK CONTRACT: READY
 ISSUE SPECIFICATION: COMPLETE
 GITHUB ISSUE: #1 CREATED
 TASK PACKAGE: W1-T001-TP-v0.1 READY
-LUNA ASSIGNMENT: NOT STARTED
-CODING: NOT STARTED
-BLOCKER: NONE — READY FOR EXACT LUNA ASSIGNMENT
+LUNA ASSIGNMENT: COMPLETE
+CODING: COMPLETE
+INTEGRATION REVIEW: PASSED
+NEXT GATE: PR REVIEW
 ```
 
 The read-only route check confirmed the exact `luna-worker` configuration and bounded Contract comprehension without editing files or starting implementation. It does not substitute for an Issue-bound Task Package or implementation assignment.
 
 ## 5. Next Required Decision
 
-Assign the complete `W1-T001-TP-v0.1` to exact `luna-worker`. Coding remains restricted to that Package until evidence review.
+Create a single-Issue PR from `agent/w1-t001-artifact-commit`, preserving Issue #1, Package `W1-T001-TP-v0.1` and the Integration Review evidence.
+
+## 6. Implementation Evidence
+
+| Evidence | Result |
+| --- | --- |
+| Files | Seven allowed Artifact source/test files only |
+| Public seam | `ArtifactCommitBoundary.commit()` and exact `get()` |
+| First Commit / exact retrieval | Passed |
+| Explicit revision / history | Passed |
+| Stale predecessor rejection | Passed |
+| Duplicate logical Commit | Passed |
+| Conflicting logical Commit | Passed |
+| Invalid Candidate / exact Reference | Passed |
+| Recursive immutability | Passed |
+| Non-finite float rejection | Passed |
+| External dependencies / calls | None |
+| Test command | `PYTHONPATH=src /opt/homebrew/bin/python3.12 -m unittest discover -s tests -p 'test_*.py' -v` |
+| Test result | 10 tests passed |
