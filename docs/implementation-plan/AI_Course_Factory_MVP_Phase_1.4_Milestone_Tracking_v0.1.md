@@ -9,7 +9,7 @@
 | Tracking Date | 2026-08-10 |
 | Active Milestone | M2 — Source to Approved Script |
 | Active Wave | W2 — Grounded Script Slice |
-| Coding | In Progress — W2-T006A integration review passed |
+| Coding | In Progress — W2-T007 ready for assignment |
 | External Provider Calls | Closed |
 
 This tracker is a projection of accepted Milestone and Wave contracts. It does not redefine M0–M8 or W0–W8.
@@ -51,9 +51,8 @@ Only the current bounded outcome may be instantiated; later outcomes remain orde
 5. Content Agent Plan / Script Candidates and Commit — W2-T005 Issue #13; integration review passed with 51-test suite.
 6. Script grounding / completeness guard and Creator decision record — W2-T006 Issue #15; integration review passed with 57-test suite.
 7. Approval Record decision context — W2-T006A Issue #17; integration review passed with 59-test suite.
-8. Mandatory Script Review interrupt.
-9. Approve / Reject / Revise and Resume.
-10. Vertical Slice acceptance evidence.
+8. Mandatory Script Review interrupt, decision-before-resume coordination and Approve / Reject / Revise — W2-T007 Issue #19 / Package ready.
+9. Vertical Slice acceptance evidence — owned by W2-T007.
 
 ## 5. Gate Tracking
 
@@ -67,7 +66,7 @@ Only the current bounded outcome may be instantiated; later outcomes remain orde
 | Git / GitHub execution target | Passed | Local `main` repository bound to public `JettxonHo/AI-Course-Factory` |
 | External Side-effect Gate | Scoped | Public GitHub read allowed for W2-T001; credentials, paid Provider and media calls remain closed |
 | G4 — W1 Exit | Passed | W1 Exit Record; PR #4 merged; 17 / 17 post-merge suite |
-| G5 — W2 Entry | Passed with scope | One accepted bounded W2 outcome at a time; W2-T006A review passed |
+| G5 — W2 Entry | Passed with scope | One accepted bounded W2 outcome at a time; W2-T007 is current |
 
 ## 6. Update Rule
 
