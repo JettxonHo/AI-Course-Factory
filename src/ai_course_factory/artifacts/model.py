@@ -94,4 +94,3 @@ def freeze_value(value: Any) -> Any:
     # Detach non-container values as a conservative boundary.  The public
     # contract does not depend on their concrete runtime type.
     return deepcopy(value)
-
