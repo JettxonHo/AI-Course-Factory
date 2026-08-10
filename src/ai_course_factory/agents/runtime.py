@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Mapping, Protocol
 
 from ai_course_factory.artifacts import ArtifactReference
@@ -13,10 +13,12 @@ class ModelRuntimeRequest:
     """Explicit, provider-neutral inputs for one Agent model invocation."""
 
     purpose: str
-    source_record_reference: ArtifactReference
-    source_record_payload: Mapping[str, Any]
-    task_context: Mapping[str, str]
-    knowledge_boundary: str
+    source_record_reference: ArtifactReference | None = None
+    source_record_payload: Mapping[str, Any] | None = None
+    task_context: Mapping[str, Any] = field(default_factory=dict)
+    knowledge_boundary: str = ""
+    inputs: Mapping[str, Any] = field(default_factory=dict)
+    constraints: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +29,14 @@ class ModelRuntimeResult:
     lesson_focus: str
     claims: tuple[Mapping[str, Any], ...]
     gaps: tuple[str, ...] = ()
+    diagnostics: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ContentModelRuntimeResult:
+    """Provider-neutral normalized output envelope for Content Agent stages."""
+
+    content: Mapping[str, Any]
     diagnostics: tuple[str, ...] = ()
 
 
@@ -42,6 +52,7 @@ class ModelRuntimeFailure:
 class ModelRuntimePort(Protocol):
     """Minimal logical port implemented by a configured model runtime."""
 
-    def invoke(self, request: ModelRuntimeRequest) -> ModelRuntimeResult | ModelRuntimeFailure:
+    def invoke(
+        self, request: ModelRuntimeRequest
+    ) -> ModelRuntimeResult | ContentModelRuntimeResult | ModelRuntimeFailure:
         """Return a normalized result or normalized technical failure."""
-
