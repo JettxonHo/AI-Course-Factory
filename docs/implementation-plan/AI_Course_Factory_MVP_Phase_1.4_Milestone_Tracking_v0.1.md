@@ -9,7 +9,7 @@
 | Tracking Date | 2026-08-10 |
 | Active Milestone | M2 — Source to Approved Script |
 | Active Wave | W2 — Grounded Script Slice |
-| Coding | In Progress — W2-T002 ready for assignment |
+| Coding | In Progress — W2-T002 ready for PR review |
 | External Provider Calls | Closed |
 
 This tracker is a projection of accepted Milestone and Wave contracts. It does not redefine M0–M8 or W0–W8.
@@ -45,7 +45,7 @@ Only the next bounded outcome is instantiated. Later outcomes remain ordering ma
 Only the current bounded outcome may be instantiated; later outcomes remain ordered markers.
 
 1. Public GitHub Source validation and exact-commit acquisition — complete; Issue #5 / PR #6 merged; 24-test post-merge suite.
-2. Source normalization and provenance — W2-T002 Issue #7 / Package ready. Source Record Commit remains a later bounded outcome.
+2. Source normalization and provenance — W2-T002 integration review passed; pending PR merge. Source Record Commit remains a later bounded outcome.
 3. Knowledge Agent Candidate and Commit.
 4. Content Agent Plan / Script Candidates and Commit.
 5. Script grounding / completeness guard.
