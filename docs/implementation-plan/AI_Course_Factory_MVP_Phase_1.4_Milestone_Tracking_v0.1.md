@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Goal | `GOAL-P1.4-VS-001` |
-| Status | Blocked — GitHub Issue creation authorization required |
+| Status | Active |
 | Tracking Date | 2026-08-10 |
 | Active Milestone | M1 — Artifact and Workflow Control Spine |
 | Active Wave | W1 — Control Spine |
@@ -34,7 +34,7 @@ Only the next bounded outcome is instantiated. Later outcomes remain ordering ma
 
 | Order | Outcome | State | Parallel Rule |
 | --- | --- | --- | --- |
-| 1 | Artifact Commit Boundary: Candidate validation, immutable Version, exact Reference and duplicate-commit behavior | Active Task Preparation — `W1-T001` | Must complete before downstream Artifact consumers |
+| 1 | Artifact Commit Boundary: Candidate validation, immutable Version, exact Reference and duplicate-commit behavior | Integration Review Passed — `W1-T001` | Must merge before downstream Artifact consumers |
 | 2 | Artifact Storage Adapter seam | Pending | May begin only after core Artifact interface from outcome 1 is stable |
 | 3 | Minimal Workflow control state and Command / Result | Pending | Cannot redefine exact Reference established by outcome 1 |
 | 4 | Checkpoint / Resume at Human Interrupt | Pending | Requires Workflow control state and exact Reference behavior |
@@ -60,7 +60,7 @@ These are Milestone outcomes only; no bounded task instances are created by this
 | G0 — Baseline Approval | Passed | Phase 1.3 Baseline Acceptance Record v1.0 |
 | G1 — Coding Authorization | Passed with scope | Phase 1.4 Vertical Slice directive; no full-MVP or Provider authorization |
 | G2 — W1 Entry | Passed for bounded task preparation | W1 Execution Record v0.1 |
-| G3 — W1-T001 Readiness | In Review | Contract and Issue Specification being created |
+| G3 — W1-T001 Readiness | Passed | Issue #1 and Issue-bound Task Package v0.1 |
 | Exact luna-worker route | Read-only route verified | `RUNTIME_ROUTE_VERIFIED_READ_ONLY`; implementation assignment still requires Issue-bound Task Package |
 | Git / GitHub execution target | Passed | Local `main` repository bound to public `JettxonHo/AI-Course-Factory` |
 | External Side-effect Gate | Closed / Not Applicable | W1-T001 has no external Provider side effect |

@@ -38,19 +38,17 @@ Configuration evidence does not by itself prove an implementation assignment or 
 
 ## 4. Remaining Assignment Blockers
 
-1. Issue Specification still has `Issue ID: pending`; no real Issue exists.
-2. Product Owner has not yet authorized the external Issue-creation action.
-3. Step 10 requires the Task Package to bind a real Issue, so no valid Package exists.
-4. Implementation assignment remains closed until the complete Package is available.
+All previously recorded assignment blockers have been resolved by repository creation, GitHub Issue #1 and the Issue-bound Task Package. A formal implementation assignment is now permitted within the Package only.
 
 ## 5. Routing Decision
 
 ```text
 EXACT LUNA ROUTE: VERIFIED FOR READ-ONLY READINESS
 FALLBACK: NOT ALLOWED
-IMPLEMENTATION ASSIGNMENT: NOT STARTED
+IMPLEMENTATION ASSIGNMENT: READY
 CODING: NOT STARTED
-NEXT BLOCKER: GITHUB ISSUE CREATION AUTHORIZATION
+NEXT ACTION: EXACT LUNA IMPLEMENTATION ASSIGNMENT
 ```
+
 
 If a later implementation assignment cannot resolve exact `luna-worker`, the required result remains `BLOCKED_LUNA_WORKER_UNAVAILABLE`; no Terra or unnamed-worker fallback is permitted.

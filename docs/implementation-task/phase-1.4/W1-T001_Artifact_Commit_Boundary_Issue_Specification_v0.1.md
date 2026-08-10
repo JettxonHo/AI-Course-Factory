@@ -2,7 +2,7 @@
 
 ## Issue ID
 
-`pending` — the GitHub target is established, but a real Issue has not been authorized or created; this file is not a GitHub Issue.
+[#1](https://github.com/JettxonHo/AI-Course-Factory/issues/1)
 
 ## Title
 
@@ -30,7 +30,7 @@ exact `luna-worker`; no fallback
 
 ## 状态
 
-`READY_FOR_ISSUE_CREATION — AUTHORIZATION_REQUIRED`
+`ISSUE_CREATED — PACKAGE_ASSEMBLED`
 
 ## 背景
 
@@ -88,7 +88,7 @@ Can Parallel With:
 - G2 W1 entry passed.
 - Bounded Task Contract readiness passed.
 - Repository / GitHub target is established as public `JettxonHo/AI-Course-Factory`.
-- Before external Issue creation: Product Owner must explicitly authorize creating the real Issue from this Specification.
+- GitHub Issue #1 exists and preserves this Specification's scope.
 - Before assignment: an actual Issue, complete Task Package and exact `luna-worker` route must be valid.
 
 ## 输入文档
@@ -172,7 +172,7 @@ The future Task Package must bind exact executable commands to the selected loca
 
 ## 阻塞条件
 
-- Product Owner has not yet authorized the external GitHub Issue creation action.
+- Exact Task Package and assignment route must remain consistent with Issue #1.
 - Task Package cannot bind an actual Issue.
 - Exact `luna-worker` route fails or reports a model mismatch.
 - Implementation needs a changed Artifact Contract, second ownership, major dependency or external side effect.
@@ -185,9 +185,9 @@ The future implementation can enter Integration Review only when code is complet
 
 ```text
 ISSUE SPECIFICATION: COMPLETE
-GITHUB ISSUE: NOT CREATED
-EXTERNAL ISSUE CREATION: READY_PENDING_AUTHORIZATION
-TASK PACKAGE: NOT CREATED
+GITHUB ISSUE: #1 CREATED
+EXTERNAL ISSUE CREATION: COMPLETE
+TASK PACKAGE: W1-T001-TP-v0.1 CREATED
 AGENT ASSIGNMENT: NOT STARTED
 CODING: NOT STARTED
 ```
