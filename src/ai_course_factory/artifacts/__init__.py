@@ -9,6 +9,13 @@ from .commit import (
     RevisionMismatchError,
 )
 from .model import ArtifactCandidate, ArtifactReference, ArtifactVersion
+from .script_decision import (
+    ScriptDecisionBoundary,
+    ScriptDecisionFailure,
+    ScriptDecisionRecord,
+    ScriptGateAssessment,
+    ScriptGateFinding,
+)
 
 __all__ = [
     "ArtifactCandidate",
@@ -20,4 +27,9 @@ __all__ = [
     "CandidateValidationError",
     "CommitConflictError",
     "RevisionMismatchError",
+    "ScriptDecisionBoundary",
+    "ScriptDecisionFailure",
+    "ScriptDecisionRecord",
+    "ScriptGateAssessment",
+    "ScriptGateFinding",
 ]
