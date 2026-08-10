@@ -9,7 +9,7 @@
 | Tracking Date | 2026-08-10 |
 | Active Milestone | M2 — Source to Approved Script |
 | Active Wave | W2 — Grounded Script Slice |
-| Coding | In Progress — W2-T007 ready for assignment |
+| Coding | W2-T007 Integration Review Passed — PR pending |
 | External Provider Calls | Closed |
 
 This tracker is a projection of accepted Milestone and Wave contracts. It does not redefine M0–M8 or W0–W8.
@@ -20,7 +20,7 @@ This tracker is a projection of accepted Milestone and Wave contracts. It does n
 | --- | --- | --- | --- | --- |
 | M0 — Planning and Coding Gate | Complete | Step 1–12 review chain | Consolidated baseline acceptance and scoped coding authorization | Phase 1.3 Baseline Acceptance Record v1.0 |
 | M1 — Artifact and Workflow Control Spine | Complete | M0 complete; W1 entry authorized | Exact Reference, immutable Commit, control-only Checkpoint / Resume | W1 Exit Record; Issues #1 / #3 and PRs #2 / #4 |
-| M2 — Source to Approved Script | In Progress | W1 Exit Gate passed | Source → Knowledge → Script → Mandatory Review | W2 entry authorized; first task preparing |
+| M2 — Source to Approved Script | In Progress | W1 Exit Gate passed | Source → Knowledge → Script → Mandatory Review | W2-T007 integration review passed; PR and W2 Exit pending |
 | M3 — Production Planning and Budget | Outside current Goal | M2 exit and separate continuation decision | Not planned in this Goal | Not applicable |
 | M4 — Safe Production Closure | Outside current Goal | M3 exit | Not planned in this Goal | Not applicable |
 | M5 — Provider-backed Production | Outside current Goal | M4 exit plus external side-effect authorization | Not planned in this Goal | Not applicable |
@@ -51,8 +51,8 @@ Only the current bounded outcome may be instantiated; later outcomes remain orde
 5. Content Agent Plan / Script Candidates and Commit — W2-T005 Issue #13; integration review passed with 51-test suite.
 6. Script grounding / completeness guard and Creator decision record — W2-T006 Issue #15; integration review passed with 57-test suite.
 7. Approval Record decision context — W2-T006A Issue #17; integration review passed with 59-test suite.
-8. Mandatory Script Review interrupt, decision-before-resume coordination and Approve / Reject / Revise — W2-T007 Issue #19 / Package ready.
-9. Vertical Slice acceptance evidence — owned by W2-T007.
+8. Mandatory Script Review interrupt, decision-before-resume coordination and Approve / Reject / Revise — W2-T007 Issue #19; integration review passed with 66-test suite.
+9. Vertical Slice acceptance evidence — W2-T007 integration proof passed; PR merge and W2 Exit Record pending.
 
 ## 5. Gate Tracking
 
@@ -66,7 +66,7 @@ Only the current bounded outcome may be instantiated; later outcomes remain orde
 | Git / GitHub execution target | Passed | Local `main` repository bound to public `JettxonHo/AI-Course-Factory` |
 | External Side-effect Gate | Scoped | Public GitHub read allowed for W2-T001; credentials, paid Provider and media calls remain closed |
 | G4 — W1 Exit | Passed | W1 Exit Record; PR #4 merged; 17 / 17 post-merge suite |
-| G5 — W2 Entry | Passed with scope | One accepted bounded W2 outcome at a time; W2-T007 is current |
+| G5 — W2 Entry | Passed with scope | One accepted bounded W2 outcome at a time; W2-T007 integration review passed |
 
 ## 6. Update Rule
 

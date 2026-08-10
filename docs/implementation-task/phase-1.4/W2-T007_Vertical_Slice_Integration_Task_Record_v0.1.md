@@ -7,7 +7,9 @@
 | Package | `W2-T007-TP-v0.1` |
 | Branch | `agent/w2-t007-vertical-slice` |
 | Ownership | Application Layer / Script Review coordination seam |
-| State | Ready for Assignment |
-| Coding | Not Started |
+| State | Integration Review Passed |
+| Coding | Complete within bounded scope |
 
-W2-T006A / PR #18 and the 59-test post-merge suite passed. Exact `luna-worker` route is required. No external Provider, existing module modification or fallback is authorized.
+W2-T006A / PR #18 and the 59-test post-merge suite passed. Exact `luna-worker` route was used; no fallback or external Provider execution occurred.
+
+Completion evidence: the Application coordination seam and offline Source-to-approved-Script proof passed; full suite 66 tests; compile, diff, import and scope checks passed. See `W2-T007_Vertical_Slice_Integration_Review_v0.1.md`.
