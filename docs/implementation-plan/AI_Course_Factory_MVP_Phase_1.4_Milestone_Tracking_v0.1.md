@@ -9,7 +9,7 @@
 | Tracking Date | 2026-08-10 |
 | Active Milestone | M2 — Source to Approved Script |
 | Active Wave | W2 — Grounded Script Slice |
-| Coding | In Progress — W2-T001 ready for assignment |
+| Coding | In Progress — W2-T001 ready for PR review |
 | External Provider Calls | Closed |
 
 This tracker is a projection of accepted Milestone and Wave contracts. It does not redefine M0–M8 or W0–W8.
@@ -44,7 +44,7 @@ Only the next bounded outcome is instantiated. Later outcomes remain ordering ma
 
 Only the current bounded outcome may be instantiated; later outcomes remain ordered markers.
 
-1. Public GitHub Source validation and exact-commit acquisition — W2-T001 Issue #5 / Package ready.
+1. Public GitHub Source validation and exact-commit acquisition — W2-T001 integration review passed; pending PR merge.
 2. Source normalization, provenance and Source Record Commit — pending accepted Connector result contract.
 3. Knowledge Agent Candidate and Commit.
 4. Content Agent Plan / Script Candidates and Commit.
