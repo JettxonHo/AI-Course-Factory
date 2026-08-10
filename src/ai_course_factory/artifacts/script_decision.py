@@ -9,6 +9,9 @@ import math
 from .model import ArtifactReference, ArtifactVersion
 
 
+_MAX_DECISION_CONTEXT_LENGTH = 4096
+
+
 @dataclass(frozen=True, slots=True)
 class ScriptGateFinding:
     """One deterministic Hard Block finding for the selected Script Version."""
@@ -54,6 +57,7 @@ class ScriptDecisionRecord:
     assessment_disposition: str
     finding_codes: tuple[str, ...]
     action: str
+    decision_context: str
 
 
 class _DecisionValidation(Exception):
@@ -125,6 +129,7 @@ class ScriptDecisionBoundary:
         thread_id: str,
         creator_id: str,
         action: str,
+        decision_context: str = "",
     ) -> ScriptDecisionRecord | ScriptDecisionFailure:
         try:
             if self._assessments.get(id(assessment)) is not assessment:
@@ -139,6 +144,7 @@ class ScriptDecisionBoundary:
             self._validate_identity(creator_id, "INVALID_CREATOR_ID", "Creator identity is required")
             if action not in {"approve", "reject", "revise"}:
                 raise _DecisionValidation("INVALID_DECISION_ACTION", "decision action is invalid")
+            self._validate_decision_context(decision_context, action)
             if assessment.disposition == "hard_block" and action == "approve":
                 raise _DecisionValidation(
                     "HARD_BLOCK_APPROVAL_FORBIDDEN",
@@ -157,6 +163,7 @@ class ScriptDecisionBoundary:
                 assessment_disposition=assessment.disposition,
                 finding_codes=tuple(finding.code for finding in assessment.findings),
                 action=action,
+                decision_context=decision_context,
             )
             existing = self._records.get(decision_id)
             if existing is not None:
@@ -233,6 +240,20 @@ class ScriptDecisionBoundary:
             or any(ord(char) < 0x20 or ord(char) == 0x7F for char in value)
         ):
             raise _DecisionValidation(code, message)
+
+    @staticmethod
+    def _validate_decision_context(value: object, action: str) -> None:
+        if (
+            not isinstance(value, str)
+            or len(value) > _MAX_DECISION_CONTEXT_LENGTH
+            or any(ord(char) < 0x20 or ord(char) == 0x7F for char in value)
+            or action in {"reject", "revise"}
+            and not value.strip()
+        ):
+            raise _DecisionValidation(
+                "INVALID_DECISION_CONTEXT",
+                "decision context must be safe and bounded",
+            )
 
     @staticmethod
     def _validate_version(

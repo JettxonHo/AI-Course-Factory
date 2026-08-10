@@ -330,10 +330,79 @@ class ScriptDecisionBoundaryTests(unittest.TestCase):
             thread_id="thread-1",
             creator_id="creator-1",
             action="revise",
+            decision_context="Use a different revision instruction.",
         )
         self.assertIsInstance(conflict, ScriptDecisionFailure)
         self.assertEqual(conflict.kind, "validation")
         self.assertEqual(conflict.code, "DECISION_CONFLICT")
+
+    def test_revise_persists_bounded_decision_context_and_context_conflicts(self):
+        values = valid_versions()
+        boundary = ScriptDecisionBoundary()
+        assessment = self._assess(values, boundary)
+
+        record = boundary.decide(
+            assessment,
+            decision_id="decision-context-1",
+            task_id="task-1",
+            thread_id="thread-1",
+            creator_id="creator-1",
+            action="revise",
+            decision_context="Ground scene two in the source claim.",
+        )
+
+        self.assertIsInstance(record, ScriptDecisionRecord)
+        self.assertEqual(record.decision_context, "Ground scene two in the source claim.")
+
+        replay = boundary.decide(
+            assessment,
+            decision_id="decision-context-1",
+            task_id="task-1",
+            thread_id="thread-1",
+            creator_id="creator-1",
+            action="revise",
+            decision_context="Ground scene two in the source claim.",
+        )
+        self.assertIs(replay, record)
+
+        conflict = boundary.decide(
+            assessment,
+            decision_id="decision-context-1",
+            task_id="task-1",
+            thread_id="thread-1",
+            creator_id="creator-1",
+            action="revise",
+            decision_context="Use a different revision instruction.",
+        )
+        self.assertIsInstance(conflict, ScriptDecisionFailure)
+        self.assertEqual(conflict.kind, "validation")
+        self.assertEqual(conflict.code, "DECISION_CONFLICT")
+
+    def test_reject_and_revise_require_safe_bounded_decision_context(self):
+        values = valid_versions()
+        boundary = ScriptDecisionBoundary()
+        assessment = self._assess(values, boundary)
+
+        invalid_contexts = ("", "   ", "\n", "x" * 4097)
+        for action in ("reject", "revise"):
+            for index, context in enumerate(invalid_contexts):
+                with self.subTest(action=action, index=index):
+                    result = boundary.decide(
+                        assessment,
+                        decision_id=f"invalid-context-{action}-{index}",
+                        task_id="task-1",
+                        thread_id="thread-1",
+                        creator_id="creator-1",
+                        action=action,
+                        decision_context=context,
+                    )
+                    self.assertIsInstance(result, ScriptDecisionFailure)
+                    self.assertEqual(result.kind, "validation")
+                    self.assertEqual(result.code, "INVALID_DECISION_CONTEXT")
+                    self.assertIsInstance(
+                        boundary.get(f"invalid-context-{action}-{index}"),
+                        ScriptDecisionFailure,
+                    )
 
     def test_hard_block_cannot_approve_but_reject_and_revise_are_recorded(self):
         values = list(valid_versions())
@@ -375,6 +444,7 @@ class ScriptDecisionBoundaryTests(unittest.TestCase):
                     thread_id="thread-1",
                     creator_id="creator-1",
                     action=action,
+                    decision_context=f"Creator requested {action} for this exact Script version.",
                 )
                 self.assertIsInstance(record, ScriptDecisionRecord)
                 self.assertEqual(record.action, action)
