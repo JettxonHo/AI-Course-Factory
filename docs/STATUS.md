@@ -9,11 +9,11 @@
 | Canonical Branch | `main` |
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
 | Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
-| Current Main | `c26e8087d3d29383ab87283d5244b35f7857292f` |
+| Current Main | `5db967b696c5c6b89e85b70fea395df9a9fef3df` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
-| Remote | `origin/main@c26e8087d3d29383ab87283d5244b35f7857292f` |
+| Remote | `origin/main@5db967b696c5c6b89e85b70fea395df9a9fef3df` |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | None; #25 is closed after M1-002 merge |
+| Current M1 Task Contract | #28 — M1-003 Storyboard Decision — sole READY contract |
 | Open PR | None |
 | Current Code Gate | 81 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
@@ -89,7 +89,7 @@ This proves the current offline and no-Provider Character and Storyboard plannin
 - Issue #25 is closed as completed; its sole M1-002 Task Contract was delivered by merged PR #26.
 - `main@c26e808` contains reviewed Storyboard implementation commit `bb8e497`.
 - GitHub reported no status checks for PR #26; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- There is no open Issue or PR for M1 result 3.
+- Issue #28 is open and its body is the sole READY M1-003 Storyboard Decision Task Contract; no matching PR exists yet.
 
 ## 5. Protected Untracked Materials
 
@@ -167,7 +167,8 @@ The exact Luna implementation preserved the existing Character result contract, 
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
-- M1 results 3–7 require new bounded Task Contracts and are not authorized by Issue #25。
+- M1 result 3 of 7 is READY only under Issue #28 and exact Luna dispatch remains pending；
+- M1 results 4–7 require new bounded Task Contracts and are not authorized by Issue #28。
 
 ### Blocks only real Provider milestone
 
@@ -185,5 +186,7 @@ The exact Luna implementation preserved the existing Character result contract, 
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded Task Contract before Storyboard decision work.
-2. Keep all real Provider, cost and deployment gates closed.
+1. Verify `codex/28-storyboard-decision` and exact `luna-worker` runtime routing, then dispatch Issue #28 only.
+2. Independently review the actual decision diff and rerun every required gate before commit/PR/merge.
+3. Do not start Timeline or another result without its own bounded Task Contract.
+4. Keep all real Provider, cost and deployment gates closed.
