@@ -8,13 +8,14 @@
 | Repository | `JettxonHo/AI-Course-Factory` |
 | Branch | `codex/25-storyboard-planning` |
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
+| Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
 | Code Parent | `cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote | `origin/main@cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
 | Worktrees | One main worktree |
 | Open Issue | #25 — M1-002 Storyboard Planning — sole READY Task Contract |
 | Open PR | None for Issue #25 |
-| Current Code Gate | 73 tests passed |
+| Current Code Gate | 81 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -36,18 +37,27 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - provider-neutral `ProductionAgent.plan_character` with exact Script/approval/lineage checks；
 - bounded Character Candidate validation and safe runtime failures；
 - external commit through the unchanged Artifact Store to an exact Character Reference；
-- equivalent replay and changed-input Commit conflict evidence。
+- provider-neutral `ProductionAgent.plan_storyboard` with exact Script/approval/Character lineage checks；
+- dynamic ordered Storyboard scene validation derived from the Script rather than a hardcoded system count；
+- external commit through the unchanged Artifact Store to an exact Storyboard Reference；
+- Character and Storyboard equivalent replay and changed-input Commit conflict evidence。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 73 tests — OK
+Ran 81 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
 
 uv run python -m unittest tests.integration.test_character_planning -v
+Ran 3 tests — OK
+
+uv run python -m unittest tests.agents.test_storyboard_planning -v
+Ran 5 tests — OK
+
+uv run python -m unittest tests.integration.test_storyboard_planning -v
 Ran 3 tests — OK
 
 uv run python -m compileall -q src tests
@@ -57,13 +67,13 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character planning slice only. It does not prove Storyboard, Production Request, Budget, persistence, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider Character and Storyboard planning slices only. It does not prove Storyboard decision, Timeline, Production Request, Budget, persistence, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
 - persistent database or file-backed Artifact/Decision/Checkpoint storage；
 - task-level application and local Web Workspace；
-- Storyboard/Timeline/Production Request planning；
+- Timeline/Production Request planning；
 - Storyboard decision and Budget gate；
 - Production Orchestrator or Provider adapters；
 - Visual/TTS/media generation；
@@ -77,7 +87,7 @@ This proves the current offline and no-Provider Character planning slice only. I
 - `main@cd1a936` contains the approved M0 baseline and independently approved Character planning implementation.
 - GitHub reported no status checks for PR #24; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
 - Issue #25 is open and its body is the sole READY M1-002 Storyboard Planning Task Contract.
-- No PR exists yet for Issue #25.
+- Local reviewed commit `bb8e497` implements that contract; no PR exists yet for Issue #25.
 
 ## 5. Protected Untracked Materials
 
@@ -102,15 +112,15 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #23 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff206-22f1-7282-97c4-fe1a324edf4d` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #25 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff220-ddc9-7451-80e5-baa7a59948ab` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
 
 The runtime evidence above verifies Agent routing only; it does not prove product Model Runtime or Provider capability.
 
-## 7. M0 Baseline and M1-001 Change
+## 7. M0 Baseline and M1 Changes
 
 The M0 planning-baseline commit containing this snapshot establishes these approved v1.0 truth sources:
 
@@ -138,13 +148,23 @@ Issue #23 implementation is isolated in published commit `d05e286` and changes o
 
 The main orchestrator requested one review correction to remove redundant public aliases and arbitrary nested constraints. The same Luna narrowed the interface, all gates were rerun, and the final independent verdict is `APPROVED`.
 
+Issue #25 implementation is isolated in local commit `bb8e497` and changes only:
+
+- `src/ai_course_factory/agents/production_agent.py`；
+- `src/ai_course_factory/agents/runtime.py`；
+- `src/ai_course_factory/agents/__init__.py`；
+- `tests/agents/test_storyboard_planning.py`；
+- `tests/integration/test_storyboard_planning.py`。
+
+The exact Luna implementation preserved the existing Character result contract, added an independent Storyboard result envelope, derived Storyboard scene order from the exact Script, and left Commit ownership at the Artifact Store. The main orchestrator independently reviewed the actual diff, reran all gates, and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### Current M1 state
 
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
-- M1 result 2 of 7 is READY only under Issue #25 and exact Luna dispatch remains pending；
+- M1 result 2 of 7 is independently approved locally at `bb8e497` under Issue #25；
 - M1 results 3–7 require new bounded Task Contracts and are not authorized by Issue #25。
 
 ### Blocks only real Provider milestone
@@ -163,7 +183,6 @@ The main orchestrator requested one review correction to remove redundant public
 
 ## 9. Next Ordered Actions
 
-1. Verify `codex/25-storyboard-planning` and exact `luna-worker` runtime routing, then dispatch Issue #25 only.
-2. Independently review the actual Storyboard diff and rerun its required gates before any commit/PR/merge.
-3. Do not start Storyboard decision or another M1 result without its own bounded Task Contract.
-4. Keep all real Provider, cost and deployment gates closed.
+1. Publish the reviewed Issue #25 branch, run its available remote PR gates and merge only if the PR remains clean.
+2. After merge, update Issue/GOAL/STATUS and establish a separate bounded Task Contract before Storyboard decision work.
+3. Keep all real Provider, cost and deployment gates closed.
