@@ -6,14 +6,14 @@
 | --- | --- |
 | Date | 2026-08-12 |
 | Repository | `JettxonHo/AI-Course-Factory` |
-| Branch | `codex/23-character-planning` |
-| Reviewed M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
-| Code Parent | `08085e428db07e5a54a1a5a6a29517c84bba2d0d` |
+| Branch | `codex/25-storyboard-planning` |
+| Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
+| Code Parent | `cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
-| Remote | `origin/main@08085e428db07e5a54a1a5a6a29517c84bba2d0d`; M0/M1 branch published as `origin/codex/23-character-planning` |
+| Remote | `origin/main@cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
 | Worktrees | One main worktree |
-| Open Issue | #23 — M1-001 Character Planning — sole Task Contract |
-| Open PR | #24 — draft delivery PR for the approved M0 baseline and M1-001 |
+| Open Issue | #25 — M1-002 Storyboard Planning — sole READY Task Contract |
+| Open PR | None for Issue #25 |
 | Current Code Gate | 73 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -73,14 +73,11 @@ This proves the current offline and no-Provider Character planning slice only. I
 
 ## 4. GitHub State
 
-- Issue #23 is open, its body is the sole READY M1-001 Task Contract, and draft PR #24 is its delivery PR.
-- PRs #2 through #22 for Phase 1.4 are merged.
-- `main@08085e4` contains the accepted Source-to-approved-Script slice.
-- Published commit `d05e286` contains the independently approved five-file Character planning implementation.
-- The planning and implementation commits are published on `origin/codex/23-character-planning` but are not merged into `main`.
-- GitHub reports no status checks for PR #24; the current evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-
-Issue #23 remains open while draft PR #24 awaits the remote merge gate.
+- Issue #23 is closed as completed; its sole M1-001 Task Contract was delivered by merged PR #24.
+- `main@cd1a936` contains the approved M0 baseline and independently approved Character planning implementation.
+- GitHub reported no status checks for PR #24; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
+- Issue #25 is open and its body is the sole READY M1-002 Storyboard Planning Task Contract.
+- No PR exists yet for Issue #25.
 
 ## 5. Protected Untracked Materials
 
@@ -146,9 +143,9 @@ The main orchestrator requested one review correction to remove redundant public
 ### Current M1 state
 
 - M0 activation is complete；
-- M1 result 1 of 7 is independently approved and published in draft PR #24；
-- M1 results 2–7 require new bounded Task Contracts and are not automatically authorized by Issue #23；
-- Issue #23 remains open until PR #24 completes its review/merge workflow。
+- M1 result 1 of 7 is independently approved and merged by PR #24；
+- M1 result 2 of 7 is READY only under Issue #25 and exact Luna dispatch remains pending；
+- M1 results 3–7 require new bounded Task Contracts and are not authorized by Issue #25。
 
 ### Blocks only real Provider milestone
 
@@ -166,6 +163,7 @@ The main orchestrator requested one review correction to remove redundant public
 
 ## 9. Next Ordered Actions
 
-1. Complete the PR #24 review/merge gate before advancing the shared Production Agent interface.
-2. Do not start Storyboard or another M1 result without its own bounded Task Contract.
-3. Keep all real Provider, cost and deployment gates closed.
+1. Verify `codex/25-storyboard-planning` and exact `luna-worker` runtime routing, then dispatch Issue #25 only.
+2. Independently review the actual Storyboard diff and rerun its required gates before any commit/PR/merge.
+3. Do not start Storyboard decision or another M1 result without its own bounded Task Contract.
+4. Keep all real Provider, cost and deployment gates closed.
