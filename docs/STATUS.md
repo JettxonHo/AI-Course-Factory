@@ -9,13 +9,14 @@
 | Canonical Branch | `main` |
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
 | Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
+| Reviewed M1-003 Commit | `047ce29660e25c9d3e9407f1df3d1a53a2504272` |
 | Current Main | `5db967b696c5c6b89e85b70fea395df9a9fef3df` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote | `origin/main@5db967b696c5c6b89e85b70fea395df9a9fef3df` |
 | Worktrees | One main worktree |
 | Current M1 Task Contract | #28 — M1-003 Storyboard Decision — sole READY contract |
 | Open PR | None |
-| Current Code Gate | 81 tests passed |
+| Current Code Gate | 89 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -40,13 +41,15 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - provider-neutral `ProductionAgent.plan_storyboard` with exact Script/approval/Character lineage checks；
 - dynamic ordered Storyboard scene validation derived from the Script rather than a hardcoded system count；
 - external commit through the unchanged Artifact Store to an exact Storyboard Reference；
-- Character and Storyboard equivalent replay and changed-input Commit conflict evidence。
+- Character and Storyboard equivalent replay and changed-input Commit conflict evidence；
+- exact in-memory Storyboard decision bound to the committed Storyboard/Script/Character lineage；
+- enabled approve/reject/revise and disabled explicit-skip decision semantics with immutable replay/conflict behavior。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 81 tests — OK
+Ran 89 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -60,6 +63,12 @@ Ran 5 tests — OK
 uv run python -m unittest tests.integration.test_storyboard_planning -v
 Ran 3 tests — OK
 
+uv run python -m unittest tests.artifacts.test_storyboard_decision -v
+Ran 7 tests — OK
+
+uv run python -m unittest tests.integration.test_storyboard_decision -v
+Ran 1 test — OK
+
 uv run python -m compileall -q src tests
 OK
 
@@ -67,14 +76,14 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character and Storyboard planning slices only. It does not prove Storyboard decision, Timeline, Production Request, Budget, persistence, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider Character, Storyboard and in-memory Storyboard-decision slices only. It does not prove Timeline, Production Request, Budget, persistence, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
 - persistent database or file-backed Artifact/Decision/Checkpoint storage；
 - task-level application and local Web Workspace；
 - Timeline/Production Request planning；
-- Storyboard decision and Budget gate；
+- Budget gate；
 - Production Orchestrator or Provider adapters；
 - Visual/TTS/media generation；
 - Final Video Review、stale/impact、scene retry；
@@ -89,7 +98,7 @@ This proves the current offline and no-Provider Character and Storyboard plannin
 - Issue #25 is closed as completed; its sole M1-002 Task Contract was delivered by merged PR #26.
 - `main@c26e808` contains reviewed Storyboard implementation commit `bb8e497`.
 - GitHub reported no status checks for PR #26; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #28 is open and its body is the sole READY M1-003 Storyboard Decision Task Contract; no matching PR exists yet.
+- Issue #28 is open and its body is the sole READY M1-003 Storyboard Decision Task Contract; reviewed local commit `047ce29` implements it and no matching PR exists yet.
 
 ## 5. Protected Untracked Materials
 
@@ -114,8 +123,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #25 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff220-ddc9-7451-80e5-baa7a59948ab` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #28 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff22f-be2e-73b1-aa47-ff8a205f0e6f` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -160,6 +169,15 @@ Issue #25 implementation is isolated in merged commit `bb8e497` and changes only
 
 The exact Luna implementation preserved the existing Character result contract, added an independent Storyboard result envelope, derived Storyboard scene order from the exact Script, and left Commit ownership at the Artifact Store. The main orchestrator independently reviewed the actual diff, reran all gates, and returned `APPROVED`.
 
+Issue #28 implementation is isolated in local commit `047ce29` and changes only:
+
+- `src/ai_course_factory/artifacts/storyboard_decision.py`；
+- `src/ai_course_factory/artifacts/__init__.py`；
+- `tests/artifacts/test_storyboard_decision.py`；
+- `tests/integration/test_storyboard_decision.py`。
+
+The exact Luna followed the confirmed public TDD seams: the first focused test was red because the boundary did not exist, then the public unit and committed-Storyboard integration slices turned green. The main orchestrator independently reviewed mode/action exclusivity, exact lineage, atomic failures, replay/conflict and safe exception behavior and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### Current M1 state
@@ -167,7 +185,7 @@ The exact Luna implementation preserved the existing Character result contract, 
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
-- M1 result 3 of 7 is READY only under Issue #28 and exact Luna dispatch remains pending；
+- M1 result 3 of 7 is independently approved locally at `047ce29` under Issue #28；
 - M1 results 4–7 require new bounded Task Contracts and are not authorized by Issue #28。
 
 ### Blocks only real Provider milestone
@@ -186,7 +204,6 @@ The exact Luna implementation preserved the existing Character result contract, 
 
 ## 9. Next Ordered Actions
 
-1. Verify `codex/28-storyboard-decision` and exact `luna-worker` runtime routing, then dispatch Issue #28 only.
-2. Independently review the actual decision diff and rerun every required gate before commit/PR/merge.
-3. Do not start Timeline or another result without its own bounded Task Contract.
-4. Keep all real Provider, cost and deployment gates closed.
+1. Publish the reviewed Issue #28 branch, run its available remote PR gates and merge only if the PR remains clean.
+2. After merge, update Issue/GOAL/STATUS and establish a separate bounded Task Contract before Timeline work.
+3. Keep all real Provider, cost and deployment gates closed.
