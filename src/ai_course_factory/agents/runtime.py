@@ -41,6 +41,14 @@ class ContentModelRuntimeResult:
 
 
 @dataclass(frozen=True, slots=True)
+class ProductionModelRuntimeResult:
+    """Provider-neutral normalized output envelope for Production Agent stages."""
+
+    character: Mapping[str, Any]
+    diagnostics: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class ModelRuntimeFailure:
     """Normalized technical failure returned by a model runtime."""
 
@@ -54,5 +62,10 @@ class ModelRuntimePort(Protocol):
 
     def invoke(
         self, request: ModelRuntimeRequest
-    ) -> ModelRuntimeResult | ContentModelRuntimeResult | ModelRuntimeFailure:
+    ) -> (
+        ModelRuntimeResult
+        | ContentModelRuntimeResult
+        | ProductionModelRuntimeResult
+        | ModelRuntimeFailure
+    ):
         """Return a normalized result or normalized technical failure."""

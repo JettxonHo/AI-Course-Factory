@@ -88,3 +88,63 @@ Rejected because Artifact Commit, Workflow control, Source / Knowledge, Content 
 #### Bypass GitHub lineage silently
 
 Rejected. Local preparation can continue, but no external Issue, Branch or PR may be claimed until a repository / GitHub target is explicitly established.
+
+## Decision D-002 — Consolidate Daily Development Truth Sources
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted |
+| Decision Date | 2026-08-12 |
+| Decision Owner | Product Owner |
+| Applies To | AI Course Factory planning and all future Goals |
+| Source Directive | Product Owner approval of controlled rebaseline and Goal/Luna workflow |
+
+### Context
+
+The repository accumulated more than 7,000 lines across PRD, Technical Spec, Implementation Boundary, plans, execution records and task packages. Later acceptance records resolved many older status fields without updating those files. The same future task could therefore appear both approved and unauthorized depending on which document Codex read first.
+
+The code has a healthy 66-test Source-to-approved-Script slice, but document volume and duplicated task contracts now exceed the amount required to direct the next implementation safely.
+
+### Alternatives
+
+#### Continue Phase Addendums
+
+Small immediate change, but each new stage would add another source of status and authority drift.
+
+#### Add Only a Master Index
+
+Preserves all existing baselines, but Codex would still need to interpret several overlapping product, architecture and implementation contracts.
+
+#### Controlled Rebaseline
+
+Create one PRD, one System Spec, one Implementation Spec, one Development Workflow, one active Goal and one current STATUS. Preserve all old files as historical evidence.
+
+### Decision
+
+Adopt the controlled rebaseline.
+
+Daily development truth is split by question:
+
+- PRD: product value, behavior, scope and acceptance；
+- System Spec: domain language, Artifact, state, gates and module interfaces；
+- Implementation Spec: code/runtime mapping, persistence, adapters and testing；
+- Development Workflow/AGENTS: Goal, model routing, Issue, PR and Review；
+- GOAL: current authorized scope and stopping condition；
+- STATUS: verified current facts。
+
+Historical Phase documents remain in place and must not be deleted. They are no longer daily implementation entry points unless a current truth source explicitly references them.
+
+### Agent Routing Decision
+
+- ORCHESTRATOR_REVIEWER uses project configuration `gpt-5.6-sol / xhigh`.
+- Bounded code implementation uses exact custom Agent `luna-worker`, configured `gpt-5.6-luna / max`.
+- No automatic Terra/default-worker fallback is allowed.
+- Configuration evidence and runtime model evidence remain separate.
+
+### Consequences
+
+- New implementation tasks need one authoritative Issue/Task Contract, not four parallel task documents.
+- Goal and STATUS are updated after accepted progress; Specs change only when their corresponding contract changes.
+- Existing Phase 1.5 untracked files are protected until the Product Owner chooses archive or commit treatment.
+- The proposed Core MVP Goal still requires separate approval before feature coding.
+- Real Provider selection, credentials and budget remain separate human decisions.
