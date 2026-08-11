@@ -15,7 +15,7 @@
 | Remote | `origin/main@5db967b696c5c6b89e85b70fea395df9a9fef3df` |
 | Worktrees | One main worktree |
 | Current M1 Task Contract | #28 — M1-003 Storyboard Decision — sole READY contract |
-| Open PR | None |
+| Open PR | #29 — draft delivery PR for M1-003 |
 | Current Code Gate | 89 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -98,7 +98,7 @@ This proves the current offline and no-Provider Character, Storyboard and in-mem
 - Issue #25 is closed as completed; its sole M1-002 Task Contract was delivered by merged PR #26.
 - `main@c26e808` contains reviewed Storyboard implementation commit `bb8e497`.
 - GitHub reported no status checks for PR #26; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #28 is open and its body is the sole READY M1-003 Storyboard Decision Task Contract; reviewed local commit `047ce29` implements it and no matching PR exists yet.
+- Issue #28 is open and its body is the sole READY M1-003 Storyboard Decision Task Contract; reviewed commit `047ce29` is published in draft PR #29.
 
 ## 5. Protected Untracked Materials
 
@@ -185,7 +185,7 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
-- M1 result 3 of 7 is independently approved locally at `047ce29` under Issue #28；
+- M1 result 3 of 7 is independently approved at `047ce29` and published in draft PR #29；
 - M1 results 4–7 require new bounded Task Contracts and are not authorized by Issue #28。
 
 ### Blocks only real Provider milestone
@@ -204,6 +204,6 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 
 ## 9. Next Ordered Actions
 
-1. Publish the reviewed Issue #28 branch, run its available remote PR gates and merge only if the PR remains clean.
+1. Complete the PR #29 remote gate and merge only if the PR remains clean.
 2. After merge, update Issue/GOAL/STATUS and establish a separate bounded Task Contract before Timeline work.
 3. Keep all real Provider, cost and deployment gates closed.

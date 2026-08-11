@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 complete; M1 results 1–2 merged; result 3 independently approved locally |
+| Status | ACTIVE — M0 complete; M1 results 1–2 merged; result 3 approved in draft PR #29 |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -105,7 +105,7 @@ Exit：
 
 ### M1 — Approved Script to Authorized Production Request
 
-Status：**ACTIVE** — results 1–2 of 7 are independently `APPROVED` and merged; result 3 of 7 is independently `APPROVED` locally at `codex/28-storyboard-decision@047ce29`; results 4–7 remain pending and unauthorized without their own Task Contracts.
+Status：**ACTIVE** — results 1–2 of 7 are independently `APPROVED` and merged; result 3 of 7 is independently `APPROVED` at `codex/28-storyboard-decision@047ce29` and published in draft PR #29; results 4–7 remain pending and unauthorized without their own Task Contracts.
 
 Outcome：现有 exact approved Script 形成 provider-neutral、预算受控的生产入口。
 
