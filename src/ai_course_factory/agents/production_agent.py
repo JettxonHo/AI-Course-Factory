@@ -1,9 +1,9 @@
 """Staged, provider-neutral Production Agent boundaries.
 
-The first Production planning step deliberately stops at a Character
-``ArtifactCandidate``.  The Agent validates the exact approved Script input and
-normalises the model-runtime result, while the existing Artifact boundary owns
-validation and Commit of the candidate.
+The first Production planning steps stop at provider-neutral Character and
+Storyboard ``ArtifactCandidate`` values.  The Agent validates exact approved
+inputs and normalises model-runtime results, while the existing Artifact
+boundary owns validation and Commit of each candidate.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ from .runtime import (
     ModelRuntimePort,
     ModelRuntimeRequest,
     ProductionModelRuntimeResult,
+    StoryboardModelRuntimeResult,
 )
 
 
@@ -32,6 +33,9 @@ _PURPOSE = "character_planning"
 _MAX_IDENTITY_LENGTH = 256
 _MAX_TEXT_LENGTH = 4096
 _MAX_CHARACTER_TRAITS = 32
+_MAX_STORYBOARD_SCENES = 128
+_MAX_CONTINUITY_NOTES = 32
+_MAX_SCENE_ID_LENGTH = 128
 
 _CHARACTER_FIELDS = {
     "name",
@@ -49,6 +53,13 @@ class CharacterPlanningConstraints:
 
     name: str
     design_version: str
+
+
+@dataclass(frozen=True, slots=True)
+class StoryboardPlanningConstraints:
+    """The sole Storyboard planning constraint."""
+
+    aspect_ratio: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,7 +125,9 @@ class ProductionAgent:
             upstream = self._validate_script(
                 script_reference, resolved_script
             )
-            self._validate_approval(script_decision, script_reference, upstream)
+            self._validate_approval(
+                script_decision, script_reference, upstream
+            )
             result = self._invoke_runtime(
                 ModelRuntimeRequest(
                     purpose=_PURPOSE,
@@ -167,6 +180,108 @@ class ProductionAgent:
                 "production agent execution failed",
             )
 
+    def plan_storyboard(
+        self,
+        script_reference: ArtifactReference,
+        resolved_script: ArtifactVersion,
+        script_decision: ScriptDecisionRecord,
+        character_reference: ArtifactReference,
+        resolved_character: ArtifactVersion,
+        *,
+        constraints: StoryboardPlanningConstraints | Mapping[str, str],
+        storyboard_identity: str,
+        storyboard_commit_id: str,
+    ) -> ArtifactCandidate | ProductionAgentFailure:
+        """Return a validated provider-neutral Storyboard Candidate.
+
+        Exact input, lineage, approval and constraint checks complete before
+        invoking the supplied model runtime.  The Agent never commits a
+        Candidate or advances workflow state.
+        """
+
+        try:
+            normalized_constraints = self._normalize_storyboard_constraints(constraints)
+            self._validate_identity(
+                storyboard_identity,
+                "INVALID_STORYBOARD_IDENTITY",
+                "Storyboard identity is required",
+            )
+            self._validate_identity(
+                storyboard_commit_id,
+                "INVALID_STORYBOARD_COMMIT_ID",
+                "logical Commit identity is required",
+            )
+            upstream = self._validate_script(script_reference, resolved_script)
+            script_aspect_ratio, script_scene_ids = self._validate_storyboard_script(
+                resolved_script
+            )
+            self._validate_approval(script_decision, script_reference, upstream)
+            self._validate_character_input(
+                character_reference,
+                resolved_character,
+                script_reference,
+                script_decision,
+            )
+            if normalized_constraints["aspect_ratio"] != script_aspect_ratio:
+                raise _ProductionValidation(
+                    "STORYBOARD_ASPECT_RATIO_MISMATCH",
+                    "Storyboard aspect ratio does not match Script",
+                )
+            result = self._invoke_storyboard_runtime(
+                ModelRuntimeRequest(
+                    purpose="storyboard_planning",
+                    inputs=MappingProxyType(
+                        {
+                            "script_reference": script_reference,
+                            "script_payload": resolved_script.payload,
+                            "character_reference": character_reference,
+                            "character_payload": resolved_character.payload,
+                            "approval_decision_id": script_decision.decision_id,
+                        }
+                    ),
+                    constraints=MappingProxyType(
+                        {"storyboard_constraints": normalized_constraints}
+                    ),
+                )
+            )
+            storyboard = self._validate_storyboard_result(
+                result.storyboard,
+                normalized_constraints,
+                script_scene_ids,
+            )
+            return ArtifactCandidate(
+                artifact_type="storyboard",
+                identity=storyboard_identity,
+                payload={
+                    "script_reference": script_reference,
+                    "approval_decision_id": script_decision.decision_id,
+                    "character_reference": character_reference,
+                    "storyboard_constraints": normalized_constraints,
+                    "storyboard": storyboard,
+                },
+                provenance=(
+                    {
+                        "purpose": "storyboard_planning",
+                        "script_reference": script_reference,
+                        "character_reference": character_reference,
+                        "approval_decision_id": script_decision.decision_id,
+                    },
+                ),
+                dependencies=(script_reference, character_reference),
+                validated=True,
+                commit_id=storyboard_commit_id,
+            )
+        except _ProductionValidation as exc:
+            return ProductionAgentFailure("validation", exc.code, exc.message)
+        except _ProductionExecution as exc:
+            return ProductionAgentFailure("execution", exc.code, exc.message)
+        except Exception:
+            return ProductionAgentFailure(
+                "execution",
+                "PRODUCTION_AGENT_FAILED",
+                "production agent execution failed",
+            )
+
     @classmethod
     def _normalize_constraints(
         cls, value: CharacterPlanningConstraints | Mapping[str, str]
@@ -191,6 +306,26 @@ class ProductionAgent:
         return MappingProxyType(
             {"name": normalized_name, "design_version": normalized_version}
         )
+
+    @classmethod
+    def _normalize_storyboard_constraints(
+        cls, value: StoryboardPlanningConstraints | Mapping[str, str]
+    ) -> Mapping[str, str]:
+        if isinstance(value, StoryboardPlanningConstraints):
+            raw = {"aspect_ratio": value.aspect_ratio}
+        elif isinstance(value, Mapping) and set(value) == {"aspect_ratio"}:
+            raw = value
+        else:
+            raise _ProductionValidation(
+                "INVALID_STORYBOARD_CONSTRAINTS",
+                "Storyboard constraints must contain aspect ratio",
+            )
+        aspect_ratio = cls._bounded_text(
+            raw["aspect_ratio"],
+            "INVALID_STORYBOARD_CONSTRAINTS",
+            "Storyboard aspect ratio is invalid",
+        )
+        return MappingProxyType({"aspect_ratio": aspect_ratio})
 
     @classmethod
     def _validate_script(
@@ -234,6 +369,107 @@ class ProductionAgent:
                 "SCRIPT_LINEAGE_MISMATCH", "Script dependencies are invalid"
             )
         return expected_dependencies[0], expected_dependencies[1], expected_dependencies[2]
+
+    @classmethod
+    def _validate_storyboard_script(
+        cls, version: ArtifactVersion
+    ) -> tuple[str, tuple[str, ...]]:
+        payload = version.payload
+        if not isinstance(payload, Mapping):
+            raise _ProductionValidation(
+                "INVALID_SCRIPT_PAYLOAD", "resolved Script payload is invalid"
+            )
+        aspect_ratio = cls._bounded_text(
+            payload.get("aspect_ratio"),
+            "INVALID_SCRIPT_FORMAT",
+            "Script aspect ratio is invalid",
+        )
+        scenes = payload.get("scenes")
+        if (
+            not isinstance(scenes, tuple)
+            or not scenes
+            or len(scenes) > _MAX_STORYBOARD_SCENES
+        ):
+            raise _ProductionValidation(
+                "INVALID_SCRIPT_SCENES", "Script scenes are invalid"
+            )
+        scene_ids: list[str] = []
+        for scene in scenes:
+            if not isinstance(scene, Mapping):
+                raise _ProductionValidation(
+                    "INVALID_SCRIPT_SCENES", "Script scenes are invalid"
+                )
+            scene_id = scene.get("scene_id")
+            if (
+                not isinstance(scene_id, str)
+                or not scene_id.strip()
+                or len(scene_id) > _MAX_SCENE_ID_LENGTH
+                or cls._has_control(scene_id)
+                or scene_id in scene_ids
+            ):
+                raise _ProductionValidation(
+                    "INVALID_SCRIPT_SCENES", "Script scene identities are invalid"
+                )
+            scene_ids.append(scene_id)
+        return aspect_ratio, tuple(scene_ids)
+
+    @classmethod
+    def _validate_character_input(
+        cls,
+        reference: ArtifactReference,
+        version: ArtifactVersion,
+        script_reference: ArtifactReference,
+        script_decision: ScriptDecisionRecord,
+    ) -> None:
+        if not cls._valid_reference(reference, "character"):
+            raise _ProductionValidation(
+                "INVALID_CHARACTER_REFERENCE",
+                "an exact character Reference is required",
+            )
+        if not isinstance(version, ArtifactVersion):
+            raise _ProductionValidation(
+                "INVALID_CHARACTER_VERSION", "a resolved Character Version is required"
+            )
+        if version.reference != reference:
+            raise _ProductionValidation(
+                "CHARACTER_REFERENCE_MISMATCH",
+                "Character Reference does not match Version",
+            )
+        if version.dependencies != (script_reference,):
+            raise _ProductionValidation(
+                "CHARACTER_LINEAGE_MISMATCH",
+                "Character dependencies are invalid",
+            )
+        payload = version.payload
+        if not isinstance(payload, Mapping) or set(payload) != {
+            "script_reference",
+            "approval_decision_id",
+            "character_constraints",
+            "character",
+        }:
+            raise _ProductionValidation(
+                "INVALID_CHARACTER_PAYLOAD", "Character payload is invalid"
+            )
+        if payload.get("script_reference") != script_reference:
+            raise _ProductionValidation(
+                "CHARACTER_LINEAGE_MISMATCH",
+                "Character Script Reference does not match",
+            )
+        approval_id = payload.get("approval_decision_id")
+        cls._validate_identity(
+            approval_id,
+            "INVALID_CHARACTER_PAYLOAD",
+            "Character approval identity is invalid",
+        )
+        if approval_id != script_decision.decision_id:
+            raise _ProductionValidation(
+                "CHARACTER_APPROVAL_MISMATCH",
+                "Character approval identity does not match",
+            )
+        character_constraints = cls._normalize_constraints(
+            payload.get("character_constraints")
+        )
+        cls._validate_character_result(payload.get("character"), character_constraints)
 
     @classmethod
     def _validate_approval(
@@ -285,6 +521,134 @@ class ProductionAgent:
             )
         self._validate_diagnostics(result.diagnostics)
         return result
+
+    def _invoke_storyboard_runtime(
+        self, request: ModelRuntimeRequest
+    ) -> StoryboardModelRuntimeResult:
+        runtime_invoke = getattr(self._runtime, "invoke", None)
+        if not callable(runtime_invoke):
+            raise _ProductionValidation("INVALID_RUNTIME", "model runtime is required")
+        try:
+            result = runtime_invoke(request)
+        except Exception:
+            raise _ProductionExecution(
+                "MODEL_RUNTIME_FAILED", "model runtime execution failed"
+            ) from None
+        if isinstance(result, ModelRuntimeFailure):
+            raise _ProductionExecution(
+                "MODEL_RUNTIME_FAILED", "model runtime execution failed"
+            )
+        if not isinstance(result, StoryboardModelRuntimeResult):
+            raise _ProductionValidation(
+                "INVALID_MODEL_RESULT", "model runtime result is invalid"
+            )
+        self._validate_diagnostics(result.diagnostics)
+        return result
+
+    @classmethod
+    def _validate_storyboard_result(
+        cls,
+        value: object,
+        constraints: Mapping[str, str],
+        expected_scene_ids: tuple[str, ...],
+    ) -> Mapping[str, Any]:
+        if not isinstance(value, Mapping) or set(value) != {"aspect_ratio", "scenes"}:
+            raise _ProductionValidation(
+                "INVALID_STORYBOARD_RESULT", "storyboard result is invalid"
+            )
+        aspect_ratio = cls._bounded_text(
+            value.get("aspect_ratio"),
+            "INVALID_STORYBOARD_ASPECT_RATIO",
+            "Storyboard aspect ratio is invalid",
+        )
+        if aspect_ratio != constraints["aspect_ratio"]:
+            raise _ProductionValidation(
+                "STORYBOARD_ASPECT_RATIO_MISMATCH",
+                "Storyboard aspect ratio does not match constraints",
+            )
+        scenes = value.get("scenes")
+        if (
+            not isinstance(scenes, tuple)
+            or not scenes
+            or len(scenes) > _MAX_STORYBOARD_SCENES
+            or len(scenes) != len(expected_scene_ids)
+        ):
+            raise _ProductionValidation(
+                "INVALID_STORYBOARD_SCENES", "Storyboard scenes are invalid"
+            )
+        normalized_scenes: list[dict[str, Any]] = []
+        actual_scene_ids: list[str] = []
+        for scene in scenes:
+            if not isinstance(scene, Mapping) or set(scene) != {
+                "scene_id",
+                "visual_intent",
+                "character_action",
+                "continuity_notes",
+            }:
+                raise _ProductionValidation(
+                    "INVALID_STORYBOARD_SCENE", "Storyboard scene is invalid"
+                )
+            scene_id = scene.get("scene_id")
+            if (
+                not isinstance(scene_id, str)
+                or not scene_id.strip()
+                or len(scene_id) > _MAX_SCENE_ID_LENGTH
+                or cls._has_control(scene_id)
+            ):
+                raise _ProductionValidation(
+                    "INVALID_STORYBOARD_SCENE", "Storyboard scene is invalid"
+                )
+            actual_scene_ids.append(scene_id)
+            visual_intent = cls._bounded_text(
+                scene.get("visual_intent"),
+                "INVALID_STORYBOARD_SCENE",
+                "Storyboard scene is invalid",
+            )
+            character_action = cls._bounded_text(
+                scene.get("character_action"),
+                "INVALID_STORYBOARD_SCENE",
+                "Storyboard scene is invalid",
+            )
+            continuity_notes = cls._continuity_notes(scene.get("continuity_notes"))
+            normalized_scenes.append(
+                {
+                    "scene_id": scene_id,
+                    "visual_intent": visual_intent,
+                    "character_action": character_action,
+                    "continuity_notes": continuity_notes,
+                }
+            )
+        if tuple(actual_scene_ids) != expected_scene_ids:
+            raise _ProductionValidation(
+                "STORYBOARD_SCENE_ORDER_MISMATCH",
+                "Storyboard scene identities must match Script order",
+            )
+        return {"aspect_ratio": aspect_ratio, "scenes": tuple(normalized_scenes)}
+
+    @classmethod
+    def _continuity_notes(cls, value: object) -> tuple[str, ...]:
+        if (
+            not isinstance(value, tuple)
+            or not value
+            or len(value) > _MAX_CONTINUITY_NOTES
+        ):
+            raise _ProductionValidation(
+                "INVALID_STORYBOARD_SCENE", "Storyboard continuity notes are invalid"
+            )
+        notes = tuple(
+            cls._bounded_text(
+                item,
+                "INVALID_STORYBOARD_SCENE",
+                "Storyboard continuity notes are invalid",
+            )
+            for item in value
+        )
+        if len(set(notes)) != len(notes):
+            raise _ProductionValidation(
+                "DUPLICATE_CONTINUITY_NOTES",
+                "Storyboard continuity notes must be unique",
+            )
+        return notes
 
     @classmethod
     def _validate_character_result(
