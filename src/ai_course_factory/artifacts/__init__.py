@@ -16,6 +16,11 @@ from .script_decision import (
     ScriptGateAssessment,
     ScriptGateFinding,
 )
+from .storyboard_decision import (
+    StoryboardDecisionBoundary,
+    StoryboardDecisionFailure,
+    StoryboardDecisionRecord,
+)
 
 __all__ = [
     "ArtifactCandidate",
@@ -32,4 +37,7 @@ __all__ = [
     "ScriptDecisionRecord",
     "ScriptGateAssessment",
     "ScriptGateFinding",
+    "StoryboardDecisionBoundary",
+    "StoryboardDecisionFailure",
+    "StoryboardDecisionRecord",
 ]
