@@ -14,7 +14,7 @@
 | Remote | `origin/main@cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
 | Worktrees | One main worktree |
 | Open Issue | #25 — M1-002 Storyboard Planning — sole READY Task Contract |
-| Open PR | None for Issue #25 |
+| Open PR | #26 — draft delivery PR for M1-002 |
 | Current Code Gate | 81 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -87,7 +87,7 @@ This proves the current offline and no-Provider Character and Storyboard plannin
 - `main@cd1a936` contains the approved M0 baseline and independently approved Character planning implementation.
 - GitHub reported no status checks for PR #24; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
 - Issue #25 is open and its body is the sole READY M1-002 Storyboard Planning Task Contract.
-- Local reviewed commit `bb8e497` implements that contract; no PR exists yet for Issue #25.
+- Reviewed commit `bb8e497` implements that contract and is published in draft PR #26.
 
 ## 5. Protected Untracked Materials
 
@@ -164,7 +164,7 @@ The exact Luna implementation preserved the existing Character result contract, 
 
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
-- M1 result 2 of 7 is independently approved locally at `bb8e497` under Issue #25；
+- M1 result 2 of 7 is independently approved at `bb8e497` and published in draft PR #26；
 - M1 results 3–7 require new bounded Task Contracts and are not authorized by Issue #25。
 
 ### Blocks only real Provider milestone
@@ -183,6 +183,6 @@ The exact Luna implementation preserved the existing Character result contract, 
 
 ## 9. Next Ordered Actions
 
-1. Publish the reviewed Issue #25 branch, run its available remote PR gates and merge only if the PR remains clean.
+1. Complete the PR #26 remote gate and merge only if the PR remains clean.
 2. After merge, update Issue/GOAL/STATUS and establish a separate bounded Task Contract before Storyboard decision work.
 3. Keep all real Provider, cost and deployment gates closed.
