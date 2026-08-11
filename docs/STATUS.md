@@ -6,15 +6,15 @@
 | --- | --- |
 | Date | 2026-08-12 |
 | Repository | `JettxonHo/AI-Course-Factory` |
-| Branch | `codex/25-storyboard-planning` |
+| Canonical Branch | `main` |
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
 | Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
-| Code Parent | `cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
+| Current Main | `c26e8087d3d29383ab87283d5244b35f7857292f` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
-| Remote | `origin/main@cd1a936ddeeffed7da92c13de0ec0dc0ff0be7b0` |
+| Remote | `origin/main@c26e8087d3d29383ab87283d5244b35f7857292f` |
 | Worktrees | One main worktree |
-| Open Issue | #25 — M1-002 Storyboard Planning — sole READY Task Contract |
-| Open PR | #26 — draft delivery PR for M1-002 |
+| Current M1 Task Contract | None; #25 is closed after M1-002 merge |
+| Open PR | None |
 | Current Code Gate | 81 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -86,8 +86,10 @@ This proves the current offline and no-Provider Character and Storyboard plannin
 - Issue #23 is closed as completed; its sole M1-001 Task Contract was delivered by merged PR #24.
 - `main@cd1a936` contains the approved M0 baseline and independently approved Character planning implementation.
 - GitHub reported no status checks for PR #24; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #25 is open and its body is the sole READY M1-002 Storyboard Planning Task Contract.
-- Reviewed commit `bb8e497` implements that contract and is published in draft PR #26.
+- Issue #25 is closed as completed; its sole M1-002 Task Contract was delivered by merged PR #26.
+- `main@c26e808` contains reviewed Storyboard implementation commit `bb8e497`.
+- GitHub reported no status checks for PR #26; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
+- There is no open Issue or PR for M1 result 3.
 
 ## 5. Protected Untracked Materials
 
@@ -148,7 +150,7 @@ Issue #23 implementation is isolated in published commit `d05e286` and changes o
 
 The main orchestrator requested one review correction to remove redundant public aliases and arbitrary nested constraints. The same Luna narrowed the interface, all gates were rerun, and the final independent verdict is `APPROVED`.
 
-Issue #25 implementation is isolated in local commit `bb8e497` and changes only:
+Issue #25 implementation is isolated in merged commit `bb8e497` and changes only:
 
 - `src/ai_course_factory/agents/production_agent.py`；
 - `src/ai_course_factory/agents/runtime.py`；
@@ -164,7 +166,7 @@ The exact Luna implementation preserved the existing Character result contract, 
 
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
-- M1 result 2 of 7 is independently approved at `bb8e497` and published in draft PR #26；
+- M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
 - M1 results 3–7 require new bounded Task Contracts and are not authorized by Issue #25。
 
 ### Blocks only real Provider milestone
@@ -183,6 +185,5 @@ The exact Luna implementation preserved the existing Character result contract, 
 
 ## 9. Next Ordered Actions
 
-1. Complete the PR #26 remote gate and merge only if the PR remains clean.
-2. After merge, update Issue/GOAL/STATUS and establish a separate bounded Task Contract before Storyboard decision work.
-3. Keep all real Provider, cost and deployment gates closed.
+1. Establish a separate bounded Task Contract before Storyboard decision work.
+2. Keep all real Provider, cost and deployment gates closed.
