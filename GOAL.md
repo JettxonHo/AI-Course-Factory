@@ -4,12 +4,12 @@
 
 | Field | Value |
 | --- | --- |
-| Status | APPROVED — activation gates pending |
+| Status | ACTIVE — M0 complete; M1 result 1 of 7 approved locally |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
 | Implementer | exact `luna-worker` — configured `gpt-5.6-luna / max` |
-| Baseline | `main@08085e4` plus approved v1.0 planning baseline |
+| Baseline | code parent `08085e4`; approved planning baseline `4c00eb2` |
 | Coding Authorization | Granted for bounded M1–M4 tasks after milestone/task/runtime gates pass |
 | External Provider Authorization | Not granted |
 | Deployment Authorization | Not granted |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-已完成并通过 66 tests：
+当前已完成并通过 73 tests：
 
 ```text
 Public GitHub
@@ -48,9 +48,11 @@ Public GitHub
   -> versioned six-scene Script
   -> mandatory Script Review
   -> exact approved Script
+  -> provider-neutral Character Candidate
+  -> exact Character Reference through the existing Artifact Store
 ```
 
-未完成：持久化、本地工作台、Production Agent、Character/Storyboard/Timeline/Request、Budget、Provider、媒体合成、Final Review、恢复和导出。
+未完成：Storyboard、Timeline、Production Request、Budget、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character 证据只覆盖 no-Provider、in-memory planning boundary。
 
 ## 5. In Scope
 
@@ -86,6 +88,8 @@ Public GitHub
 
 ### M0 — Planning Baseline and Goal Gate
 
+Status：**COMPLETE** — planning baseline `4c00eb2`; main-agent and Luna runtime gates verified; Issue #23 aligned as the sole M1 Task Contract.
+
 Outcome：PRD、两个 Spec、开发协议、STATUS 和本 Goal 边界一致，并由 Product Owner 批准。
 
 Exit：
@@ -97,6 +101,8 @@ Exit：
 - Issue #23 与新 Goal/Spec 完成对齐，不扩大范围。
 
 ### M1 — Approved Script to Authorized Production Request
+
+Status：**ACTIVE** — result 1 of 7 is independently `APPROVED` on `codex/23-character-planning@d05e286`; results 2–7 remain pending and unauthorized without their own Task Contracts.
 
 Outcome：现有 exact approved Script 形成 provider-neutral、预算受控的生产入口。
 
