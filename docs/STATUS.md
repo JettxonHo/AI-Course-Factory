@@ -10,10 +10,10 @@
 | Reviewed M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
 | Code Parent | `08085e428db07e5a54a1a5a6a29517c84bba2d0d` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
-| Remote | `origin/main@08085e428db07e5a54a1a5a6a29517c84bba2d0d`; local M0/M1 commits not pushed |
+| Remote | `origin/main@08085e428db07e5a54a1a5a6a29517c84bba2d0d`; M0/M1 branch published as `origin/codex/23-character-planning` |
 | Worktrees | One main worktree |
 | Open Issue | #23 — M1-001 Character Planning — sole Task Contract |
-| Open PR | None |
+| Open PR | #24 — draft delivery PR for the approved M0 baseline and M1-001 |
 | Current Code Gate | 73 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -73,13 +73,14 @@ This proves the current offline and no-Provider Character planning slice only. I
 
 ## 4. GitHub State
 
-- Issue #23 is open, has no matching PR, and its body is the sole READY M1-001 Task Contract.
+- Issue #23 is open, its body is the sole READY M1-001 Task Contract, and draft PR #24 is its delivery PR.
 - PRs #2 through #22 for Phase 1.4 are merged.
 - `main@08085e4` contains the accepted Source-to-approved-Script slice.
-- Local commit `d05e286` contains the independently approved five-file Character planning implementation.
-- The local planning and implementation commits have not been pushed or merged; remote runtime/CI evidence does not yet exist.
+- Published commit `d05e286` contains the independently approved five-file Character planning implementation.
+- The planning and implementation commits are published on `origin/codex/23-character-planning` but are not merged into `main`.
+- GitHub reports no status checks for PR #24; the current evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
 
-Issue #23 remains open because this task did not authorize push, PR creation or merge.
+Issue #23 remains open while draft PR #24 awaits the remote merge gate.
 
 ## 5. Protected Untracked Materials
 
@@ -130,7 +131,7 @@ The M0 planning-baseline commit containing this snapshot establishes these appro
 
 These are approved planning artifacts. They do not change product runtime behavior and do not include the five protected in-flight files.
 
-Issue #23 implementation is isolated in local commit `d05e286` and changes only:
+Issue #23 implementation is isolated in published commit `d05e286` and changes only:
 
 - `src/ai_course_factory/agents/production_agent.py`；
 - `src/ai_course_factory/agents/runtime.py`；
@@ -145,9 +146,9 @@ The main orchestrator requested one review correction to remove redundant public
 ### Current M1 state
 
 - M0 activation is complete；
-- M1 result 1 of 7 is approved locally；
+- M1 result 1 of 7 is independently approved and published in draft PR #24；
 - M1 results 2–7 require new bounded Task Contracts and are not automatically authorized by Issue #23；
-- Issue #23 remains open until an authorized publication/PR/merge workflow completes。
+- Issue #23 remains open until PR #24 completes its review/merge workflow。
 
 ### Blocks only real Provider milestone
 
@@ -165,6 +166,6 @@ The main orchestrator requested one review correction to remove redundant public
 
 ## 9. Next Ordered Actions
 
-1. Keep Issue #23 open unless and until the local commits are intentionally pushed, reviewed remotely and merged.
+1. Complete the PR #24 review/merge gate before advancing the shared Production Agent interface.
 2. Do not start Storyboard or another M1 result without its own bounded Task Contract.
 3. Keep all real Provider, cost and deployment gates closed.
