@@ -10,12 +10,12 @@
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
 | Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
 | Reviewed M1-003 Commit | `047ce29660e25c9d3e9407f1df3d1a53a2504272` |
-| Current Main | `5db967b696c5c6b89e85b70fea395df9a9fef3df` |
+| Latest Feature Baseline | M1-003 merged at `main@a331c475637dd62e470fa2a7d0304b9d41ecad6b` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
-| Remote | `origin/main@5db967b696c5c6b89e85b70fea395df9a9fef3df` |
+| Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | #28 — M1-003 Storyboard Decision — sole READY contract |
-| Open PR | #29 — draft delivery PR for M1-003 |
+| Current M1 Task Contract | None; #28 is closed after M1-003 merge |
+| Open PR | None |
 | Current Code Gate | 89 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -98,7 +98,10 @@ This proves the current offline and no-Provider Character, Storyboard and in-mem
 - Issue #25 is closed as completed; its sole M1-002 Task Contract was delivered by merged PR #26.
 - `main@c26e808` contains reviewed Storyboard implementation commit `bb8e497`.
 - GitHub reported no status checks for PR #26; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #28 is open and its body is the sole READY M1-003 Storyboard Decision Task Contract; reviewed commit `047ce29` is published in draft PR #29.
+- Issue #28 is closed as completed; its sole M1-003 Storyboard Decision Task Contract was delivered by merged PR #29.
+- `main@a331c47` contains reviewed Storyboard decision implementation commit `047ce29`.
+- GitHub reported no status checks for PR #29; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
+- There is no open Issue or PR for M1 result 4.
 
 ## 5. Protected Untracked Materials
 
@@ -169,7 +172,7 @@ Issue #25 implementation is isolated in merged commit `bb8e497` and changes only
 
 The exact Luna implementation preserved the existing Character result contract, added an independent Storyboard result envelope, derived Storyboard scene order from the exact Script, and left Commit ownership at the Artifact Store. The main orchestrator independently reviewed the actual diff, reran all gates, and returned `APPROVED`.
 
-Issue #28 implementation is isolated in local commit `047ce29` and changes only:
+Issue #28 implementation is isolated in merged commit `047ce29` and changes only:
 
 - `src/ai_course_factory/artifacts/storyboard_decision.py`；
 - `src/ai_course_factory/artifacts/__init__.py`；
@@ -185,7 +188,7 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
-- M1 result 3 of 7 is independently approved at `047ce29` and published in draft PR #29；
+- M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
 - M1 results 4–7 require new bounded Task Contracts and are not authorized by Issue #28。
 
 ### Blocks only real Provider milestone
@@ -204,6 +207,5 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 
 ## 9. Next Ordered Actions
 
-1. Complete the PR #29 remote gate and merge only if the PR remains clean.
-2. After merge, update Issue/GOAL/STATUS and establish a separate bounded Task Contract before Timeline work.
-3. Keep all real Provider, cost and deployment gates closed.
+1. Establish a separate bounded Task Contract before Timeline work.
+2. Keep all real Provider, cost and deployment gates closed.
