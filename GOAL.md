@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 complete; M1 result 1 of 7 independently approved and published in draft PR #24 |
+| Status | ACTIVE — M0 complete; M1 result 1 merged; result 2 approved in draft PR #26 |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前已完成并通过 73 tests：
+当前已完成并通过 81 tests：
 
 ```text
 Public GitHub
@@ -50,9 +50,11 @@ Public GitHub
   -> exact approved Script
   -> provider-neutral Character Candidate
   -> exact Character Reference through the existing Artifact Store
+  -> provider-neutral ordered Storyboard Candidate
+  -> exact Storyboard Reference through the existing Artifact Store
 ```
 
-未完成：Storyboard、Timeline、Production Request、Budget、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character 证据只覆盖 no-Provider、in-memory planning boundary。
+未完成：Storyboard decision、Timeline、Production Request、Budget、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character/Storyboard 证据只覆盖 no-Provider、in-memory planning boundary。
 
 ## 5. In Scope
 
@@ -102,7 +104,7 @@ Exit：
 
 ### M1 — Approved Script to Authorized Production Request
 
-Status：**ACTIVE** — result 1 of 7 is independently `APPROVED` on `codex/23-character-planning@d05e286` and published in draft PR #24; results 2–7 remain pending and unauthorized without their own Task Contracts.
+Status：**ACTIVE** — result 1 of 7 is independently `APPROVED` and merged by PR #24 at `main@cd1a936`; result 2 of 7 is independently `APPROVED` at `codex/25-storyboard-planning@bb8e497` and published in draft PR #26; results 3–7 remain pending and unauthorized without their own Task Contracts.
 
 Outcome：现有 exact approved Script 形成 provider-neutral、预算受控的生产入口。
 

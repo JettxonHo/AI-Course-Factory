@@ -13,6 +13,7 @@ from .production_agent import (
     CharacterPlanningConstraints,
     ProductionAgent,
     ProductionAgentFailure,
+    StoryboardPlanningConstraints,
 )
 from .runtime import (
     ContentModelRuntimeResult,
@@ -21,6 +22,7 @@ from .runtime import (
     ModelRuntimeRequest,
     ModelRuntimeResult,
     ProductionModelRuntimeResult,
+    StoryboardModelRuntimeResult,
 )
 
 __all__ = [
@@ -42,4 +44,6 @@ __all__ = [
     "ProductionAgent",
     "ProductionAgentFailure",
     "ProductionModelRuntimeResult",
+    "StoryboardModelRuntimeResult",
+    "StoryboardPlanningConstraints",
 ]
