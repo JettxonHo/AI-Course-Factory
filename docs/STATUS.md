@@ -11,13 +11,14 @@
 | Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
 | Reviewed M1-003 Commit | `047ce29660e25c9d3e9407f1df3d1a53a2504272` |
 | Reviewed M1-004 Commit | `77a360d8705209c8c70e9165de896c9bc7331359` |
+| Reviewed M1-005 Commit | `1838819bcba7633fc057b77035d1e71f3da155eb` |
 | Latest Feature Baseline | M1-004 merged at `main@42415546d43b8e4567e6d8ce829d8be399cc3e86` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | Issue #34 — M1-005 Production Request Planning, `READY` |
+| Current M1 Task Contract | Issue #34 — M1-005 Production Request Planning, independently `APPROVED`; awaiting publication |
 | Open PR | None |
-| Current Code Gate | 98 tests passed on merged `main@4241554` |
+| Current Code Gate | 104 tests passed on `codex/34-production-request-planning` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -48,13 +49,17 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - provider-neutral `ProductionAgent.plan_timeline` with exact Script/Character/Storyboard and satisfying Storyboard-decision checks；
 - Script-derived, zero-based, contiguous ordered Timeline timing with finite/duration/result normalization；
 - external commit through the unchanged Artifact Store to an exact Timeline Reference；
-- Timeline equivalent replay, changed-input Commit conflict and malformed-result non-Commit evidence。
+- Timeline equivalent replay, changed-input Commit conflict and malformed-result non-Commit evidence；
+- provider-neutral `ProductionAgent.plan_request` with exact Script/Character/Storyboard/Timeline and satisfying decision checks；
+- exact language/aspect/timing/narration/visual/character/continuity aggregation with provider-specific fields rejected；
+- external commit through the unchanged Artifact Store to an exact Production Request Reference；
+- Production Request equivalent replay, changed-input Commit conflict and malformed-result non-Commit evidence。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 98 tests — OK
+Ran 104 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -80,6 +85,12 @@ Ran 5 tests — OK
 uv run python -m unittest tests.integration.test_timeline_planning -v
 Ran 4 tests — OK
 
+uv run python -m unittest tests.agents.test_production_request_planning -v
+Ran 4 tests — OK
+
+uv run python -m unittest tests.integration.test_production_request_planning -v
+Ran 2 tests — OK
+
 uv run python -m compileall -q src tests
 OK
 
@@ -87,13 +98,12 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision and Timeline slices only. It does not prove Production Request, Budget, persistence, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision, Timeline and Production Request slices only. It does not prove Budget, persistence, paid Provider, media or deployment behavior. Production Request remains a reviewed branch candidate until its PR is merged.
 
 ## 3. Not Implemented
 
 - persistent database or file-backed Artifact/Decision/Checkpoint storage；
 - task-level application and local Web Workspace；
-- Production Request planning；
 - Budget gate；
 - Production Orchestrator or Provider adapters；
 - Visual/TTS/media generation；
@@ -115,7 +125,7 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #31 is closed as completed; its sole M1-004 Timeline Planning Task Contract was delivered by merged PR #32.
 - `main@4241554` contains reviewed Timeline implementation commit `77a360d`.
 - GitHub reported no status checks for PR #32; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #34 is the sole open M1-005 Production Request Planning Task Contract; no implementation PR exists yet.
+- Issue #34 is the sole open M1-005 Production Request Planning Task Contract; reviewed implementation commit `1838819` is locally approved on `codex/34-production-request-planning` and awaits publication. It is not yet part of `main`.
 
 ## 5. Protected Untracked Materials
 
@@ -140,8 +150,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #31 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff375-e07b-73f2-a52b-35df2d2c4c6a` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #34 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff38e-dcb7-77f2-8d27-6d5035b40540` first and last `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -205,6 +215,16 @@ Issue #31 implementation is isolated in merged commit `77a360d` and changes only
 
 The exact Luna first observed a public import failure before implementing the Timeline seam. The main orchestrator requested one test-evidence correction for an actual upstream Storyboard scene-order mutation and a genuinely raised runtime exception. The same Luna corrected only the tests; the orchestrator reread the actual Diff, reran all gates, verified gate/timing mutations are caught, and returned `APPROVED`.
 
+Issue #34 implementation is isolated in reviewed commit `1838819` and changes only:
+
+- `src/ai_course_factory/agents/production_agent.py`；
+- `src/ai_course_factory/agents/runtime.py`；
+- `src/ai_course_factory/agents/__init__.py`；
+- `tests/agents/test_production_request_planning.py`；
+- `tests/integration/test_production_request_planning.py`。
+
+The exact Luna first observed a public import failure before implementing the Production Request seam. The main orchestrator stopped an initial oversized implementation, required reuse of existing validators, and reduced the source addition to 291 lines. Independent Review then requested one test-only correction for upstream malformed narration and exact-shape runtime narration drift. The same Luna added those cases; the orchestrator reread the Diff, reran all gates, killed Timeline/result-validator bypass mutations, and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### Current M1 state
@@ -214,7 +234,7 @@ The exact Luna first observed a public import failure before implementing the Ti
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
 - M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
 - M1 result 4 of 7 is independently approved and merged by PR #32 at `main@4241554`；
-- M1 result 5 is authorized only within Issue #34 on `codex/34-production-request-planning`; results 6–7 remain unauthorized without their own bounded Task Contracts。
+- M1 result 5 is independently approved at commit `1838819` under Issue #34 but not yet merged; results 6–7 remain unauthorized without their own bounded Task Contracts。
 
 ### Blocks only real Provider milestone
 
@@ -232,6 +252,6 @@ The exact Luna first observed a public import failure before implementing the Ti
 
 ## 9. Next Ordered Actions
 
-1. Dispatch exact `luna-worker` for Issue #34 only after branch, baseline and runtime-route verification.
-2. Independently review the Production Request Diff and required gates before any PR or merge.
+1. Publish reviewed commit `1838819` as the Issue #34 implementation PR and verify its remote Diff/check state.
+2. Merge only if the PR remains clean and the documented local evidence is intact, then synchronize `main` truth sources.
 3. Keep all real Provider, cost and deployment gates closed.
