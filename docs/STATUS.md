@@ -4,7 +4,7 @@
 
 | Field | Current Fact |
 | --- | --- |
-| Date | 2026-08-12 |
+| Date | 2026-08-13 |
 | Repository | `JettxonHo/AI-Course-Factory` |
 | Canonical Branch | `main` |
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
@@ -28,13 +28,14 @@
 | Reviewed M3-004 Commit | `b8e2d706edeec210532d724cfc21360253965058` |
 | Reviewed M3-005 Commit | `fb9ef21d2264ac6773f2ff3c589684c8003146b8` |
 | Reviewed M3-006 Commit | `26bffd61b4f5f04039c2d33c1e881ac99e007f8d` |
-| Latest Feature Baseline | M3-006 merged by PR #92 at `main@8f4868157b532af73f21c37743b7b6c67fa5b55e` |
+| Reviewed M3-007 Commit | `6fc259eb2f9836f517785dbc41b2206e82ca2a7e` |
+| Latest Feature Baseline | M3-007 merged by PR #96 at `main@b3f2999e509a5467b590679177ec62f1c938ba41` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; M3-006/Issue #91 is closed through PR #92; next implementation requires a separate Task Contract for Task/gate integration and Final Review |
+| Current Task Contract | None; M3-007/Issue #95 is closed through PR #96; next implementation requires a separate Task Contract for Task/Workflow gate integration that persists the Final Video decision before state advance |
 | Open PR | None |
-| Current Code Gate | 293 full tests passed and compileall passed on merged `main@8f4868157b532af73f21c37743b7b6c67fa5b55e`; GitHub reported no hosted checks |
+| Current Code Gate | 305 full tests passed and compileall passed on merged `main@b3f2999e509a5467b590679177ec62f1c938ba41`; GitHub reported no hosted checks |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -131,8 +132,11 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - frozen `ProductionCompositionResult` and the sole public `ProductionOrchestrator.compose` path validate one exact committed Production Request/Timeline plus terminal zero-charge Scene attempts before mutation；
 - staged product-path commits create exact Scene Clip, Scene Audio, Subtitle, logical Master Audio and Video Artifact Versions with canonical lineage, provenance and dependencies；
 - exact replay after durable-store/workspace reconstruction and staged Video-commit recovery preserve immutable upstream Artifacts and output bytes without duplicate generation；
+- frozen/slotted Final Video assessment, finding, failure and decision records plus a runtime-checkable repository seam preserve the exact mandatory Final Video Review contract；
+- the Final Video decision boundary structurally assesses one exact PR #92 Video Version, including canonical Scene Clip/Subtitle/Master Audio binding, deterministic hard blocks and mandatory `approve|reject|revise` actions；
+- the in-memory default and SQLite v1 Final Video decision repositories preserve exact replay/conflict, close/reopen, two-instance visibility and safe corruption/storage failure behavior without storing media payloads or Workflow state；
 
-Verification evidence on 2026-08-12:
+Verification evidence through 2026-08-13:
 
 M3-003 historical pre-PR #84 baseline: 264 full regression tests passed on `main@42cf6c2`; this historical count is retained only as M3-003 evidence.
 
@@ -292,7 +296,22 @@ GitHub reported no hosted checks
 
 M3-006 Review history: the main-controller returned `CHANGES_REQUESTED` in two rounds for a mutable repository snapshot and the exact committed Request scalar family; the same Luna corrected both. Independent evidence covered exact Scene Clip/Scene Audio, Subtitle, logical Master Audio and Video Artifact lineage, replay and staged Video-commit recovery. The evidence boundary is local FFmpeg synthetic color/tone/subtitle Fixture output only; no remote checks were reported.
 
-This proves the current offline planning/Budget/durable-runtime slices, provider-neutral visual/voice interfaces, deterministic non-playable Fake Fixture output, playable per-operation local FFmpeg Fixture media through the task Workspace, claim-gated offline Production Orchestrator behavior, local FFmpeg composition and the product-path media Artifact composition described above. Budget pricing, Fake media, FFmpeg media and the composed MP4 remain deterministic local Fixture evidence; Fake Fixture bytes are non-playable, while FFmpeg media and the composed MP4 are synthetic color/tone output with attached subtitles rather than prompt-faithful visual or spoken TTS. This does not prove Task/gate integration, Final Review/scene retry, export, any real Provider invocation, live pricing, fees, paid media, UI or deployment behavior.
+This proves the current offline planning/Budget/durable-runtime slices, provider-neutral visual/voice interfaces, deterministic non-playable Fake Fixture output, playable per-operation local FFmpeg Fixture media through the task Workspace, claim-gated offline Production Orchestrator behavior, local FFmpeg composition and the product-path media Artifact composition described above. Budget pricing, Fake media, FFmpeg media and the composed MP4 remain deterministic local Fixture evidence; Fake Fixture bytes are non-playable, while FFmpeg media and the composed MP4 are synthetic color/tone output with attached subtitles rather than prompt-faithful visual or spoken TTS. This M3-006 evidence does not prove the later Final Video decision seam, Task/gate integration, scene retry, export, any real Provider invocation, live pricing, fees, paid media, UI or deployment behavior.
+
+M3-007 merge gates at `main@b3f2999e509a5467b590679177ec62f1c938ba41` (PR #96 evidence; implementation commit `6fc259eb2f9836f517785dbc41b2206e82ca2a7e`):
+
+```text
+focused Final Video decision contract: 6 passed
+SQLite Final Video decision integration: 6 passed
+full regression: 305 passed
+compileall: passed
+git diff --check, exact changed-file allowlist and protected-five audit: passed
+GitHub reported no hosted checks
+```
+
+M3-007 Review history: the main-controller first returned `CHANGES_REQUESTED` for a concrete foreign Scene Clip canonical-binding defect and missing single-mutation evidence; the same Luna corrected both. The public surface was then narrowed by removing a private helper from the module `__all__`, and the final independent verdict was `APPROVED`. The merged seam contains frozen/slotted assessment, finding, failure and decision records, a runtime-checkable repository seam with in-memory default and SQLite v1 adapter, exact PR #92 Video structural assessment, canonical ordered Scene Clip/Subtitle/Master Audio binding, deterministic hard blocks, mandatory `approve|reject|revise` rules, exact replay/conflict, restart/two-instance and corruption evidence.
+
+M3-007 evidence is decision/persistence only: no media probe, Workspace write, Provider call, fee, Task/Workflow advance, scene retry/replace, export, UI or deployment evidence was added. The next bounded Task Contract must wire this exact decision into Task/Workflow and persist it before state advance; real Provider, cost and deployment gates remain closed.
 
 ## 3. Not Implemented
 
@@ -301,7 +320,7 @@ Playable per-operation local FFmpeg Fixture media, local FFmpeg composition and 
 - broader Workflow/Task/gate integration and production orchestration beyond the bounded composition slice；
 - task-level production application use cases and local Web Workspace；
 - real Visual/TTS Provider adapters and non-Fixture product media generation beyond the local composer output；
-- Final Video Review and scene retry/replace；
+- Task/Workflow gate integration that persists the Final Video decision before state advance, plus scene retry/replace；
 - publish package/export；
 - product Model Runtime, UI and deployment evidence。
 
@@ -376,6 +395,11 @@ Playable per-operation local FFmpeg Fixture media, local FFmpeg composition and 
 - PR #92 adds the sole public `ProductionOrchestrator.compose` path and exact `ProductionCompositionResult`; it validates one committed Request/Timeline plus terminal zero-charge Scene attempts, stages Scene Clip/Scene Audio, Subtitle, logical Master Audio and Video Artifact commits, and preserves exact lineage, replay and staged Video-commit recovery.
 - PR #92 merge evidence is 12 focused composition unit tests, 1 durable local FFmpeg/SQLite integration test, 293 full regression tests, compileall, real local FFmpeg/ffprobe probes and a mutation audit for a mutable repository snapshot plus the exact committed Request scalar family. Main-controller review returned `CHANGES_REQUESTED` in two rounds and then independently approved the corrected result. GitHub reported no hosted checks.
 - The #92 evidence boundary is local FFmpeg synthetic color/tone/subtitle Fixture output only; Master Audio is a logical ordered assembly rather than standalone-file evidence. This does not prove Task/gate integration, Final Review/scene retry, export, real Provider, fees, UI, deployment or full E2E evidence.
+- Issue #95 is closed as completed; its sole M3-007 durable mandatory Final Video Review decision Task Contract was independently approved and delivered by merged PR #96.
+- PR #96 implementation commit is `6fc259eb2f9836f517785dbc41b2206e82ca2a7e`; merge commit is `b3f2999e509a5467b590679177ec62f1c938ba41` (`main@b3f2999`).
+- PR #96 adds frozen/slotted assessment, finding, failure and decision records, a runtime-checkable Final Video decision repository seam, the in-memory default and SQLite v1 adapter. It assesses the exact PR #92 Video structure and canonical Scene Clip/Subtitle/Master Audio binding, issues deterministic hard blocks, enforces mandatory `approve|reject|revise`, and preserves exact replay/conflict plus restart/two-instance/corruption behavior.
+- PR #96 merge evidence is 6 focused contract tests, 6 SQLite integration tests, 305 full regression tests, compileall, diff/allowlist/protected audits and main-controller independent review. The first review returned `CHANGES_REQUESTED` for the foreign Scene Clip canonical-binding defect and missing single-mutation evidence; the same Luna corrected both, removed a private helper from module `__all__`, and the final verdict was `APPROVED`. GitHub reported no hosted checks.
+- The #96 evidence boundary is decision/persistence only. It does not prove Task/Workflow gate advance, scene retry/replace, export, media probes, Workspace writes, real Provider calls, fees, UI, deployment or full E2E evidence.
 
 ## 5. Protected Untracked Materials
 
@@ -400,10 +424,11 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #91 was closed after the completed handoff; no active worker remains; this is route/closure evidence, not independent Issue #91 runtime identity |
-| Last independently exposed Luna runtime | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max`; this is the last independently exposed Luna runtime evidence and does not claim the Issue #91 or Issue #93 runtime |
-| Issue #91 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route is required by the Task Contract; this snapshot exposes no independent Issue #91 task UUID or host `turn_context`, so its runtime model is not separately claimed |
+| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #95 was closed after the completed handoff; no active worker remains; this is route/closure evidence, not independent Issue #95 runtime identity |
+| Last independently exposed Luna runtime | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max`; this is the last independently exposed Luna runtime evidence and does not claim the Issue #95 or Issue #97 runtime |
+| Issue #95 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route is required by the Task Contract; this snapshot exposes no independent Issue #95 task UUID or host `turn_context`, so its runtime model is not separately claimed |
 | Issue #93 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #93 task UUID or host `turn_context`; no runtime identity/model claim is made |
+| Issue #97 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #97 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -635,13 +660,15 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 - M3-004 is independently approved and merged by PR #84 at `main@88309e0` (implementation commit `b8e2d70`)；
 - M3-005 is independently approved and merged by PR #88 at `main@2741200` (implementation commit `fb9ef21`)；
 - M3-006 is independently approved and merged by PR #92 at `main@8f48681` (implementation commit `26bffd6`)；
+- M3-007 is independently approved and merged by PR #96 at `main@b3f2999` (implementation commit `6fc259e`)；
 - provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture adapters now write only through the task Workspace with exact replay/conflict evidence；
 - atomic Provider-attempt claims now distinguish the one new execution owner from restart/concurrent replay before a future Adapter call；
 - the offline Production Orchestrator now validates one exact Request/media task, invokes only the matching Fake adapter after a new claim, persists zero-charge terminal outcomes and safely replays terminal state；
 - separate playable local FFmpeg Fixture visual/voice adapters now validate real ffprobe output before Workspace commit, preserve exact task-bound bytes on replay/conflict, and support zero-charge terminal restart replay；
 - the local `FFmpegMediaComposer` now validates and re-probes at least two ordered playable Scene inputs, emits a deterministic MP4-family H.264/AAC output with one attached `mov_text` subtitle stream, and preserves Workspace-only replay/conflict/no-overwrite behavior；
 - product-path `ProductionOrchestrator.compose` now validates the exact committed Request/Timeline and terminal Scene attempts, stages Scene Clip/Scene Audio, Subtitle, logical Master Audio and Video Artifact commits, and preserves exact lineage, replay and staged recovery；
-- M3 remains active: Task/gate integration, Final Review/scene retry, export, real Provider, fees, UI and deployment are not implemented or authorized；
+- the durable Final Video Review decision seam now assesses exact Video structural lineage, enforces hard-block and Creator action rules, and persists exact decisions through in-memory and SQLite repositories with replay/conflict/restart/corruption evidence；
+- M3 remains active: Task/Workflow gate integration (including persisting Final Video decision before state advance), scene retry/replace, export, real Provider, fees, UI and deployment are not implemented or authorized；
 - no real Provider, credential, fee, SDK, network or deployment evidence exists。
 
 ### Blocks only real Provider milestone
