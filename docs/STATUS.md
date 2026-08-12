@@ -22,13 +22,14 @@
 | Reviewed M2-006 Commit | `71ca0dafab7615861c98d53bba6f7d6008f3530a` |
 | Reviewed M2-007 Commit | `91dbdc38bae9a82c74960ac89779f7fc017c1d2e` |
 | Reviewed M2-008 Commit | `0c63f3e0cc5f20cbc9cec0d8b76ecfeacdc6f45a` |
-| Latest Feature Baseline | M2-008 merged at `main@437d8ca91b6ae990e5e7ae4f0d315b9979ec00aa` |
+| Reviewed M3-001 Commit | `6d14524c2f6852d86a0721e6c7930b70ef81bbcd` |
+| Latest Feature Baseline | M3-001 merged at `main@60af4d2943505ef6092ca98288d7cdd54b64e201` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #67 is closed after M2-008 completion |
+| Current Task Contract | None; #71 is closed after M3-001 completion |
 | Open PR | None |
-| Current Code Gate | 230 tests passed on merged `main@437d8ca` |
+| Current Code Gate | 241 tests passed on merged `main@60af4d2` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -105,12 +106,22 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - aggregate reserved micros, per-Scope attempt numbering, one unknown/nonterminal attempt, idempotency, exact replay/conflict and failed-attempt retry caps are enforced atomically in memory and SQLite；
 - terminal success/failure outcomes retain safe charge/result and exact Workspace references; valid terminal replay succeeds while changed outcomes or static lineage fail closed；
 - SQLite close/reopen, two-instance serialization, trigger rollback, full Authorization binding, impossible group/corrupt/future/open/closed state and JSON bounds have mutation-sensitive recovery evidence。
+- frozen, slotted provider-neutral visual/voice generation tasks, normalized media results/failures and runtime-checkable interfaces；
+- explicit-injection deterministic Fake visual/voice adapters that validate exact Production Request and task-scoped Workspace references before writing；
+- canonical bounded UTF-8 Fixture envelopes with explicit Fake provider identity and non-playable media types, written only through `WorkspaceAdapter.commit`；
+- visual and voice close/reopen replay, changed-content conflict/no-overwrite, malformed Workspace-success, huge-duration and exact-type mutation evidence without Provider, SDK, subprocess or fees。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 230 tests — OK
+Ran 241 tests — OK
+
+uv run python -m unittest tests.production.test_media_interfaces -v
+Ran 4 tests — OK
+
+uv run python -m unittest tests.integration.test_fake_media_adapters -v
+Ran 7 tests — OK
 
 uv run python -m unittest tests.production.test_provider_attempt_repository_contract -v
 Ran 10 tests — OK
@@ -206,13 +217,13 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider planning/Budget slices plus durable Artifact, Script/Storyboard decision, Budget Authorization, existing Script Review Workflow-checkpoint, exact Task-projection restart behavior, task-scoped filesystem persistence and pre-call Provider-attempt reservation/outcome recovery. Budget pricing is a deterministic local Fixture. It does not prove broader Workflow gates, a Production Orchestrator, any Provider invocation, live pricing, paid media, UI or deployment behavior.
+This proves the current offline planning/Budget/durable-runtime slices plus provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture output through the task Workspace. Budget pricing and Fake media remain local deterministic Fixtures. It does not prove broader Workflow gates, a Production Orchestrator, Composer/FFmpeg, playable media, any real Provider invocation, live pricing, paid media, UI or deployment behavior.
 
 ## 3. Not Implemented
 
 - Production Orchestrator, broader Workflow gates and production-side authorization enforcement；
 - task-level production application use cases and local Web Workspace；
-- Visual/TTS/Composer adapters and media generation；
+- Composer/FFmpeg, playable media generation and real Visual/TTS Provider adapters；
 - Final Video Review and scene retry/replace；
 - publish package/export；
 - product Model Runtime and real media Provider evidence。
@@ -264,6 +275,9 @@ This proves the current offline and no-Provider planning/Budget slices plus dura
 - Issue #67 is closed as completed; its sole M2-008 persistent Provider-attempt ledger Task Contract was delivered by merged PR #68.
 - `main@437d8ca` contains reviewed Provider-attempt commit `0c63f3e`.
 - GitHub reported no status checks for PR #68; its merge evidence is the 230-test local run, exact Authorization/pre-call reservation, restart/retry/terminal replay, atomic race/rollback, record-fingerprint/group corruption mutations and main-controller independent Review, not remote CI.
+- Issue #71 is closed as completed; its sole M3-001 provider-neutral visual/voice interface and deterministic Fake Adapter Task Contract was delivered by merged PR #72.
+- `main@60af4d2` contains reviewed Fake media interface commit `6d14524`.
+- GitHub reported no status checks for PR #72; its merge evidence is the 241-test local run, exact-result/canonical-envelope/replay/conflict/type-mutation checks and main-controller independent Review, not remote CI or real Provider/playable-media evidence.
 
 ## 5. Protected Untracked Materials
 
@@ -288,8 +302,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #67 was interrupted immediately after each completed handoff to release the execution slot |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff47e-6876-7ee3-926c-bae3d89a64b8` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #71 was interrupted immediately after each completed handoff to release the execution slot |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff4aa-37f1-7421-ba47-c65a10fc6c3d` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -446,6 +460,18 @@ Issue #67 implementation is isolated in reviewed commit `0c63f3e` and changes on
 
 The exact Luna recorded the missing repository-interface RED and stopped at the no-Provider pre-call/outcome persistence seam. Independent Review rejected an over-cap first draft, then reproduced Authorization-return, row/fingerprint binding, terminal-lineage, changed-Authorization retry and attempt-sequence corruption defects. The same Luna corrected each bounded issue, the orchestrator independently reran all focused/full gates and the original mutations, returned `APPROVED`, and closed the worker immediately after each completed handoff.
 
+Issue #71 implementation is isolated in reviewed commit `6d14524` and changes only:
+
+- `src/ai_course_factory/production/model.py`；
+- `src/ai_course_factory/production/interfaces.py`；
+- `src/ai_course_factory/production/adapters/__init__.py`；
+- `src/ai_course_factory/production/adapters/fake.py`；
+- `src/ai_course_factory/production/__init__.py`；
+- `tests/production/test_media_interfaces.py`；
+- `tests/integration/test_fake_media_adapters.py`。
+
+The exact Luna recorded the missing public-interface RED and implemented only provider-neutral visual/voice values, interfaces and deterministic Fake Fixture adapters. Independent Review reproduced huge-integer misclassification and exact-type bypasses, then required exact result/envelope and visual+voice replay/conflict evidence. The same Luna corrected the bounded defects without adding a Provider or playable media path; the orchestrator reran all gates, returned `APPROVED`, and closed the worker immediately after each completed handoff.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -481,6 +507,13 @@ The exact Luna recorded the missing repository-interface RED and stopped at the 
 - Provider-attempt reservations and terminal outcomes now survive SQLite close/reopen with exact Authorization binding, aggregate budget/attempt caps, unknown-started recovery and safe corruption handling；
 - M2 exit is `PASSED`: all approved durable-runtime results have independent Review and restart/replay evidence while all external Provider and cost gates remain closed。
 
+### M3 milestone review
+
+- M3-001 is independently approved and merged by PR #72 at `main@60af4d2`；
+- provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture adapters now write only through the task Workspace with exact replay/conflict evidence；
+- M3 remains active: Production Orchestrator, Composer/FFmpeg, playable media, Final Review and export are not implemented；
+- no real Provider, credential, fee, SDK, network or deployment evidence exists。
+
 ### Blocks only real Provider milestone
 
 - PD-001 Visual Provider/model/credentials；
@@ -497,5 +530,5 @@ The exact Luna recorded the missing repository-interface RED and stopped at the 
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M3-001 Task Contract for the provider-neutral production orchestration interface and deterministic Fake boundary; do not select or call a real Provider, incur fees or bundle media composition beyond the approved contract.
+1. Establish a separate bounded M3-002 Task Contract for the provider-neutral Production Orchestrator to consume one exact Production Request and matching Budget Authorization, reserve a Provider attempt before invoking the deterministic Fake visual/voice interfaces, and persist the normalized terminal outcome; do not select or call a real Provider, incur fees, add Composer/FFmpeg or claim playable media.
 2. Keep all real Provider, cost and deployment gates closed.
