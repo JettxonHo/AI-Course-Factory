@@ -23,6 +23,7 @@ from .runtime import (
     ModelRuntimeResult,
     ProductionModelRuntimeResult,
     StoryboardModelRuntimeResult,
+    TimelineModelRuntimeResult,
 )
 
 __all__ = [
@@ -46,4 +47,5 @@ __all__ = [
     "ProductionModelRuntimeResult",
     "StoryboardModelRuntimeResult",
     "StoryboardPlanningConstraints",
+    "TimelineModelRuntimeResult",
 ]
