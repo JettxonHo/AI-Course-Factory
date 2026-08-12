@@ -17,13 +17,14 @@
 | Reviewed M2-001 Commit | `ce2db9a1d315dd250754e1427eacd6d9b058ddb7` |
 | Reviewed M2-002 Commit | `ca55c6347fdfed7d8e676f4ccf1131b5fd896003` |
 | Reviewed M2-003 Commit | `2fb235e1e7e588a9dcad7aae1263b93fa27c391f` |
-| Latest Feature Baseline | M2-003 plus test hardening merged at `main@5ec30a0b7fe79f870f6d274bb0d81a07549b8771` |
+| Reviewed M2-004 Commit | `e18977d6783080d42db349f2ee33849aa08370f2` |
+| Latest Feature Baseline | M2-004 merged at `main@fdd755caabb037e6951765d0dbd91bca0adee47a` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #49 is closed after M2-003 completion |
+| Current Task Contract | None; #53 is closed after M2-004 completion |
 | Open PR | None |
-| Current Code Gate | 152 tests passed on merged `main@5ec30a0` |
+| Current Code Gate | 166 tests passed on merged `main@fdd755c` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -62,7 +63,7 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - deterministic provider-neutral `BudgetModule.estimate` from one exact Production Request and Request-bound local Fixture price snapshot；
 - integer-micros price arithmetic, complete visual/voice Scene coverage and bounded 1–3 attempt policy；
 - external commit through the unchanged Artifact Store to an exact Production Budget Reference；
-- mandatory in-memory Creator Budget Review approve/reject decision and independent Authorization after valid approval；
+- mandatory Creator Budget Review approve/reject decision and independent Authorization after valid approval；
 - Authorization bound to exact Request/Budget References, canonical snapshot, approved amount/attempt caps, Creator/time/decision identity；
 - Budget Commit replay/conflict, underfunded/stale/mutated Budget rejection and new-Request-Version isolation evidence；
 - offline cross-slice exact approved Script -> Character -> Storyboard decision -> Timeline -> Production Request -> Production Budget -> independent Authorization integration evidence；
@@ -77,12 +78,15 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - runtime-checkable `StoryboardDecisionRepository` with existing enabled-review/disabled-skip semantics preserved；
 - durable SQLite Storyboard decisions with exact Script/Character lineage, mode/action and immutable replay/conflict；
 - restored satisfying Storyboard decision reaches existing Timeline planning, while failed/corrupt storage produces no Timeline invocation。
+- runtime-checkable `BudgetAuthorizationRepository` with the existing default in-memory behavior preserved；
+- durable SQLite Budget decisions and independent Authorizations with exact Request/Budget/snapshot/Creator/time/cap binding；
+- approve Decision+Authorization `BEGIN IMMEDIATE` atomicity, reject decision-only persistence, close/reopen replay, two-instance conflict and safe cross-table corruption normalization。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 152 tests — OK
+Ran 166 tests — OK
 
 uv run python -m unittest tests.artifacts.test_repository_contract -v
 Ran 6 tests — OK
@@ -101,6 +105,12 @@ Ran 4 tests — OK
 
 uv run python -m unittest tests.integration.test_sqlite_storyboard_decision_repository -v
 Ran 6 tests — OK
+
+uv run python -m unittest tests.production.test_budget_repository_contract -v
+Ran 6 tests — OK
+
+uv run python -m unittest tests.integration.test_sqlite_budget_authorization -v
+Ran 8 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -148,11 +158,11 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider planning/Budget slices plus durable Artifact and Script/Storyboard decision restart behavior. Budget Authorization and Workflow checkpoint remain in-memory. Budget pricing is a deterministic local Fixture. It does not prove live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider planning/Budget slices plus durable Artifact, Script/Storyboard decision and Budget Authorization restart behavior. Workflow checkpoint remains in-memory. Budget pricing is a deterministic local Fixture. It does not prove budget consumption, Provider-attempt reservation, live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
-- persistent Budget Authorization/Provider-attempt and Workflow-checkpoint storage；
+- persistent Provider-attempt and Workflow-checkpoint storage；
 - task-level application and local Web Workspace；
 - production-side authorization enforcement；
 - Production Orchestrator or Provider adapters；
@@ -193,6 +203,9 @@ This proves the current offline and no-Provider planning/Budget slices plus dura
 - Issue #49 is closed as completed; its sole M2-003 persistent Storyboard decision Task Contract was delivered by merged PR #50.
 - `main@5ec30a0` contains reviewed Storyboard decision persistence commit `2fb235e` and the bounded test hardening from PR #52.
 - GitHub reported no status checks for PR #50; its merge evidence is the 152-test local run, conflict/reference/mode/restart mutations, downstream Timeline failure checks, a 20-run two-instance conflict audit and main-controller independent Review, not remote CI.
+- Issue #53 is closed as completed; its sole M2-004 persistent Budget decision/Authorization Task Contract was delivered by merged PR #54.
+- `main@fdd755c` contains reviewed Budget persistence commit `e18977d`.
+- GitHub reported no status checks for PR #54; its merge evidence is the 166-test local run, atomic second-insert rollback, exact direct-save mutations, cross-table corruption checks, a 10-run two-instance conflict audit and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -217,8 +230,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #49 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff3ea-eb2a-7b11-8985-1718ac396c0d` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #53 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff3f9-9594-7b52-8eee-ce7af50df2e1` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -322,6 +335,16 @@ Issue #49 implementation is isolated in merged commit `2fb235e` and changes only
 
 The exact Luna recorded the required missing-interface RED, added the standalone repository seam and proved restored decisions at the existing Timeline consumer. The orchestrator independently reviewed the real Diff, killed conflict/reference/mode/restart mutations, exercised simultaneous conflicting identities and returned `APPROVED` without a correction round.
 
+Issue #53 implementation is isolated in merged commit `e18977d` and changes only:
+
+- `src/ai_course_factory/production/budget.py`；
+- `src/ai_course_factory/production/sqlite_budget.py`；
+- `src/ai_course_factory/production/__init__.py`；
+- `tests/production/test_budget_repository_contract.py`；
+- `tests/integration/test_sqlite_budget_authorization.py`。
+
+The exact Luna recorded the missing repository-interface RED and preserved the existing Budget public records and in-memory behavior behind an injected repository seam. Independent Review returned `CHANGES_REQUESTED` for direct-save bounds/canonicality and cross-table integrity, then corrected request-order semantics, encoded JSON bounds, replay-before-conflict corruption handling and mutation-test construction. The orchestrator reran all gates and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -342,10 +365,12 @@ The exact Luna recorded the required missing-interface RED, added the standalone
 - M2 result 1 is independently approved and merged by PR #44 at `main@922d6c1`；
 - M2 result 2 is independently approved and merged by PR #47 at `main@6593ed1`；
 - M2 result 3 is independently approved and merged by PR #50, with test hardening in PR #52, at `main@5ec30a0`；
+- M2 result 4 is independently approved and merged by PR #54 at `main@fdd755c`；
 - exact Artifact Versions and logical Commit replay now survive SQLite close/reopen；
 - exact Script Creator decisions now survive SQLite close/reopen and are persisted before Workflow resume；
 - exact Storyboard decisions now survive SQLite close/reopen and reach Timeline by exact record；
-- Budget Authorization, Workflow checkpoint, task aggregate and filesystem workspace persistence remain open；
+- exact Budget decisions and Authorizations now survive SQLite close/reopen with atomic approval persistence；
+- Workflow checkpoint, Provider attempts, task aggregate and filesystem workspace persistence remain open；
 - M2 exit is not yet passed。
 
 ### Blocks only real Provider milestone
@@ -364,5 +389,5 @@ The exact Luna recorded the required missing-interface RED, added the standalone
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M2-004 Task Contract for persistent Budget decision and Authorization atomicity; do not bundle Provider attempts or Workflow checkpoints.
+1. Establish a separate bounded M2-005 Task Contract for persistent Workflow checkpoint recovery; do not bundle Provider attempts or task aggregate behavior.
 2. Keep all real Provider, cost and deployment gates closed.
