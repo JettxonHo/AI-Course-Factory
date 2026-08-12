@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0, M1 and M2 complete; M3-001 complete and M3-002 awaits its bounded Task Contract |
+| Status | ACTIVE — M0, M1 and M2 complete; M3-001/M3-002 complete and M3-003 awaits its bounded Task Contract |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 241 tests：
+当前 `main` 已完成并通过 247 tests：
 
 ```text
 Public GitHub
@@ -71,6 +71,7 @@ Public GitHub
   -> persistent Task projection with exact selected References, stale impact, history and command replay
   -> task-scoped filesystem workspace with atomic immutable blob commit and restart/race proof
   -> persistent Provider-attempt ledger with pre-call Budget reservation and terminal-outcome recovery
+  -> atomic Provider-attempt execution claim distinguishing new ownership from restart/replay
   -> provider-neutral visual/voice generation interfaces
   -> deterministic non-playable Fake visual/voice Fixture bytes committed only through the task Workspace
 ```
@@ -167,7 +168,7 @@ Results：
 - Production Orchestrator；
 - visual/voice/composer interfaces（**PARTIAL** — provider-neutral visual/voice interfaces completed by PR #72; Composer remains pending）；
 - Fake Adapters（**PARTIAL** — deterministic visual/voice non-playable Fixture adapters completed by PR #72; playable local composition remains pending）；
-- Provider Execution Record、attempt 和 bounded retry；
+- Provider Execution Record、attempt 和 bounded retry（**PARTIAL** — persistent attempts and atomic new-vs-existing execution claims completed by PR #68/#76; Orchestrator execution remains pending）；
 - subtitle/audio/video Artifact；
 - Final Review、scene retry/replace；
 - Manifest/Publish Package。
