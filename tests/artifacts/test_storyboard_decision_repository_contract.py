@@ -30,8 +30,8 @@ class StoryboardDecisionRepositoryContractTests(unittest.TestCase):
             character_reference=ArtifactReference("character", "character:potato-v1", 1),
             script_approval_decision_id="script-approval-1",
             review_enabled=True,
-            action="approve",
-            decision_context="",
+            action="revise",
+            decision_context="Make scene two more concrete.",
         )
 
         with tempfile.TemporaryDirectory() as directory:
