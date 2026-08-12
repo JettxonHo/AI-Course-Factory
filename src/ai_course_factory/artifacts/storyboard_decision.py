@@ -1,4 +1,4 @@
-"""In-memory Creator decision boundary for an exact Storyboard Version."""
+"""Creator decision boundary for an exact Storyboard Version."""
 
 from __future__ import annotations
 
