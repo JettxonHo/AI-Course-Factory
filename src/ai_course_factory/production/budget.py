@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import math
 import re
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from ai_course_factory.artifacts import ArtifactCandidate, ArtifactReference, ArtifactVersion
 
@@ -145,6 +145,23 @@ class BudgetDecisionOutcome:
     authorization: BudgetAuthorizationRecord | None
 
 
+@runtime_checkable
+class BudgetAuthorizationRepository(Protocol):
+    """Durable seam for immutable Budget decisions and authorizations."""
+
+    def save(
+        self, outcome: BudgetDecisionOutcome
+    ) -> BudgetDecisionOutcome | BudgetFailure: ...
+
+    def get_decision(
+        self, decision_id: str
+    ) -> BudgetDecisionRecord | BudgetFailure: ...
+
+    def get_authorization(
+        self, authorization_id: str
+    ) -> BudgetAuthorizationRecord | BudgetFailure: ...
+
+
 class _BudgetValidation(Exception):
     def __init__(self, code: str, message: str) -> None:
         super().__init__(message)
@@ -208,7 +225,8 @@ class BudgetModule:
 class BudgetAuthorizationBoundary:
     """Record mandatory Creator Budget Review and independent authorization."""
 
-    def __init__(self) -> None:
+    def __init__(self, repository: BudgetAuthorizationRepository | None = None) -> None:
+        self._repository = repository
         self._decisions: dict[str, BudgetDecisionRecord] = {}
         self._authorizations: dict[str, BudgetAuthorizationRecord] = {}
 
@@ -304,6 +322,25 @@ class BudgetAuthorizationBoundary:
                 decided_at=decided_at,
                 decision_context=decision_context,
             )
+            outcome = BudgetDecisionOutcome(decision, authorization)
+            if self._repository is not None:
+                try:
+                    persisted = self._repository.save(outcome)
+                except Exception:
+                    return BudgetFailure(
+                        "execution",
+                        "BUDGET_AUTHORIZATION_FAILED",
+                        "budget decision could not be recorded",
+                    )
+                if isinstance(persisted, BudgetFailure):
+                    return persisted
+                if not isinstance(persisted, BudgetDecisionOutcome) or persisted != outcome:
+                    return BudgetFailure(
+                        "execution",
+                        "BUDGET_AUTHORIZATION_FAILED",
+                        "budget decision could not be recorded",
+                    )
+                return persisted
             existing = self._decisions.get(decision_id)
             existing_authorization = (
                 self._authorizations.get(authorization_id) if authorization_id is not None else None
@@ -326,7 +363,7 @@ class BudgetAuthorizationBoundary:
             self._decisions[decision_id] = decision
             if authorization is not None:
                 self._authorizations[authorization.authorization_id] = authorization
-            return BudgetDecisionOutcome(decision, authorization)
+            return outcome
         except _BudgetValidation as exc:
             return BudgetFailure("validation", exc.code, exc.message)
         except Exception:
@@ -337,6 +374,18 @@ class BudgetAuthorizationBoundary:
     def get_decision(self, decision_id: str) -> BudgetDecisionRecord | BudgetFailure:
         try:
             _validate_identity(decision_id, "INVALID_DECISION_ID", "decision identity is required")
+            if self._repository is not None:
+                try:
+                    result = self._repository.get_decision(decision_id)
+                except Exception:
+                    return BudgetFailure(
+                        "execution", "BUDGET_AUTHORIZATION_FAILED", "decision lookup failed"
+                    )
+                if isinstance(result, (BudgetDecisionRecord, BudgetFailure)):
+                    return result
+                return BudgetFailure(
+                    "execution", "BUDGET_AUTHORIZATION_FAILED", "decision lookup failed"
+                )
             try:
                 return self._decisions[decision_id]
             except KeyError:
@@ -353,6 +402,18 @@ class BudgetAuthorizationBoundary:
                 "INVALID_AUTHORIZATION_ID",
                 "authorization identity is required",
             )
+            if self._repository is not None:
+                try:
+                    result = self._repository.get_authorization(authorization_id)
+                except Exception:
+                    return BudgetFailure(
+                        "execution", "BUDGET_AUTHORIZATION_FAILED", "authorization lookup failed"
+                    )
+                if isinstance(result, (BudgetAuthorizationRecord, BudgetFailure)):
+                    return result
+                return BudgetFailure(
+                    "execution", "BUDGET_AUTHORIZATION_FAILED", "authorization lookup failed"
+                )
             try:
                 return self._authorizations[authorization_id]
             except KeyError:
@@ -671,6 +732,7 @@ def _has_control(value: str) -> bool:
 
 __all__ = [
     "BudgetAuthorizationBoundary",
+    "BudgetAuthorizationRepository",
     "BudgetAuthorizationRecord",
     "BudgetDecisionOutcome",
     "BudgetDecisionRecord",
