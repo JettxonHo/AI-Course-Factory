@@ -25,7 +25,9 @@ from .storyboard_decision import (
     StoryboardDecisionBoundary,
     StoryboardDecisionFailure,
     StoryboardDecisionRecord,
+    StoryboardDecisionRepository,
 )
+from .sqlite_storyboard_decision import SQLiteStoryboardDecisionRepository
 
 __all__ = [
     "ArtifactCandidate",
@@ -48,6 +50,8 @@ __all__ = [
     "StoryboardDecisionBoundary",
     "StoryboardDecisionFailure",
     "StoryboardDecisionRecord",
+    "StoryboardDecisionRepository",
     "SQLiteArtifactRepository",
     "SQLiteScriptDecisionRepository",
+    "SQLiteStoryboardDecisionRepository",
 ]
