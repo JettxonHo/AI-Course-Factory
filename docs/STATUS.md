@@ -12,13 +12,14 @@
 | Reviewed M1-003 Commit | `047ce29660e25c9d3e9407f1df3d1a53a2504272` |
 | Reviewed M1-004 Commit | `77a360d8705209c8c70e9165de896c9bc7331359` |
 | Reviewed M1-005 Commit | `1838819bcba7633fc057b77035d1e71f3da155eb` |
-| Latest Feature Baseline | M1-005 merged at `main@1c01a3421a7dce0c3efb88f993a1c23241a04ea4` |
+| Reviewed M1-006 Commit | `7ee3677a0640e5e454c2a81c354c4aff70191a54` |
+| Latest Feature Baseline | M1-006 merged at `main@2379650ec8dccb73a047aa1e72af511203917181` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | None; #34 is closed after M1-005 merge |
+| Current M1 Task Contract | None; #37 is closed after M1-006 merge |
 | Open PR | None |
-| Current Code Gate | 104 tests passed on merged `main@1c01a34` |
+| Current Code Gate | 117 tests passed on merged `main@2379650` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -53,13 +54,19 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - provider-neutral `ProductionAgent.plan_request` with exact Script/Character/Storyboard/Timeline and satisfying decision checks；
 - exact language/aspect/timing/narration/visual/character/continuity aggregation with provider-specific fields rejected；
 - external commit through the unchanged Artifact Store to an exact Production Request Reference；
-- Production Request equivalent replay, changed-input Commit conflict and malformed-result non-Commit evidence。
+- Production Request equivalent replay, changed-input Commit conflict and malformed-result non-Commit evidence；
+- deterministic provider-neutral `BudgetModule.estimate` from one exact Production Request and Request-bound local Fixture price snapshot；
+- integer-micros price arithmetic, complete visual/voice Scene coverage and bounded 1–3 attempt policy；
+- external commit through the unchanged Artifact Store to an exact Production Budget Reference；
+- mandatory in-memory Creator Budget Review approve/reject decision and independent Authorization after valid approval；
+- Authorization bound to exact Request/Budget References, canonical snapshot, approved amount/attempt caps, Creator/time/decision identity；
+- Budget Commit replay/conflict, underfunded/stale/mutated Budget rejection and new-Request-Version isolation evidence。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 104 tests — OK
+Ran 117 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -91,6 +98,12 @@ Ran 4 tests — OK
 uv run python -m unittest tests.integration.test_production_request_planning -v
 Ran 2 tests — OK
 
+uv run python -m unittest tests.production.test_budget -v
+Ran 5 tests — OK
+
+uv run python -m unittest tests.integration.test_budget_authorization -v
+Ran 8 tests — OK
+
 uv run python -m compileall -q src tests
 OK
 
@@ -98,13 +111,13 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision, Timeline and Production Request slices only. It does not prove Budget, persistence, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision, Timeline, Production Request and in-memory Budget/Authorization slices only. Budget pricing is a deterministic local Fixture. It does not prove live pricing, persistent authorization, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
 - persistent database or file-backed Artifact/Decision/Checkpoint storage；
 - task-level application and local Web Workspace；
-- Budget gate；
+- persistent Budget decision/Authorization storage and production-side authorization enforcement；
 - Production Orchestrator or Provider adapters；
 - Visual/TTS/media generation；
 - Final Video Review、stale/impact、scene retry；
@@ -128,6 +141,9 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #34 is closed as completed; its sole M1-005 Production Request Planning Task Contract was delivered by merged PR #35.
 - `main@1c01a34` contains reviewed Production Request implementation commit `1838819`.
 - GitHub reported no status checks for PR #35; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
+- Issue #37 is closed as completed; its sole M1-006 Production Budget and Creator Authorization Task Contract was delivered by merged PR #38.
+- `main@2379650` contains reviewed Budget/Authorization implementation commit `7ee3677`.
+- GitHub reported no status checks for PR #38; its merge evidence is the recorded local test/build run, mutation audit and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -237,7 +253,8 @@ The exact Luna first observed a public import failure before implementing the Pr
 - M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
 - M1 result 4 of 7 is independently approved and merged by PR #32 at `main@4241554`；
 - M1 result 5 of 7 is independently approved and merged by PR #35 at `main@1c01a34`；
-- M1 results 6–7 remain unauthorized without their own bounded Task Contracts。
+- M1 result 6 of 7 is independently approved and merged by PR #38 at `main@2379650`；
+- M1 result 7 remains unauthorized without its own bounded Task Contract。
 
 ### Blocks only real Provider milestone
 
@@ -255,5 +272,5 @@ The exact Luna first observed a public import failure before implementing the Pr
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded Task Contract before Budget Candidate and mandatory Creator authorization work.
+1. Establish a separate bounded Task Contract for the M1 no-Provider cross-slice integration proof.
 2. Keep all real Provider, cost and deployment gates closed.

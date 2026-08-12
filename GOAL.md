@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 complete; M1 results 1–5 merged; result 6 awaits its own Task Contract |
+| Status | ACTIVE — M0 complete; M1 results 1–6 merged; result 7 awaits its own Task Contract |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 104 tests：
+当前 `main` 已完成并通过 117 tests：
 
 ```text
 Public GitHub
@@ -57,9 +57,13 @@ Public GitHub
   -> exact Timeline Reference through the existing Artifact Store
   -> provider-neutral Production Request Candidate
   -> exact Production Request Reference through the existing Artifact Store
+  -> provider-neutral Production Budget Candidate from a Request-bound local Fixture price snapshot
+  -> exact Production Budget Reference through the existing Artifact Store
+  -> mandatory in-memory Creator Budget Review decision
+  -> independent exact Budget Authorization after valid approval
 ```
 
-未完成：Budget、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character/Storyboard/decision/Timeline/Production Request 证据只覆盖 no-Provider、in-memory planning boundary。
+未完成：M1 no-Provider cross-slice integration proof、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character/Storyboard/decision/Timeline/Production Request/Budget 证据只覆盖 no-Provider、in-memory boundary；Budget price evidence is a deterministic local Fixture, not live pricing or Provider readiness。
 
 ## 5. In Scope
 
@@ -109,7 +113,7 @@ Exit：
 
 ### M1 — Approved Script to Authorized Production Request
 
-Status：**ACTIVE** — results 1–5 of 7 are independently `APPROVED` and merged; result 5 was delivered by PR #35 at `main@1c01a34`; results 6–7 remain pending and unauthorized without their own Task Contracts.
+Status：**ACTIVE** — results 1–6 of 7 are independently `APPROVED` and merged; result 6 was delivered by PR #38 at `main@2379650`; result 7 remains pending and unauthorized without its own Task Contract.
 
 Outcome：现有 exact approved Script 形成 provider-neutral、预算受控的生产入口。
 
