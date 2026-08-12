@@ -16,7 +16,7 @@
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
 | Current M1 Task Contract | Issue #31 — M1-004 Timeline Planning, independently `APPROVED`; awaiting publication |
-| Open PR | None |
+| Open PR | #32 — Draft; GitHub reports `CLEAN` / `MERGEABLE` with no status checks |
 | Current Code Gate | 98 tests passed on `codex/31-timeline-planning` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -112,8 +112,8 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #28 is closed as completed; its sole M1-003 Storyboard Decision Task Contract was delivered by merged PR #29.
 - `main@a331c47` contains reviewed Storyboard decision implementation commit `047ce29`.
 - GitHub reported no status checks for PR #29; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #31 is the sole open M1-004 Timeline Planning Task Contract; no implementation PR exists yet.
-- Reviewed Timeline implementation commit `77a360d` is locally approved on `codex/31-timeline-planning` and awaits publication; it is not yet part of `main`.
+- Issue #31 is the sole open M1-004 Timeline Planning Task Contract and is linked to draft PR #32.
+- Reviewed Timeline implementation commit `77a360d` is published in PR #32; GitHub reports the PR `CLEAN` / `MERGEABLE` with no configured status checks. It is not yet part of `main`.
 
 ## 5. Protected Untracked Materials
 
@@ -229,6 +229,6 @@ The exact Luna first observed a public import failure before implementing the Ti
 
 ## 9. Next Ordered Actions
 
-1. Publish reviewed commit `77a360d` as the Issue #31 implementation PR and verify its remote Diff/check state.
-2. Merge only if the PR remains clean and the documented local evidence is intact, then synchronize `main` truth sources.
+1. Reverify PR #32 remains clean, contains only the reviewed scope and preserves the documented local evidence.
+2. Mark PR #32 ready and merge only if those conditions remain true, then synchronize `main` truth sources.
 3. Keep Production Request and all real Provider, cost and deployment work closed until their own gates pass.
