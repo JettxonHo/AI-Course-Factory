@@ -17,7 +17,7 @@
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
 | Current M1 Task Contract | Issue #34 — M1-005 Production Request Planning, independently `APPROVED`; awaiting publication |
-| Open PR | None |
+| Open PR | #35 — Draft; GitHub reports mergeable with no status checks configured |
 | Current Code Gate | 104 tests passed on `codex/34-production-request-planning` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
@@ -125,7 +125,8 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #31 is closed as completed; its sole M1-004 Timeline Planning Task Contract was delivered by merged PR #32.
 - `main@4241554` contains reviewed Timeline implementation commit `77a360d`.
 - GitHub reported no status checks for PR #32; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #34 is the sole open M1-005 Production Request Planning Task Contract; reviewed implementation commit `1838819` is locally approved on `codex/34-production-request-planning` and awaits publication. It is not yet part of `main`.
+- Issue #34 is the sole open M1-005 Production Request Planning Task Contract and is linked to draft PR #35.
+- Reviewed Production Request implementation commit `1838819` is published in PR #35; GitHub reports the PR mergeable with no configured status checks. It is not yet part of `main`.
 
 ## 5. Protected Untracked Materials
 
@@ -252,6 +253,6 @@ The exact Luna first observed a public import failure before implementing the Pr
 
 ## 9. Next Ordered Actions
 
-1. Publish reviewed commit `1838819` as the Issue #34 implementation PR and verify its remote Diff/check state.
-2. Merge only if the PR remains clean and the documented local evidence is intact, then synchronize `main` truth sources.
+1. Reverify PR #35 remains mergeable, contains only the reviewed scope and preserves the documented local evidence.
+2. Mark PR #35 ready and merge only if those conditions remain true, then synchronize `main` truth sources.
 3. Keep all real Provider, cost and deployment gates closed.
