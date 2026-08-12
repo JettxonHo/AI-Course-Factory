@@ -13,13 +13,14 @@
 | Reviewed M1-004 Commit | `77a360d8705209c8c70e9165de896c9bc7331359` |
 | Reviewed M1-005 Commit | `1838819bcba7633fc057b77035d1e71f3da155eb` |
 | Reviewed M1-006 Commit | `7ee3677a0640e5e454c2a81c354c4aff70191a54` |
-| Latest Feature Baseline | M1-006 merged at `main@2379650ec8dccb73a047aa1e72af511203917181` |
+| Reviewed M1-007 Commit | `6ccb19778e5620451cf4314a91ed738acedaa177` |
+| Latest Feature Baseline | M1-007 merged at `main@13ccba4f6544255f29ce322a3d8475e5546913ba` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | None; #37 is closed after M1-006 merge |
+| Current Task Contract | None; #40 is closed after M1 completion |
 | Open PR | None |
-| Current Code Gate | 117 tests passed on merged `main@2379650` |
+| Current Code Gate | 119 tests passed on merged `main@13ccba4` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -60,13 +61,15 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - external commit through the unchanged Artifact Store to an exact Production Budget Reference；
 - mandatory in-memory Creator Budget Review approve/reject decision and independent Authorization after valid approval；
 - Authorization bound to exact Request/Budget References, canonical snapshot, approved amount/attempt caps, Creator/time/decision identity；
-- Budget Commit replay/conflict, underfunded/stale/mutated Budget rejection and new-Request-Version isolation evidence。
+- Budget Commit replay/conflict, underfunded/stale/mutated Budget rejection and new-Request-Version isolation evidence；
+- offline cross-slice exact approved Script -> Character -> Storyboard decision -> Timeline -> Production Request -> Production Budget -> independent Authorization integration evidence；
+- the integrated deterministic runtime invokes only Character/Storyboard/Timeline/Production Request planning once each; reject and underfunded approval create no Authorization。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 117 tests — OK
+Ran 119 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -103,6 +106,9 @@ Ran 5 tests — OK
 
 uv run python -m unittest tests.integration.test_budget_authorization -v
 Ran 8 tests — OK
+
+uv run python -m unittest tests.integration.test_authorized_production_request -v
+Ran 2 tests — OK
 
 uv run python -m compileall -q src tests
 OK
@@ -144,6 +150,9 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #37 is closed as completed; its sole M1-006 Production Budget and Creator Authorization Task Contract was delivered by merged PR #38.
 - `main@2379650` contains reviewed Budget/Authorization implementation commit `7ee3677`.
 - GitHub reported no status checks for PR #38; its merge evidence is the recorded local test/build run, mutation audit and main-controller independent Review, not remote CI.
+- Issue #40 is closed as completed; its sole M1-007 offline cross-slice integration Task Contract was delivered by merged PR #41.
+- `main@13ccba4` contains reviewed single-file integration commit `6ccb197`.
+- GitHub reported no status checks for PR #41; its merge evidence is the focused/full local runs, three killed lineage/authorization mutations and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -245,7 +254,7 @@ The exact Luna first observed a public import failure before implementing the Pr
 
 ## 8. Open Decisions and Blockers
 
-### Current M1 state
+### M1 milestone review
 
 - M0 activation is complete；
 - M1 result 1 of 7 is independently approved and merged by PR #24；
@@ -254,7 +263,9 @@ The exact Luna first observed a public import failure before implementing the Pr
 - M1 result 4 of 7 is independently approved and merged by PR #32 at `main@4241554`；
 - M1 result 5 of 7 is independently approved and merged by PR #35 at `main@1c01a34`；
 - M1 result 6 of 7 is independently approved and merged by PR #38 at `main@2379650`；
-- M1 result 7 remains unauthorized without its own bounded Task Contract。
+- M1 result 7 of 7 is independently approved and merged by PR #41 at `main@13ccba4`；
+- M1 exit is `PASSED`: exact planning lineage, mandatory Budget Review and separate Authorization compose offline；
+- M1 evidence remains deterministic/local/in-memory and does not establish persistence, live pricing, Provider execution, cost, media or deployment。
 
 ### Blocks only real Provider milestone
 
@@ -272,5 +283,5 @@ The exact Luna first observed a public import failure before implementing the Pr
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded Task Contract for the M1 no-Provider cross-slice integration proof.
+1. Establish a separate bounded M2-001 Task Contract for the Artifact repository interface and SQLite Adapter.
 2. Keep all real Provider, cost and deployment gates closed.
