@@ -12,13 +12,13 @@
 | Reviewed M1-003 Commit | `047ce29660e25c9d3e9407f1df3d1a53a2504272` |
 | Reviewed M1-004 Commit | `77a360d8705209c8c70e9165de896c9bc7331359` |
 | Reviewed M1-005 Commit | `1838819bcba7633fc057b77035d1e71f3da155eb` |
-| Latest Feature Baseline | M1-004 merged at `main@42415546d43b8e4567e6d8ce829d8be399cc3e86` |
+| Latest Feature Baseline | M1-005 merged at `main@1c01a3421a7dce0c3efb88f993a1c23241a04ea4` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | Issue #34 — M1-005 Production Request Planning, independently `APPROVED`; awaiting publication |
-| Open PR | #35 — Draft; GitHub reports mergeable with no status checks configured |
-| Current Code Gate | 104 tests passed on `codex/34-production-request-planning` |
+| Current M1 Task Contract | None; #34 is closed after M1-005 merge |
+| Open PR | None |
+| Current Code Gate | 104 tests passed on merged `main@1c01a34` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -98,7 +98,7 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision, Timeline and Production Request slices only. It does not prove Budget, persistence, paid Provider, media or deployment behavior. Production Request remains a reviewed branch candidate until its PR is merged.
+This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision, Timeline and Production Request slices only. It does not prove Budget, persistence, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
@@ -125,8 +125,9 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #31 is closed as completed; its sole M1-004 Timeline Planning Task Contract was delivered by merged PR #32.
 - `main@4241554` contains reviewed Timeline implementation commit `77a360d`.
 - GitHub reported no status checks for PR #32; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- Issue #34 is the sole open M1-005 Production Request Planning Task Contract and is linked to draft PR #35.
-- Reviewed Production Request implementation commit `1838819` is published in PR #35; GitHub reports the PR mergeable with no configured status checks. It is not yet part of `main`.
+- Issue #34 is closed as completed; its sole M1-005 Production Request Planning Task Contract was delivered by merged PR #35.
+- `main@1c01a34` contains reviewed Production Request implementation commit `1838819`.
+- GitHub reported no status checks for PR #35; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -216,7 +217,7 @@ Issue #31 implementation is isolated in merged commit `77a360d` and changes only
 
 The exact Luna first observed a public import failure before implementing the Timeline seam. The main orchestrator requested one test-evidence correction for an actual upstream Storyboard scene-order mutation and a genuinely raised runtime exception. The same Luna corrected only the tests; the orchestrator reread the actual Diff, reran all gates, verified gate/timing mutations are caught, and returned `APPROVED`.
 
-Issue #34 implementation is isolated in reviewed commit `1838819` and changes only:
+Issue #34 implementation is isolated in merged commit `1838819` and changes only:
 
 - `src/ai_course_factory/agents/production_agent.py`；
 - `src/ai_course_factory/agents/runtime.py`；
@@ -235,7 +236,8 @@ The exact Luna first observed a public import failure before implementing the Pr
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
 - M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
 - M1 result 4 of 7 is independently approved and merged by PR #32 at `main@4241554`；
-- M1 result 5 is independently approved at commit `1838819` under Issue #34 but not yet merged; results 6–7 remain unauthorized without their own bounded Task Contracts。
+- M1 result 5 of 7 is independently approved and merged by PR #35 at `main@1c01a34`；
+- M1 results 6–7 remain unauthorized without their own bounded Task Contracts。
 
 ### Blocks only real Provider milestone
 
@@ -253,6 +255,5 @@ The exact Luna first observed a public import failure before implementing the Pr
 
 ## 9. Next Ordered Actions
 
-1. Reverify PR #35 remains mergeable, contains only the reviewed scope and preserves the documented local evidence.
-2. Mark PR #35 ready and merge only if those conditions remain true, then synchronize `main` truth sources.
-3. Keep all real Provider, cost and deployment gates closed.
+1. Establish a separate bounded Task Contract before Budget Candidate and mandatory Creator authorization work.
+2. Keep all real Provider, cost and deployment gates closed.
