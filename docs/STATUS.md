@@ -14,7 +14,7 @@
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | None; #28 is closed after M1-003 merge |
+| Current M1 Task Contract | Issue #31 — M1-004 Timeline Planning, `READY` |
 | Open PR | None |
 | Current Code Gate | 89 tests passed |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
@@ -101,7 +101,7 @@ This proves the current offline and no-Provider Character, Storyboard and in-mem
 - Issue #28 is closed as completed; its sole M1-003 Storyboard Decision Task Contract was delivered by merged PR #29.
 - `main@a331c47` contains reviewed Storyboard decision implementation commit `047ce29`.
 - GitHub reported no status checks for PR #29; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- There is no open Issue or PR for M1 result 4.
+- Issue #31 is the sole open M1-004 Timeline Planning Task Contract; no implementation PR exists yet.
 
 ## 5. Protected Untracked Materials
 
@@ -189,7 +189,7 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 - M1 result 1 of 7 is independently approved and merged by PR #24；
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
 - M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
-- M1 results 4–7 require new bounded Task Contracts and are not authorized by Issue #28。
+- M1 result 4 is authorized only within Issue #31 on `codex/31-timeline-planning`; results 5–7 remain unauthorized without their own bounded Task Contracts。
 
 ### Blocks only real Provider milestone
 
@@ -207,5 +207,6 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded Task Contract before Timeline work.
-2. Keep all real Provider, cost and deployment gates closed.
+1. Dispatch exact `luna-worker` for Issue #31 only after branch, worktree and runtime-route verification.
+2. Independently review the Timeline Diff and required gates before any PR or merge.
+3. Keep all real Provider, cost and deployment gates closed.

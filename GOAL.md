@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 complete; M1 results 1–3 merged; result 4 awaits its own Task Contract |
+| Status | ACTIVE — M0 complete; M1 results 1–3 merged; result 4 active under Issue #31 |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -105,7 +105,7 @@ Exit：
 
 ### M1 — Approved Script to Authorized Production Request
 
-Status：**ACTIVE** — results 1–3 of 7 are independently `APPROVED` and merged; result 3 was delivered by PR #29 at `main@a331c47`; results 4–7 remain pending and unauthorized without their own Task Contracts.
+Status：**ACTIVE** — results 1–3 of 7 are independently `APPROVED` and merged; result 4 is the sole active bounded task under Issue #31 on `codex/31-timeline-planning`; results 5–7 remain pending and unauthorized without their own Task Contracts.
 
 Outcome：现有 exact approved Script 形成 provider-neutral、预算受控的生产入口。
 
