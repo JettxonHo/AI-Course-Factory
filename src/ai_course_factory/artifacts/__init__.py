@@ -28,6 +28,15 @@ from .storyboard_decision import (
     StoryboardDecisionRepository,
 )
 from .sqlite_storyboard_decision import SQLiteStoryboardDecisionRepository
+from .final_video_decision import (
+    FinalVideoDecisionBoundary,
+    FinalVideoDecisionFailure,
+    FinalVideoDecisionRecord,
+    FinalVideoDecisionRepository,
+    FinalVideoGateAssessment,
+    FinalVideoGateFinding,
+)
+from .sqlite_final_video_decision import SQLiteFinalVideoDecisionRepository
 
 __all__ = [
     "ArtifactCandidate",
@@ -54,4 +63,11 @@ __all__ = [
     "SQLiteArtifactRepository",
     "SQLiteScriptDecisionRepository",
     "SQLiteStoryboardDecisionRepository",
+    "FinalVideoDecisionBoundary",
+    "FinalVideoDecisionFailure",
+    "FinalVideoDecisionRecord",
+    "FinalVideoDecisionRepository",
+    "FinalVideoGateAssessment",
+    "FinalVideoGateFinding",
+    "SQLiteFinalVideoDecisionRepository",
 ]
