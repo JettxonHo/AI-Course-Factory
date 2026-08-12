@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
 
 from .model import ArtifactReference, ArtifactVersion
 
@@ -46,6 +47,21 @@ class StoryboardDecisionRecord:
     decision_context: str
 
 
+@runtime_checkable
+class StoryboardDecisionRepository(Protocol):
+    """Persistence seam for immutable Storyboard decision records."""
+
+    def save(
+        self, record: StoryboardDecisionRecord
+    ) -> StoryboardDecisionRecord | StoryboardDecisionFailure:
+        """Persist one record or return a bounded failure."""
+
+    def get(
+        self, decision_id: str
+    ) -> StoryboardDecisionRecord | StoryboardDecisionFailure:
+        """Retrieve one record by its exact decision identity."""
+
+
 class _DecisionValidation(Exception):
     def __init__(self, code: str, message: str) -> None:
         super().__init__(message)
@@ -53,11 +69,106 @@ class _DecisionValidation(Exception):
         self.message = message
 
 
-class StoryboardDecisionBoundary:
-    """Record Creator actions against exact committed Storyboard lineage."""
+def _validate_decision_record(record: object) -> StoryboardDecisionFailure | None:
+    """Validate a record supplied directly to a repository adapter."""
+
+    try:
+        if not isinstance(record, StoryboardDecisionRecord):
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision record is invalid"
+            )
+        StoryboardDecisionBoundary._validate_identity(
+            record.decision_id,
+            "INVALID_DECISION_ID",
+            "decision identity is required",
+        )
+        StoryboardDecisionBoundary._validate_identity(
+            record.task_id,
+            "INVALID_TASK_ID",
+            "task identity is required",
+        )
+        StoryboardDecisionBoundary._validate_identity(
+            record.thread_id,
+            "INVALID_THREAD_ID",
+            "thread identity is required",
+        )
+        StoryboardDecisionBoundary._validate_identity(
+            record.creator_id,
+            "INVALID_CREATOR_ID",
+            "Creator identity is required",
+        )
+        if record.gate_kind != "storyboard_review":
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision record gate kind is invalid"
+            )
+        StoryboardDecisionBoundary._validate_reference(
+            record.storyboard_reference, "storyboard"
+        )
+        StoryboardDecisionBoundary._validate_reference(record.script_reference, "script")
+        StoryboardDecisionBoundary._validate_reference(
+            record.character_reference, "character"
+        )
+        StoryboardDecisionBoundary._validate_identity(
+            record.script_approval_decision_id,
+            "INVALID_SCRIPT_APPROVAL_ID",
+            "Storyboard Script approval identity is invalid",
+        )
+        StoryboardDecisionBoundary._validate_review_enabled(record.review_enabled)
+        StoryboardDecisionBoundary._validate_action(record.action, record.review_enabled)
+        StoryboardDecisionBoundary._validate_decision_context(
+            record.decision_context, record.action
+        )
+    except _DecisionValidation as exc:
+        return StoryboardDecisionFailure("validation", exc.code, exc.message)
+    except Exception:
+        return StoryboardDecisionFailure(
+            "execution", "STORYBOARD_DECISION_FAILED", "storyboard decision could not be recorded"
+        )
+    return None
+
+
+class _InMemoryStoryboardDecisionRepository:
+    """Default repository preserving the original process-local behavior."""
 
     def __init__(self) -> None:
         self._records: dict[str, StoryboardDecisionRecord] = {}
+
+    def save(self, record: StoryboardDecisionRecord) -> StoryboardDecisionRecord | StoryboardDecisionFailure:
+        invalid = _validate_decision_record(record)
+        if invalid is not None:
+            return invalid
+        existing = self._records.get(record.decision_id)
+        if existing is not None:
+            if existing == record:
+                return existing
+            return StoryboardDecisionFailure(
+                "validation",
+                "DECISION_CONFLICT",
+                "decision identity was already used with different input",
+            )
+        self._records[record.decision_id] = record
+        return record
+
+    def get(self, decision_id: str) -> StoryboardDecisionRecord | StoryboardDecisionFailure:
+        if not isinstance(decision_id, str) or not StoryboardDecisionBoundary._valid_identity(decision_id):
+            return StoryboardDecisionFailure(
+                "validation", "INVALID_DECISION_ID", "decision identity is required"
+            )
+        try:
+            return self._records[decision_id]
+        except KeyError:
+            return StoryboardDecisionFailure(
+                "validation", "DECISION_NOT_FOUND", "decision record does not exist"
+            )
+
+
+class StoryboardDecisionBoundary:
+    """Record Creator actions against exact committed Storyboard lineage."""
+
+    def __init__(self, repository: StoryboardDecisionRepository | None = None) -> None:
+        self._repository = (
+            repository if repository is not None else _InMemoryStoryboardDecisionRepository()
+        )
 
     def decide(
         self,
@@ -110,16 +221,16 @@ class StoryboardDecisionBoundary:
                 action=action,
                 decision_context=decision_context,
             )
-            existing = self._records.get(decision_id)
-            if existing is not None:
-                if existing == record:
-                    return existing
-                raise _DecisionValidation(
-                    "DECISION_CONFLICT",
-                    "decision identity was already used with different input",
+            persisted = self._repository.save(record)
+            if isinstance(persisted, StoryboardDecisionFailure):
+                return persisted
+            if not isinstance(persisted, StoryboardDecisionRecord) or persisted != record:
+                return StoryboardDecisionFailure(
+                    "execution",
+                    "STORYBOARD_DECISION_FAILED",
+                    "storyboard decision could not be recorded",
                 )
-            self._records[decision_id] = record
-            return record
+            return persisted
         except _DecisionValidation as exc:
             return StoryboardDecisionFailure("validation", exc.code, exc.message)
         except Exception:
@@ -138,14 +249,12 @@ class StoryboardDecisionBoundary:
                 "INVALID_DECISION_ID",
                 "decision identity is required",
             )
-            try:
-                return self._records[decision_id]
-            except KeyError:
-                return StoryboardDecisionFailure(
-                    "validation",
-                    "DECISION_NOT_FOUND",
-                    "decision record does not exist",
-                )
+            result = self._repository.get(decision_id)
+            if isinstance(result, (StoryboardDecisionRecord, StoryboardDecisionFailure)):
+                return result
+            return StoryboardDecisionFailure(
+                "execution", "STORYBOARD_DECISION_FAILED", "storyboard decision lookup failed"
+            )
         except _DecisionValidation as exc:
             return StoryboardDecisionFailure("validation", exc.code, exc.message)
         except Exception:
@@ -293,4 +402,5 @@ __all__ = [
     "StoryboardDecisionBoundary",
     "StoryboardDecisionFailure",
     "StoryboardDecisionRecord",
+    "StoryboardDecisionRepository",
 ]
