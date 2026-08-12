@@ -14,13 +14,14 @@
 | Reviewed M1-005 Commit | `1838819bcba7633fc057b77035d1e71f3da155eb` |
 | Reviewed M1-006 Commit | `7ee3677a0640e5e454c2a81c354c4aff70191a54` |
 | Reviewed M1-007 Commit | `6ccb19778e5620451cf4314a91ed738acedaa177` |
-| Latest Feature Baseline | M1-007 merged at `main@13ccba4f6544255f29ce322a3d8475e5546913ba` |
+| Reviewed M2-001 Commit | `ce2db9a1d315dd250754e1427eacd6d9b058ddb7` |
+| Latest Feature Baseline | M2-001 merged at `main@922d6c1fff14f536d836582b4d16f60375a01a3c` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #40 is closed after M1 completion |
+| Current Task Contract | None; #43 is closed after M2-001 completion |
 | Open PR | None |
-| Current Code Gate | 119 tests passed on merged `main@13ccba4` |
+| Current Code Gate | 131 tests passed on merged `main@922d6c1` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -63,13 +64,23 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - Authorization bound to exact Request/Budget References, canonical snapshot, approved amount/attempt caps, Creator/time/decision identity；
 - Budget Commit replay/conflict, underfunded/stale/mutated Budget rejection and new-Request-Version isolation evidence；
 - offline cross-slice exact approved Script -> Character -> Storyboard decision -> Timeline -> Production Request -> Production Budget -> independent Authorization integration evidence；
-- the integrated deterministic runtime invokes only Character/Storyboard/Timeline/Production Request planning once each; reject and underfunded approval create no Authorization。
+- the integrated deterministic runtime invokes only Character/Storyboard/Timeline/Production Request planning once each; reject and underfunded approval create no Authorization；
+- runtime-checkable `ArtifactRepository` contract shared by the existing in-memory boundary and the SQLite Adapter；
+- durable exact Artifact Versions, immutable history and logical replay/conflict through standard-library SQLite；
+- typed deterministic JSON for the complete accepted frozen value domain without pickle, integer coercion or mutable decode shapes；
+- `BEGIN IMMEDIATE` atomic commit/revision behavior, close/reopen recovery, two-instance visibility and safe schema/storage failure normalization。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 119 tests — OK
+Ran 131 tests — OK
+
+uv run python -m unittest tests.artifacts.test_repository_contract -v
+Ran 6 tests — OK
+
+uv run python -m unittest tests.integration.test_sqlite_artifact_repository -v
+Ran 6 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -117,13 +128,13 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision, Timeline, Production Request and in-memory Budget/Authorization slices only. Budget pricing is a deterministic local Fixture. It does not prove live pricing, persistent authorization, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider planning/Budget slices plus durable Artifact commit/get/restart behavior. Creator decisions, Budget Authorization and Workflow checkpoint remain in-memory. Budget pricing is a deterministic local Fixture. It does not prove live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
-- persistent database or file-backed Artifact/Decision/Checkpoint storage；
+- persistent Decision/Budget Authorization/Provider-attempt and Workflow-checkpoint storage；
 - task-level application and local Web Workspace；
-- persistent Budget decision/Authorization storage and production-side authorization enforcement；
+- production-side authorization enforcement；
 - Production Orchestrator or Provider adapters；
 - Visual/TTS/media generation；
 - Final Video Review、stale/impact、scene retry；
@@ -153,6 +164,9 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #40 is closed as completed; its sole M1-007 offline cross-slice integration Task Contract was delivered by merged PR #41.
 - `main@13ccba4` contains reviewed single-file integration commit `6ccb197`.
 - GitHub reported no status checks for PR #41; its merge evidence is the focused/full local runs, three killed lineage/authorization mutations and main-controller independent Review, not remote CI.
+- Issue #43 is closed as completed; its sole M2-001 Artifact repository/SQLite Task Contract was delivered by merged PR #44.
+- `main@922d6c1` contains reviewed SQLite repository commit `ce2db9a`.
+- GitHub reported no status checks for PR #44; its merge evidence is the 131-test local run, six killed contract mutations, a 20-run two-instance concurrency audit and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -177,15 +191,15 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #34 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff38e-dcb7-77f2-8d27-6d5035b40540` first and last `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #43 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff3c2-c80c-7323-b5d1-1b1afef95e67` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
 
 The runtime evidence above verifies Agent routing only; it does not prove product Model Runtime or Provider capability.
 
-## 7. M0 Baseline and M1 Changes
+## 7. M0/M1 Baseline and M2 Changes
 
 The M0 planning-baseline commit containing this snapshot establishes these approved v1.0 truth sources:
 
@@ -252,6 +266,16 @@ Issue #34 implementation is isolated in merged commit `1838819` and changes only
 
 The exact Luna first observed a public import failure before implementing the Production Request seam. The main orchestrator stopped an initial oversized implementation, required reuse of existing validators, and reduced the source addition to 291 lines. Independent Review then requested one test-only correction for upstream malformed narration and exact-shape runtime narration drift. The same Luna added those cases; the orchestrator reread the Diff, reran all gates, killed Timeline/result-validator bypass mutations, and returned `APPROVED`.
 
+Issue #43 implementation is isolated in merged commit `ce2db9a` and changes only:
+
+- `src/ai_course_factory/artifacts/commit.py`；
+- `src/ai_course_factory/artifacts/sqlite.py`；
+- `src/ai_course_factory/artifacts/__init__.py`；
+- `tests/artifacts/test_repository_contract.py`；
+- `tests/integration/test_sqlite_artifact_repository.py`。
+
+The exact Luna recorded the required missing-interface RED, then implemented the shared repository contract and SQLite Adapter. Independent Review found one persisted logical-index integrity defect, returned `CHANGES_REQUESTED`, and the same Luna bound replay to the canonical persisted Version. The orchestrator reran all gates, killed replay/revision/type/restart mutations, exercised concurrent two-instance revisions and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -266,6 +290,13 @@ The exact Luna first observed a public import failure before implementing the Pr
 - M1 result 7 of 7 is independently approved and merged by PR #41 at `main@13ccba4`；
 - M1 exit is `PASSED`: exact planning lineage, mandatory Budget Review and separate Authorization compose offline；
 - M1 evidence remains deterministic/local/in-memory and does not establish persistence, live pricing, Provider execution, cost, media or deployment。
+
+### M2 milestone review
+
+- M2 result 1 is independently approved and merged by PR #44 at `main@922d6c1`；
+- exact Artifact Versions and logical Commit replay now survive SQLite close/reopen；
+- Decision, Budget Authorization, Workflow checkpoint, task aggregate and filesystem workspace persistence remain open；
+- M2 exit is not yet passed。
 
 ### Blocks only real Provider milestone
 
@@ -283,5 +314,5 @@ The exact Luna first observed a public import failure before implementing the Pr
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M2-001 Task Contract for the Artifact repository interface and SQLite Adapter.
+1. Establish a separate bounded M2-002 Task Contract for the next persistent control-record seam; do not bundle the remaining M2 results.
 2. Keep all real Provider, cost and deployment gates closed.
