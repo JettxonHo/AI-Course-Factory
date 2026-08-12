@@ -26,11 +26,13 @@ from .sqlite_attempt import SQLiteProviderAttemptRepository
 from .interfaces import VisualGenerator, VoiceGenerator
 from .model import (
     MediaGenerationResult,
+    ProductionExecutionResult,
     ProductionMediaFailure,
     VisualGenerationTask,
     VoiceSynthesisTask,
 )
 from .adapters import DeterministicFakeVisualGenerator, DeterministicFakeVoiceGenerator
+from .orchestrator import ProductionOrchestrator
 
 __all__ = [
     "BudgetAuthorizationBoundary",
@@ -53,6 +55,7 @@ __all__ = [
     "ProviderAttemptReservation",
     "SQLiteProviderAttemptRepository",
     "MediaGenerationResult",
+    "ProductionExecutionResult",
     "ProductionMediaFailure",
     "VisualGenerationTask",
     "VoiceSynthesisTask",
@@ -60,4 +63,5 @@ __all__ = [
     "VoiceGenerator",
     "DeterministicFakeVisualGenerator",
     "DeterministicFakeVoiceGenerator",
+    "ProductionOrchestrator",
 ]

@@ -52,8 +52,21 @@ class ProductionMediaFailure:
     message: str
 
 
+@dataclass(frozen=True, slots=True)
+class ProductionExecutionResult:
+    task_id: str
+    attempt_id: str
+    production_request_reference: ArtifactReference
+    scene_id: str
+    operation: str
+    provider: str
+    output_reference: WorkspaceFileReference
+    result_code: str
+
+
 __all__ = [
     "MediaGenerationResult",
+    "ProductionExecutionResult",
     "ProductionMediaFailure",
     "VisualGenerationTask",
     "VoiceSynthesisTask",
