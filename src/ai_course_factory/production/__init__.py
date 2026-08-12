@@ -2,6 +2,7 @@
 
 from .budget import (
     BudgetAuthorizationBoundary,
+    BudgetAuthorizationRepository,
     BudgetAuthorizationRecord,
     BudgetDecisionOutcome,
     BudgetDecisionRecord,
@@ -11,9 +12,11 @@ from .budget import (
     PriceSnapshot,
     RetryPolicy,
 )
+from .sqlite_budget import SQLiteBudgetAuthorizationRepository
 
 __all__ = [
     "BudgetAuthorizationBoundary",
+    "BudgetAuthorizationRepository",
     "BudgetAuthorizationRecord",
     "BudgetDecisionOutcome",
     "BudgetDecisionRecord",
@@ -22,4 +25,5 @@ __all__ = [
     "PriceLineItem",
     "PriceSnapshot",
     "RetryPolicy",
+    "SQLiteBudgetAuthorizationRepository",
 ]
