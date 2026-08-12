@@ -4,11 +4,14 @@ from .commit import (
     ArtifactCommitBoundary,
     ArtifactCommitError,
     ArtifactNotFoundError,
+    ArtifactRepository,
+    ArtifactStorageError,
     CandidateValidationError,
     CommitConflictError,
     RevisionMismatchError,
 )
 from .model import ArtifactCandidate, ArtifactReference, ArtifactVersion
+from .sqlite import SQLiteArtifactRepository
 from .script_decision import (
     ScriptDecisionBoundary,
     ScriptDecisionFailure,
@@ -28,6 +31,8 @@ __all__ = [
     "ArtifactCommitError",
     "ArtifactNotFoundError",
     "ArtifactReference",
+    "ArtifactRepository",
+    "ArtifactStorageError",
     "ArtifactVersion",
     "CandidateValidationError",
     "CommitConflictError",
@@ -40,4 +45,5 @@ __all__ = [
     "StoryboardDecisionBoundary",
     "StoryboardDecisionFailure",
     "StoryboardDecisionRecord",
+    "SQLiteArtifactRepository",
 ]
