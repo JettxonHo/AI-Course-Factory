@@ -10,13 +10,14 @@
 | Merged M1-001 Commit | `d05e286b33dbb5e0c855a024b21648a4722861c7` |
 | Reviewed M1-002 Commit | `bb8e4974d3da96138ad466013bdee83cf8ee77f7` |
 | Reviewed M1-003 Commit | `047ce29660e25c9d3e9407f1df3d1a53a2504272` |
+| Reviewed M1-004 Commit | `77a360d8705209c8c70e9165de896c9bc7331359` |
 | Latest Feature Baseline | M1-003 merged at `main@a331c475637dd62e470fa2a7d0304b9d41ecad6b` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | Issue #31 — M1-004 Timeline Planning, `READY` |
+| Current M1 Task Contract | Issue #31 — M1-004 Timeline Planning, independently `APPROVED`; awaiting publication |
 | Open PR | None |
-| Current Code Gate | 89 tests passed |
+| Current Code Gate | 98 tests passed on `codex/31-timeline-planning` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -43,13 +44,17 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - external commit through the unchanged Artifact Store to an exact Storyboard Reference；
 - Character and Storyboard equivalent replay and changed-input Commit conflict evidence；
 - exact in-memory Storyboard decision bound to the committed Storyboard/Script/Character lineage；
-- enabled approve/reject/revise and disabled explicit-skip decision semantics with immutable replay/conflict behavior。
+- enabled approve/reject/revise and disabled explicit-skip decision semantics with immutable replay/conflict behavior；
+- provider-neutral `ProductionAgent.plan_timeline` with exact Script/Character/Storyboard and satisfying Storyboard-decision checks；
+- Script-derived, zero-based, contiguous ordered Timeline timing with finite/duration/result normalization；
+- external commit through the unchanged Artifact Store to an exact Timeline Reference；
+- Timeline equivalent replay, changed-input Commit conflict and malformed-result non-Commit evidence。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 89 tests — OK
+Ran 98 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -69,6 +74,12 @@ Ran 7 tests — OK
 uv run python -m unittest tests.integration.test_storyboard_decision -v
 Ran 1 test — OK
 
+uv run python -m unittest tests.agents.test_timeline_planning -v
+Ran 5 tests — OK
+
+uv run python -m unittest tests.integration.test_timeline_planning -v
+Ran 4 tests — OK
+
 uv run python -m compileall -q src tests
 OK
 
@@ -76,13 +87,13 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider Character, Storyboard and in-memory Storyboard-decision slices only. It does not prove Timeline, Production Request, Budget, persistence, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider Character, Storyboard, in-memory Storyboard-decision and Timeline slices only. It does not prove Production Request, Budget, persistence, paid Provider, media or deployment behavior. Timeline remains a reviewed branch candidate until its PR is merged.
 
 ## 3. Not Implemented
 
 - persistent database or file-backed Artifact/Decision/Checkpoint storage；
 - task-level application and local Web Workspace；
-- Timeline/Production Request planning；
+- Production Request planning；
 - Budget gate；
 - Production Orchestrator or Provider adapters；
 - Visual/TTS/media generation；
@@ -102,6 +113,7 @@ This proves the current offline and no-Provider Character, Storyboard and in-mem
 - `main@a331c47` contains reviewed Storyboard decision implementation commit `047ce29`.
 - GitHub reported no status checks for PR #29; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
 - Issue #31 is the sole open M1-004 Timeline Planning Task Contract; no implementation PR exists yet.
+- Reviewed Timeline implementation commit `77a360d` is locally approved on `codex/31-timeline-planning` and awaits publication; it is not yet part of `main`.
 
 ## 5. Protected Untracked Materials
 
@@ -126,8 +138,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #28 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff22f-be2e-73b1-aa47-ff8a205f0e6f` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #31 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff375-e07b-73f2-a52b-35df2d2c4c6a` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -181,6 +193,16 @@ Issue #28 implementation is isolated in merged commit `047ce29` and changes only
 
 The exact Luna followed the confirmed public TDD seams: the first focused test was red because the boundary did not exist, then the public unit and committed-Storyboard integration slices turned green. The main orchestrator independently reviewed mode/action exclusivity, exact lineage, atomic failures, replay/conflict and safe exception behavior and returned `APPROVED`.
 
+Issue #31 implementation is isolated in reviewed commit `77a360d` and changes only:
+
+- `src/ai_course_factory/agents/production_agent.py`；
+- `src/ai_course_factory/agents/runtime.py`；
+- `src/ai_course_factory/agents/__init__.py`；
+- `tests/agents/test_timeline_planning.py`；
+- `tests/integration/test_timeline_planning.py`。
+
+The exact Luna first observed a public import failure before implementing the Timeline seam. The main orchestrator requested one test-evidence correction for an actual upstream Storyboard scene-order mutation and a genuinely raised runtime exception. The same Luna corrected only the tests; the orchestrator reread the actual Diff, reran all gates, verified gate/timing mutations are caught, and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### Current M1 state
@@ -189,7 +211,7 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 - M1 result 1 of 7 is independently approved and merged by PR #24；
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
 - M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
-- M1 result 4 is authorized only within Issue #31 on `codex/31-timeline-planning`; results 5–7 remain unauthorized without their own bounded Task Contracts。
+- M1 result 4 is independently approved at commit `77a360d` under Issue #31 but not yet merged; results 5–7 remain unauthorized without their own bounded Task Contracts。
 
 ### Blocks only real Provider milestone
 
@@ -207,6 +229,6 @@ The exact Luna followed the confirmed public TDD seams: the first focused test w
 
 ## 9. Next Ordered Actions
 
-1. Dispatch exact `luna-worker` for Issue #31 only after branch, worktree and runtime-route verification.
-2. Independently review the Timeline Diff and required gates before any PR or merge.
-3. Keep all real Provider, cost and deployment gates closed.
+1. Publish reviewed commit `77a360d` as the Issue #31 implementation PR and verify its remote Diff/check state.
+2. Merge only if the PR remains clean and the documented local evidence is intact, then synchronize `main` truth sources.
+3. Keep Production Request and all real Provider, cost and deployment work closed until their own gates pass.
