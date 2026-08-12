@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 and M1 complete; M2 awaits its first bounded Task Contract |
+| Status | ACTIVE — M0 and M1 complete; M2 result 1 complete, result 2 awaits a bounded Task Contract |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 119 tests：
+当前 `main` 已完成并通过 131 tests：
 
 ```text
 Public GitHub
@@ -62,9 +62,11 @@ Public GitHub
   -> mandatory in-memory Creator Budget Review decision
   -> independent exact Budget Authorization after valid approval
   -> offline exact approved-Script-to-Authorization integration proof
+  -> shared ArtifactRepository contract
+  -> durable SQLite Artifact commit/get, restart and replay proof
 ```
 
-未完成：持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character/Storyboard/decision/Timeline/Production Request/Budget/Authorization 证据只覆盖 no-Provider、in-memory boundary；Budget price evidence is a deterministic local Fixture, not live pricing or Provider readiness。
+未完成：Decision/Budget/Checkpoint 持久化、task aggregate、本地工作台、Provider、媒体合成、Final Review 和导出。Artifact Version 现已具备 SQLite restart/replay 证据；Decision、Budget Authorization 和 Workflow state 仍是 in-memory。Budget price evidence is a deterministic local Fixture, not live pricing or Provider readiness。
 
 ## 5. In Scope
 
@@ -132,18 +134,20 @@ Exit：**PASSED** — the offline cross-slice proof traces every planning Artifa
 
 ### M2 — Durable Local Task Runtime
 
+Status：**ACTIVE** — result 1 independently `APPROVED` and merged by PR #44 at `main@922d6c1`; result 2 awaits its own bounded Task Contract.
+
 Outcome：当前纵向切片和 M1 结果在进程重启后可恢复，并具有最小本地任务应用接口。
 
 Results：
 
-- Artifact repository interface contract 和 SQLite Adapter；
+- Artifact repository interface contract 和 SQLite Adapter（**COMPLETE** — PR #44）；
 - persistent Decision/Budget/Provider attempt records；
 - persistent LangGraph checkpoint；
 - task aggregate、selected refs、status/stale/impact；
 - task-scoped filesystem workspace；
 - restart/replay/migration tests。
 
-Exit：创建、review、revision、planning 和 budget checkpoint 在重启后 exact 恢复；现有 66 tests 保持通过。
+Exit：创建、review、revision、planning 和 budget checkpoint 在重启后 exact 恢复；当前回归基线保持通过。
 
 ### M3 — Safe Offline Production Closure
 
