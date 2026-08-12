@@ -18,13 +18,14 @@
 | Reviewed M2-002 Commit | `ca55c6347fdfed7d8e676f4ccf1131b5fd896003` |
 | Reviewed M2-003 Commit | `2fb235e1e7e588a9dcad7aae1263b93fa27c391f` |
 | Reviewed M2-004 Commit | `e18977d6783080d42db349f2ee33849aa08370f2` |
-| Latest Feature Baseline | M2-004 merged at `main@fdd755caabb037e6951765d0dbd91bca0adee47a` |
+| Reviewed M2-005 Commit | `31df853567adbe65033ccb4cde463b05ccb8209c` |
+| Latest Feature Baseline | M2-005 merged at `main@6a7217e33396d769357feb2571acae6bd259a0d8` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #53 is closed after M2-004 completion |
+| Current Task Contract | None; #56 is closed after M2-005 completion |
 | Open PR | None |
-| Current Code Gate | 166 tests passed on merged `main@fdd755c` |
+| Current Code Gate | 180 tests passed on merged `main@6a7217e` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -80,13 +81,18 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - restored satisfying Storyboard decision reaches existing Timeline planning, while failed/corrupt storage produces no Timeline invocation。
 - runtime-checkable `BudgetAuthorizationRepository` with the existing default in-memory behavior preserved；
 - durable SQLite Budget decisions and independent Authorizations with exact Request/Budget/snapshot/Creator/time/cap binding；
-- approve Decision+Authorization `BEGIN IMMEDIATE` atomicity, reject decision-only persistence, close/reopen replay, two-instance conflict and safe cross-table corruption normalization。
+- approve Decision+Authorization `BEGIN IMMEDIATE` atomicity, reject decision-only persistence, close/reopen replay, two-instance conflict and safe cross-table corruption normalization；
+- runtime-checkable `CheckpointAdapter` with the existing in-memory default preserved；
+- official synchronous LangGraph `SqliteSaver` behind a bounded `SQLiteCheckpointAdapter` with explicit lifecycle and safe storage errors；
+- exact pending and terminal Script Review checkpoint recovery, command replay/conflict, two-instance visibility and control-only state after close/reopen；
+- decision-before-resume recovery evidence: a durable Script decision survives a failed checkpoint write while the last valid checkpoint remains pending, then the same identity completes after reopen；
+- malformed/cross-thread restored control projections and unsafe task/thread/command identities fail before state advance without raw storage detail。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 166 tests — OK
+Ran 180 tests — OK
 
 uv run python -m unittest tests.artifacts.test_repository_contract -v
 Ran 6 tests — OK
@@ -151,6 +157,12 @@ Ran 8 tests — OK
 uv run python -m unittest tests.integration.test_authorized_production_request -v
 Ran 2 tests — OK
 
+uv run python -m unittest tests.workflow.test_checkpoint_adapter_contract -v
+Ran 4 tests — OK
+
+uv run python -m unittest tests.integration.test_sqlite_script_review_checkpoint -v
+Ran 10 tests — OK
+
 uv run python -m compileall -q src tests
 OK
 
@@ -158,11 +170,11 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider planning/Budget slices plus durable Artifact, Script/Storyboard decision and Budget Authorization restart behavior. Workflow checkpoint remains in-memory. Budget pricing is a deterministic local Fixture. It does not prove budget consumption, Provider-attempt reservation, live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider planning/Budget slices plus durable Artifact, Script/Storyboard decision, Budget Authorization and existing Script Review Workflow-checkpoint restart behavior. Budget pricing is a deterministic local Fixture. It does not prove a persistent task aggregate, other future Workflow gates, budget consumption, Provider-attempt reservation, live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
-- persistent Provider-attempt and Workflow-checkpoint storage；
+- persistent Provider-attempt storage and a durable task aggregate for broader Workflow state；
 - task-level application and local Web Workspace；
 - production-side authorization enforcement；
 - Production Orchestrator or Provider adapters；
@@ -206,6 +218,9 @@ This proves the current offline and no-Provider planning/Budget slices plus dura
 - Issue #53 is closed as completed; its sole M2-004 persistent Budget decision/Authorization Task Contract was delivered by merged PR #54.
 - `main@fdd755c` contains reviewed Budget persistence commit `e18977d`.
 - GitHub reported no status checks for PR #54; its merge evidence is the 166-test local run, atomic second-insert rollback, exact direct-save mutations, cross-table corruption checks, a 10-run two-instance conflict audit and main-controller independent Review, not remote CI.
+- Issue #56 is closed as completed; its sole M2-005 persistent Script Review checkpoint Task Contract was delivered by merged PR #57.
+- `main@6a7217e` contains reviewed checkpoint persistence commit `31df853`.
+- GitHub reported no status checks for PR #57; its merge evidence is the 180-test local run, pending/terminal close-reopen proof, decision-before-resume recovery, raw-error suppression, malformed restored-state mutations and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -230,8 +245,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #53 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff3f9-9594-7b52-8eee-ce7af50df2e1` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #56 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff41d-ceab-77f1-98cf-cc4ec58d47d3` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -345,6 +360,18 @@ Issue #53 implementation is isolated in merged commit `e18977d` and changes only
 
 The exact Luna recorded the missing repository-interface RED and preserved the existing Budget public records and in-memory behavior behind an injected repository seam. Independent Review returned `CHANGES_REQUESTED` for direct-save bounds/canonicality and cross-table integrity, then corrected request-order semantics, encoded JSON bounds, replay-before-conflict corruption handling and mutation-test construction. The orchestrator reran all gates and returned `APPROVED`.
 
+Issue #56 implementation is isolated in merged commit `31df853` and changes only:
+
+- `pyproject.toml`；
+- `uv.lock`；
+- `src/ai_course_factory/workflow/checkpoint.py`；
+- `src/ai_course_factory/workflow/script_review.py`；
+- `src/ai_course_factory/workflow/__init__.py`；
+- `tests/workflow/test_checkpoint_adapter_contract.py`；
+- `tests/integration/test_sqlite_script_review_checkpoint.py`。
+
+The exact Luna recorded the missing public checkpoint-interface RED and used the official `langgraph-checkpoint-sqlite==3.1.1` synchronous saver without recreating its schema. Independent Review first suppressed raw storage causes and required a full decision/checkpoint close-reopen recovery, then rejected malformed or cross-thread restored projections and unsafe identities before state advance. The orchestrator reran all gates, killed command/no-advance and forged-state mutations and returned `APPROVED`.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -366,11 +393,13 @@ The exact Luna recorded the missing repository-interface RED and preserved the e
 - M2 result 2 is independently approved and merged by PR #47 at `main@6593ed1`；
 - M2 result 3 is independently approved and merged by PR #50, with test hardening in PR #52, at `main@5ec30a0`；
 - M2 result 4 is independently approved and merged by PR #54 at `main@fdd755c`；
+- M2 result 5 is independently approved and merged by PR #57 at `main@6a7217e`；
 - exact Artifact Versions and logical Commit replay now survive SQLite close/reopen；
 - exact Script Creator decisions now survive SQLite close/reopen and are persisted before Workflow resume；
 - exact Storyboard decisions now survive SQLite close/reopen and reach Timeline by exact record；
 - exact Budget decisions and Authorizations now survive SQLite close/reopen with atomic approval persistence；
-- Workflow checkpoint, Provider attempts, task aggregate and filesystem workspace persistence remain open；
+- the existing Script Review Workflow checkpoint now survives SQLite close/reopen with exact pending/terminal replay and safe corruption handling；
+- Provider attempts, task aggregate and filesystem workspace persistence remain open；
 - M2 exit is not yet passed。
 
 ### Blocks only real Provider milestone
@@ -389,5 +418,5 @@ The exact Luna recorded the missing repository-interface RED and preserved the e
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M2-005 Task Contract for persistent Workflow checkpoint recovery; do not bundle Provider attempts or task aggregate behavior.
+1. Establish a separate bounded M2-006 Task Contract for the persistent task aggregate and selected exact References/status; do not bundle Provider attempts, filesystem workspace or new Workflow gates.
 2. Keep all real Provider, cost and deployment gates closed.
