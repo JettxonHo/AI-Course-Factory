@@ -13,6 +13,15 @@ from .budget import (
     RetryPolicy,
 )
 from .sqlite_budget import SQLiteBudgetAuthorizationRepository
+from .attempt import (
+    ProviderAttemptFailure,
+    ProviderAttemptLedger,
+    ProviderAttemptOutcome,
+    ProviderAttemptRecord,
+    ProviderAttemptRepository,
+    ProviderAttemptReservation,
+)
+from .sqlite_attempt import SQLiteProviderAttemptRepository
 
 __all__ = [
     "BudgetAuthorizationBoundary",
@@ -26,4 +35,11 @@ __all__ = [
     "PriceSnapshot",
     "RetryPolicy",
     "SQLiteBudgetAuthorizationRepository",
+    "ProviderAttemptFailure",
+    "ProviderAttemptLedger",
+    "ProviderAttemptOutcome",
+    "ProviderAttemptRecord",
+    "ProviderAttemptRepository",
+    "ProviderAttemptReservation",
+    "SQLiteProviderAttemptRepository",
 ]
