@@ -16,13 +16,14 @@
 | Reviewed M1-007 Commit | `6ccb19778e5620451cf4314a91ed738acedaa177` |
 | Reviewed M2-001 Commit | `ce2db9a1d315dd250754e1427eacd6d9b058ddb7` |
 | Reviewed M2-002 Commit | `ca55c6347fdfed7d8e676f4ccf1131b5fd896003` |
-| Latest Feature Baseline | M2-002 merged at `main@6593ed16f86ff6418109f0cf29385c039e3a1acc` |
+| Reviewed M2-003 Commit | `2fb235e1e7e588a9dcad7aae1263b93fa27c391f` |
+| Latest Feature Baseline | M2-003 plus test hardening merged at `main@5ec30a0b7fe79f870f6d274bb0d81a07549b8771` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #46 is closed after M2-002 completion |
+| Current Task Contract | None; #49 is closed after M2-003 completion |
 | Open PR | None |
-| Current Code Gate | 142 tests passed on merged `main@6593ed1` |
+| Current Code Gate | 152 tests passed on merged `main@5ec30a0` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -72,13 +73,16 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - `BEGIN IMMEDIATE` atomic commit/revision behavior, close/reopen recovery, two-instance visibility and safe schema/storage failure normalization；
 - runtime-checkable `ScriptDecisionRepository` with the existing default in-memory behavior preserved；
 - durable SQLite Script Creator decisions with exact lineage fields, immutable replay/conflict and close/reopen recovery；
-- Script Review Application evidence that decision persistence succeeds before Workflow resume and storage failure leaves the gate pending。
+- Script Review Application evidence that decision persistence succeeds before Workflow resume and storage failure leaves the gate pending；
+- runtime-checkable `StoryboardDecisionRepository` with existing enabled-review/disabled-skip semantics preserved；
+- durable SQLite Storyboard decisions with exact Script/Character lineage, mode/action and immutable replay/conflict；
+- restored satisfying Storyboard decision reaches existing Timeline planning, while failed/corrupt storage produces no Timeline invocation。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 142 tests — OK
+Ran 152 tests — OK
 
 uv run python -m unittest tests.artifacts.test_repository_contract -v
 Ran 6 tests — OK
@@ -91,6 +95,12 @@ Ran 4 tests — OK
 
 uv run python -m unittest tests.integration.test_sqlite_script_decision_repository -v
 Ran 7 tests — OK
+
+uv run python -m unittest tests.artifacts.test_storyboard_decision_repository_contract -v
+Ran 4 tests — OK
+
+uv run python -m unittest tests.integration.test_sqlite_storyboard_decision_repository -v
+Ran 6 tests — OK
 
 uv run python -m unittest tests.agents.test_production_agent -v
 Ran 4 tests — OK
@@ -138,11 +148,11 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider planning/Budget slices plus durable Artifact and Script-decision restart behavior. Storyboard decision, Budget Authorization and Workflow checkpoint remain in-memory. Budget pricing is a deterministic local Fixture. It does not prove live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider planning/Budget slices plus durable Artifact and Script/Storyboard decision restart behavior. Budget Authorization and Workflow checkpoint remain in-memory. Budget pricing is a deterministic local Fixture. It does not prove live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
 
 ## 3. Not Implemented
 
-- persistent Storyboard decision/Budget Authorization/Provider-attempt and Workflow-checkpoint storage；
+- persistent Budget Authorization/Provider-attempt and Workflow-checkpoint storage；
 - task-level application and local Web Workspace；
 - production-side authorization enforcement；
 - Production Orchestrator or Provider adapters；
@@ -180,6 +190,9 @@ This proves the current offline and no-Provider planning/Budget slices plus dura
 - Issue #46 is closed as completed; its sole M2-002 persistent Script decision Task Contract was delivered by merged PR #47.
 - `main@6593ed1` contains reviewed Script decision persistence commit `ca55c63`.
 - GitHub reported no status checks for PR #47; its merge evidence is the 142-test local run, conflict/reference/restart and mismatched-success mutation checks, a 20-run two-instance conflict audit and main-controller independent Review, not remote CI.
+- Issue #49 is closed as completed; its sole M2-003 persistent Storyboard decision Task Contract was delivered by merged PR #50.
+- `main@5ec30a0` contains reviewed Storyboard decision persistence commit `2fb235e` and the bounded test hardening from PR #52.
+- GitHub reported no status checks for PR #50; its merge evidence is the 152-test local run, conflict/reference/mode/restart mutations, downstream Timeline failure checks, a 20-run two-instance conflict audit and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -204,8 +217,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #46 |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff3da-5640-7023-9c97-09c4ddb3fa2c` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Visible in current collaboration tool | exact `luna-worker` dispatched for Issue #49 |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff3ea-eb2a-7b11-8985-1718ac396c0d` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -299,6 +312,16 @@ Issue #46 implementation is isolated in merged commit `ca55c63` and changes only
 
 The exact Luna recorded the required missing-interface RED and preserved the existing Script assessment and Application APIs behind an injected repository seam. Independent Review found that a mismatched successful repository result could resume Workflow, returned `CHANGES_REQUESTED`, and the same Luna required equality with the requested immutable record. The orchestrator reran all gates, killed conflict/reference/restart mutations, exercised concurrent decision identities and returned `APPROVED`.
 
+Issue #49 implementation is isolated in merged commit `2fb235e` and changes only:
+
+- `src/ai_course_factory/artifacts/storyboard_decision.py`；
+- `src/ai_course_factory/artifacts/sqlite_storyboard_decision.py`；
+- `src/ai_course_factory/artifacts/__init__.py`；
+- `tests/artifacts/test_storyboard_decision_repository_contract.py`；
+- `tests/integration/test_sqlite_storyboard_decision_repository.py`。
+
+The exact Luna recorded the required missing-interface RED, added the standalone repository seam and proved restored decisions at the existing Timeline consumer. The orchestrator independently reviewed the real Diff, killed conflict/reference/mode/restart mutations, exercised simultaneous conflicting identities and returned `APPROVED` without a correction round.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -318,9 +341,11 @@ The exact Luna recorded the required missing-interface RED and preserved the exi
 
 - M2 result 1 is independently approved and merged by PR #44 at `main@922d6c1`；
 - M2 result 2 is independently approved and merged by PR #47 at `main@6593ed1`；
+- M2 result 3 is independently approved and merged by PR #50, with test hardening in PR #52, at `main@5ec30a0`；
 - exact Artifact Versions and logical Commit replay now survive SQLite close/reopen；
 - exact Script Creator decisions now survive SQLite close/reopen and are persisted before Workflow resume；
-- Storyboard decision, Budget Authorization, Workflow checkpoint, task aggregate and filesystem workspace persistence remain open；
+- exact Storyboard decisions now survive SQLite close/reopen and reach Timeline by exact record；
+- Budget Authorization, Workflow checkpoint, task aggregate and filesystem workspace persistence remain open；
 - M2 exit is not yet passed。
 
 ### Blocks only real Provider milestone
@@ -339,5 +364,5 @@ The exact Luna recorded the required missing-interface RED and preserved the exi
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M2-003 Task Contract for the next persistent control-record seam; do not bundle the remaining M2 results.
+1. Establish a separate bounded M2-004 Task Contract for persistent Budget decision and Authorization atomicity; do not bundle Provider attempts or Workflow checkpoints.
 2. Keep all real Provider, cost and deployment gates closed.
