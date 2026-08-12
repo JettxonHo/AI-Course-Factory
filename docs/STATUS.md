@@ -15,7 +15,7 @@
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current M1 Task Contract | None; #31 is closed after M1-004 merge |
+| Current M1 Task Contract | Issue #34 — M1-005 Production Request Planning, `READY` |
 | Open PR | None |
 | Current Code Gate | 98 tests passed on merged `main@4241554` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
@@ -115,7 +115,7 @@ This proves the current offline and no-Provider Character, Storyboard, in-memory
 - Issue #31 is closed as completed; its sole M1-004 Timeline Planning Task Contract was delivered by merged PR #32.
 - `main@4241554` contains reviewed Timeline implementation commit `77a360d`.
 - GitHub reported no status checks for PR #32; its merge evidence is the recorded local test/build run and main-controller independent Review, not remote CI.
-- There is no open Issue or PR for M1 result 5.
+- Issue #34 is the sole open M1-005 Production Request Planning Task Contract; no implementation PR exists yet.
 
 ## 5. Protected Untracked Materials
 
@@ -214,7 +214,7 @@ The exact Luna first observed a public import failure before implementing the Ti
 - M1 result 2 of 7 is independently approved and merged by PR #26 at `main@c26e808`；
 - M1 result 3 of 7 is independently approved and merged by PR #29 at `main@a331c47`；
 - M1 result 4 of 7 is independently approved and merged by PR #32 at `main@4241554`；
-- M1 results 5–7 remain unauthorized without their own bounded Task Contracts。
+- M1 result 5 is authorized only within Issue #34 on `codex/34-production-request-planning`; results 6–7 remain unauthorized without their own bounded Task Contracts。
 
 ### Blocks only real Provider milestone
 
@@ -232,5 +232,6 @@ The exact Luna first observed a public import failure before implementing the Ti
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded Task Contract before Production Request work.
-2. Keep all real Provider, cost and deployment gates closed.
+1. Dispatch exact `luna-worker` for Issue #34 only after branch, baseline and runtime-route verification.
+2. Independently review the Production Request Diff and required gates before any PR or merge.
+3. Keep all real Provider, cost and deployment gates closed.
