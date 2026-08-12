@@ -12,6 +12,7 @@ from ai_course_factory.artifacts import ArtifactReference
 from ai_course_factory.persistence import WorkspaceFileReference
 
 from .attempt import (
+    ProviderAttemptClaim,
     ProviderAttemptFailure,
     ProviderAttemptOutcome,
     ProviderAttemptRecord,
@@ -275,6 +276,10 @@ class SQLiteProviderAttemptRepository(ProviderAttemptRepository):
         self.close()
 
     def reserve(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptRecord | ProviderAttemptFailure:
+        result = self.claim(reservation, authorization)
+        return result.record if isinstance(result, ProviderAttemptClaim) else result
+
+    def claim(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptClaim | ProviderAttemptFailure:
         try:
             reservation = _reservation(reservation); authorization, amounts = _authorization(authorization)
             if reservation.task_id != authorization.task_id or reservation.authorization_id != authorization.authorization_id:
@@ -295,7 +300,7 @@ class SQLiteProviderAttemptRepository(ProviderAttemptRepository):
                 existing, _stored_authorization, stored_auth = _decode_row(row)
                 self._group(existing.authorization_id)
                 connection.rollback()
-                return existing if _static(existing, reservation, authorization, amount) and stored_auth == auth_json else _bad("ATTEMPT_CONFLICT", "attempt identity was already used with different input")
+                return ProviderAttemptClaim(existing, False) if _static(existing, reservation, authorization, amount) and stored_auth == auth_json else _bad("ATTEMPT_CONFLICT", "attempt identity was already used with different input")
             key_row = connection.execute(f"SELECT {_COLUMNS} FROM provider_attempts WHERE idempotency_key = ?", (reservation.idempotency_key,)).fetchone()
             if key_row is not None:
                 key_record, _key_authorization, _key_auth_json = _decode_row(key_row)
@@ -318,7 +323,7 @@ class SQLiteProviderAttemptRepository(ProviderAttemptRepository):
             record = ProviderAttemptRecord(reservation.attempt_id, reservation.task_id, reservation.authorization_id, authorization.production_request_reference, authorization.budget_reference, reservation.scene_id, reservation.operation, reservation.provider, number, reservation.idempotency_key, reservation.request_record_reference, authorization.currency, amount, "started", reservation.reserved_at, None, None, None, None, ())
             _record(record)
             connection.execute(f"INSERT INTO provider_attempts ({_COLUMNS}) VALUES ({','.join('?' for _ in range(_COLUMN_COUNT))})", _row_values(record, auth_json))
-            connection.commit(); return record
+            connection.commit(); return ProviderAttemptClaim(record, True)
         except Exception:
             self._rollback_quietly(); return _STORAGE
 

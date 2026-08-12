@@ -12,6 +12,7 @@ from ai_course_factory.production import (
     BudgetDecisionOutcome,
     BudgetFailure,
     BudgetModule,
+    ProviderAttemptClaim,
     ProviderAttemptFailure,
     ProviderAttemptLedger,
     ProviderAttemptOutcome,
@@ -74,6 +75,9 @@ def reservation(attempt_id="attempt:contract", *, authorization_id="authorizatio
 class ProviderAttemptRepositoryContractTests(unittest.TestCase):
     def test_protocol_is_runtime_checkable_for_attempt_ledger_storage(self):
         class InMemoryRepository:
+            def claim(self, reservation, authorization):
+                return reservation
+
             def reserve(self, reservation, authorization):
                 return reservation
 
@@ -98,6 +102,46 @@ class ProviderAttemptRepositoryContractTests(unittest.TestCase):
         self.assertEqual(result.reserved_amount_micros, 1_000)
         self.assertEqual(result.status, "started")
         self.assertIsNone(result.completed_at)
+
+    def test_claim_returns_created_signal_and_replays_exact_record(self):
+        authorization = approved_authorization()
+        ledger = ProviderAttemptLedger(lambda _id: authorization)
+        first = ledger.claim(reservation())
+        self.assertIsInstance(first, ProviderAttemptClaim)
+        self.assertIs(first.created, True)
+        self.assertEqual(first.record.status, "started")
+        replay = ledger.claim(reservation())
+        self.assertIsInstance(replay, ProviderAttemptClaim)
+        self.assertIs(replay.created, False)
+        self.assertEqual(replay.record, first.record)
+
+    def test_claim_replays_terminal_record_with_created_false(self):
+        authorization = approved_authorization()
+        ledger = ProviderAttemptLedger(lambda _id: authorization)
+        first = ledger.claim(reservation())
+        self.assertIsInstance(first, ProviderAttemptClaim)
+        completed = ledger.complete(ProviderAttemptOutcome("attempt:contract", "failed", datetime(2026, 8, 12, 1, tzinfo=timezone.utc), 0, "TIMEOUT", None, ()))
+        self.assertIsInstance(completed, ProviderAttemptRecord)
+        replay = ledger.claim(reservation())
+        self.assertIsInstance(replay, ProviderAttemptClaim)
+        self.assertIs(replay.created, False)
+        self.assertEqual(replay.record, completed)
+
+    def test_memory_cross_authorization_idempotency_conflict_preserves_both_groups(self):
+        authorization_a = approved_authorization(authorization_id="authorization:a", task_id="task:a")
+        authorization_b = approved_authorization(authorization_id="authorization:b", task_id="task:b")
+        ledger = ProviderAttemptLedger({authorization_a.authorization_id: authorization_a, authorization_b.authorization_id: authorization_b})
+        first_a = ledger.claim(reservation("attempt:a", authorization_id=authorization_a.authorization_id, task_id=authorization_a.task_id, key="key:a"))
+        first_b = ledger.claim(reservation("attempt:b", authorization_id=authorization_b.authorization_id, task_id=authorization_b.task_id, key="key:b"))
+        self.assertIsInstance(first_a, ProviderAttemptClaim)
+        self.assertIsInstance(first_b, ProviderAttemptClaim)
+
+        collision = ledger.claim(reservation("attempt:a:collision", authorization_id=authorization_a.authorization_id, task_id=authorization_a.task_id, key="key:b"))
+        self.assertEqual(collision, ProviderAttemptFailure("validation", "IDEMPOTENCY_CONFLICT", "idempotency key was already used with different input"))
+        self.assertEqual(ledger.get(first_a.record.attempt_id), first_a.record)
+        self.assertEqual(ledger.get(first_b.record.attempt_id), first_b.record)
+        self.assertEqual(ledger.list_for_authorization(authorization_a.authorization_id), (first_a.record,))
+        self.assertEqual(ledger.list_for_authorization(authorization_b.authorization_id), (first_b.record,))
 
     def test_lookup_validation_happens_before_repository_mutation(self):
         class SpyRepository:
@@ -210,13 +254,16 @@ class ProviderAttemptRepositoryContractTests(unittest.TestCase):
             ProviderAttemptOutcome: ("attempt_id", "status", "completed_at", "charged_amount_micros", "result_code", "response_record_reference", "output_references"),
             ProviderAttemptRecord: ("attempt_id", "task_id", "authorization_id", "production_request_reference", "budget_reference", "scene_id", "operation", "provider", "attempt_number", "idempotency_key", "request_record_reference", "currency", "reserved_amount_micros", "status", "reserved_at", "completed_at", "charged_amount_micros", "result_code", "response_record_reference", "output_references"),
             ProviderAttemptFailure: ("kind", "code", "message"),
+            ProviderAttemptClaim: ("record", "created"),
         }
         for record, names in expected.items():
             self.assertEqual(tuple(field.name for field in fields(record)), names)
             self.assertTrue(hasattr(record, "__slots__"))
         authorization = approved_authorization()
-        result = ProviderAttemptLedger(lambda _id: authorization).reserve(reservation())
-        records = (result, ProviderAttemptOutcome("attempt:failure", "failed", datetime(2026, 8, 12, tzinfo=timezone.utc), 0, "TIMEOUT", None, ()), ProviderAttemptFailure("validation", "CODE", "message"))
+        ledger = ProviderAttemptLedger(lambda _id: authorization)
+        result = ledger.reserve(reservation())
+        claim = ProviderAttemptLedger(lambda _id: authorization).claim(reservation("attempt:claim", key="key:claim"))
+        records = (result, claim, ProviderAttemptOutcome("attempt:failure", "failed", datetime(2026, 8, 12, tzinfo=timezone.utc), 0, "TIMEOUT", None, ()), ProviderAttemptFailure("validation", "CODE", "message"))
         for record in records:
             with self.assertRaises(FrozenInstanceError):
                 record.__class__.__setattr__(record, fields(record.__class__)[0].name, None)
@@ -250,6 +297,44 @@ class ProviderAttemptRepositoryContractTests(unittest.TestCase):
 
         lineage_result = ProviderAttemptLedger(lambda _id: authorization, StaticLineageMutationRepository()).complete(ProviderAttemptOutcome("attempt:seed", "failed", datetime(2026, 8, 12, 1, tzinfo=timezone.utc), 0, "TIMEOUT", None, ()))
         self.assertEqual(lineage_result.code, "ATTEMPT_STORAGE_FAILED")
+
+    def test_ledger_rejects_forged_claim_types_and_terminal_creation(self):
+        authorization = approved_authorization()
+        valid = ProviderAttemptLedger(lambda _id: authorization).reserve(reservation("attempt:seed", key="key:seed"))
+
+        class ClaimRepository:
+            def __init__(self, claim):
+                self._claim = claim
+
+            def claim(self, _reservation, _authorization):
+                return self._claim
+
+            def reserve(self, _reservation, _authorization):
+                return valid
+
+            def complete(self, _outcome):
+                return valid
+
+            def get(self, _attempt_id):
+                return valid
+
+            def list_for_authorization(self, _authorization_id):
+                return (valid,)
+
+        storage_failure = ProviderAttemptFailure("execution", "ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
+        forged = ProviderAttemptLedger(lambda _id: authorization, ClaimRepository(ProviderAttemptClaim(valid, 1))).claim(reservation("attempt:seed", key="key:seed"))
+        self.assertEqual(forged, storage_failure)
+
+        class CorruptFailureRepository(ClaimRepository):
+            def claim(self, _reservation, _authorization):
+                return ProviderAttemptFailure("validation", "ATTEMPT_STORAGE_FAILED", "raw storage detail")
+
+        normalized = ProviderAttemptLedger(lambda _id: authorization, CorruptFailureRepository(None)).claim(reservation("attempt:seed", key="key:seed"))
+        self.assertEqual(normalized, storage_failure)
+
+        terminal = replace(valid, status="failed", completed_at=datetime(2026, 8, 12, 1, tzinfo=timezone.utc), charged_amount_micros=0, result_code="TIMEOUT")
+        result = ProviderAttemptLedger(lambda _id: authorization, ClaimRepository(ProviderAttemptClaim(terminal, True))).claim(reservation("attempt:seed", key="key:seed"))
+        self.assertEqual(result, storage_failure)
 
     def test_default_memory_repository_serializes_same_scope_race(self):
         authorization = approved_authorization()
