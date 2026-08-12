@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sqlite3
 from copy import deepcopy
 from typing import Any, Protocol, runtime_checkable
@@ -15,6 +16,9 @@ from .model import decode_reference
 
 
 _STORAGE_ERROR_MESSAGE = "workflow checkpoint persistence failed"
+_DEFAULT_CHECKPOINT_NAMESPACE = ""
+_MAX_CHECKPOINT_NAMESPACE_LENGTH = 128
+_CHECKPOINT_NAMESPACE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}\Z")
 
 
 class CheckpointNotFoundError(KeyError):
@@ -37,13 +41,44 @@ class CheckpointAdapter(Protocol):
     @property
     def saver(self) -> BaseCheckpointSaver: ...
 
-    def config(self, thread_id: str) -> dict[str, dict[str, str]]: ...
+    def config(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, dict[str, str]]: ...
 
-    def has_checkpoint(self, thread_id: str) -> bool: ...
+    def has_checkpoint(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> bool: ...
 
-    def values(self, thread_id: str) -> dict[str, Any]: ...
+    def values(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, Any]: ...
 
-    def inspect(self, thread_id: str) -> dict[str, Any]: ...
+    def inspect(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, Any]: ...
+
+
+def _validate_checkpoint_namespace(checkpoint_ns: object) -> str:
+    """Validate a bounded saver namespace before touching the saver."""
+
+    if (
+        type(checkpoint_ns) is not str
+        or len(checkpoint_ns) > _MAX_CHECKPOINT_NAMESPACE_LENGTH
+        or checkpoint_ns == ""
+        and checkpoint_ns != _DEFAULT_CHECKPOINT_NAMESPACE
+        or checkpoint_ns != _DEFAULT_CHECKPOINT_NAMESPACE
+        and _CHECKPOINT_NAMESPACE_PATTERN.fullmatch(checkpoint_ns) is None
+    ):
+        raise CheckpointStorageError()
+    return checkpoint_ns
 
 
 def _detached_values(checkpoint: Any) -> dict[str, Any]:
@@ -56,13 +91,18 @@ def _detached_values(checkpoint: Any) -> dict[str, Any]:
 def _inspect_values(values: dict[str, Any]) -> dict[str, Any]:
     try:
         result = deepcopy(values)
-        if "selected_script_ref" in result:
-            result["selected_script_ref"] = decode_reference(result["selected_script_ref"])
+        for selected_key in ("selected_script_ref", "selected_video_ref"):
+            if selected_key in result:
+                result[selected_key] = decode_reference(result[selected_key])
         for key in ("decision", "command_record"):
             record = result.get(key)
             if isinstance(record, dict) and "script_reference" in record:
                 record = dict(record)
                 record["script_reference"] = decode_reference(record["script_reference"])
+            if isinstance(record, dict) and "video_reference" in record:
+                record = dict(record)
+                record["video_reference"] = decode_reference(record["video_reference"])
+            if isinstance(record, dict):
                 result[key] = record
         return result
     except Exception as exc:
@@ -86,20 +126,32 @@ class InMemoryCheckpointAdapter:
         return self._saver
 
     @staticmethod
-    def config(thread_id: str) -> dict[str, dict[str, str]]:
-        return {"configurable": {"thread_id": thread_id}}
+    def config(
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, dict[str, str]]:
+        namespace = _validate_checkpoint_namespace(checkpoint_ns)
+        return {"configurable": {"thread_id": thread_id, "checkpoint_ns": namespace}}
 
-    def has_checkpoint(self, thread_id: str) -> bool:
+    def has_checkpoint(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> bool:
         try:
-            return self._saver.get_tuple(self.config(thread_id)) is not None
+            return self._saver.get_tuple(self.config(thread_id, checkpoint_ns)) is not None
         except Exception as exc:
             raise _storage_error(exc) from None
 
-    def values(self, thread_id: str) -> dict[str, Any]:
+    def values(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, Any]:
         """Return detached control values for infrastructure-level auditing."""
 
         try:
-            checkpoint = self._saver.get_tuple(self.config(thread_id))
+            checkpoint = self._saver.get_tuple(self.config(thread_id, checkpoint_ns))
             if checkpoint is None:
                 raise CheckpointNotFoundError(thread_id)
             return _detached_values(checkpoint)
@@ -110,11 +162,15 @@ class InMemoryCheckpointAdapter:
         except Exception as exc:
             raise _storage_error(exc) from None
 
-    def inspect(self, thread_id: str) -> dict[str, Any]:
+    def inspect(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, Any]:
         """Return a normalized, payload-free control projection."""
 
         try:
-            return _inspect_values(self.values(thread_id))
+            return _inspect_values(self.values(thread_id, checkpoint_ns))
         except CheckpointNotFoundError:
             raise
         except CheckpointStorageError:
@@ -147,21 +203,34 @@ class SQLiteCheckpointAdapter:
         self._require_open()
         return self._saver
 
-    def config(self, thread_id: str) -> dict[str, dict[str, str]]:
+    def config(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, dict[str, str]]:
         self._require_open()
-        return {"configurable": {"thread_id": thread_id}}
+        namespace = _validate_checkpoint_namespace(checkpoint_ns)
+        return {"configurable": {"thread_id": thread_id, "checkpoint_ns": namespace}}
 
-    def has_checkpoint(self, thread_id: str) -> bool:
+    def has_checkpoint(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> bool:
         try:
-            return self._saver.get_tuple(self.config(thread_id)) is not None
+            return self._saver.get_tuple(self.config(thread_id, checkpoint_ns)) is not None
         except CheckpointStorageError:
             raise CheckpointStorageError() from None
         except Exception as exc:
             raise _storage_error(exc) from None
 
-    def values(self, thread_id: str) -> dict[str, Any]:
+    def values(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, Any]:
         try:
-            checkpoint = self._saver.get_tuple(self.config(thread_id))
+            checkpoint = self._saver.get_tuple(self.config(thread_id, checkpoint_ns))
             if checkpoint is None:
                 raise CheckpointNotFoundError(thread_id)
             return _detached_values(checkpoint)
@@ -172,9 +241,13 @@ class SQLiteCheckpointAdapter:
         except Exception as exc:
             raise _storage_error(exc) from None
 
-    def inspect(self, thread_id: str) -> dict[str, Any]:
+    def inspect(
+        self,
+        thread_id: str,
+        checkpoint_ns: str = _DEFAULT_CHECKPOINT_NAMESPACE,
+    ) -> dict[str, Any]:
         try:
-            return _inspect_values(self.values(thread_id))
+            return _inspect_values(self.values(thread_id, checkpoint_ns))
         except CheckpointNotFoundError:
             raise
         except CheckpointStorageError:
