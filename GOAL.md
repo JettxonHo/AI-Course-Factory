@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0, M1 and M2 complete; M3-001/M3-002 complete and M3-003 awaits its bounded Task Contract |
+| Status | ACTIVE — M0, M1 and M2 complete; M3-001/M3-002/M3-003 complete; the next bounded Composer/FFmpeg task awaits its own Task Contract and review |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 247 tests：
+当前 `main` 已完成并通过 264 tests：
 
 ```text
 Public GitHub
@@ -74,9 +74,11 @@ Public GitHub
   -> atomic Provider-attempt execution claim distinguishing new ownership from restart/replay
   -> provider-neutral visual/voice generation interfaces
   -> deterministic non-playable Fake visual/voice Fixture bytes committed only through the task Workspace
+  -> claim-gated offline Production Orchestrator for one exact visual/voice Scene operation
+  -> zero-charge terminal Provider-attempt outcome with safe terminal restart replay
 ```
 
-未完成：Production Orchestrator、本地工作台、Composer/FFmpeg、可播放媒体、真实 Provider、Final Review 和导出。Artifact Version、Script/Storyboard Creator decisions、Budget Authorization、现有 Script Review Workflow checkpoint、Task projection、task-scoped filesystem workspace、Provider-attempt ledger 与 visual/voice Fake Fixture 输出已具备有界证据。Budget price and Fake media evidence remain deterministic local Fixtures, not live pricing, playable media or Provider readiness。
+未完成：本地工作台、Composer/FFmpeg、可播放媒体、真实 Provider、Final Review 和导出。Artifact Version、Script/Storyboard Creator decisions、Budget Authorization、现有 Script Review Workflow checkpoint、Task projection、task-scoped filesystem workspace、Provider-attempt ledger、visual/voice Fake Fixture 输出与 claim-gated offline Production Orchestrator 已具备有界证据。Budget price and Fake media evidence remain deterministic local Fixtures; Fake Fixture bytes are non-playable and the Orchestrator evidence is not live pricing, Provider readiness, or product runtime evidence。
 
 ## 5. In Scope
 
@@ -161,14 +163,16 @@ Exit：**PASSED** — exact Artifact/decision/authorization/checkpoint/Task/work
 
 ### M3 — Safe Offline Production Closure
 
+Status：**ACTIVE** — M3-001、M3-002 和 M3-003 已独立批准并合并；Composer/FFmpeg、可播放媒体、Final Review 和导出仍待后续有界任务。
+
 Outcome：无费用环境中用 Fake Visual/TTS + FFmpeg 生成可播放视频并完成 Final Review 和导出。
 
 Results：
 
-- Production Orchestrator；
+- Production Orchestrator（**COMPLETE** — PR #80 at `main@42cf6c2`, implementation commit `367047a`; one exact Production Request/media task acquires one atomic claim, invokes only the matching deterministic Fake adapter for `created=True`, persists a zero-charge terminal outcome, and safely replays terminal state without a duplicate adapter call）；
 - visual/voice/composer interfaces（**PARTIAL** — provider-neutral visual/voice interfaces completed by PR #72; Composer remains pending）；
 - Fake Adapters（**PARTIAL** — deterministic visual/voice non-playable Fixture adapters completed by PR #72; playable local composition remains pending）；
-- Provider Execution Record、attempt 和 bounded retry（**PARTIAL** — persistent attempts and atomic new-vs-existing execution claims completed by PR #68/#76; Orchestrator execution remains pending）；
+- Provider Execution Record、attempt 和 bounded retry（**PARTIAL** — persistent attempts and atomic new-vs-existing execution claims completed by PR #68/#76; bounded offline Orchestrator execution completed by PR #80; automatic retry remains pending）；
 - subtitle/audio/video Artifact；
 - Final Review、scene retry/replace；
 - Manifest/Publish Package。

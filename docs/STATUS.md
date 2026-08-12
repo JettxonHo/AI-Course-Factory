@@ -24,13 +24,14 @@
 | Reviewed M2-008 Commit | `0c63f3e0cc5f20cbc9cec0d8b76ecfeacdc6f45a` |
 | Reviewed M3-001 Commit | `6d14524c2f6852d86a0721e6c7930b70ef81bbcd` |
 | Reviewed M3-002 Commit | `c48177a7ba2ff2e0f92381fa35ab6c08cdbe52b4` |
-| Latest Feature Baseline | M3-002 merged at `main@39efaa41901e51dafc89515af3c9cc2f8dbf68a5` |
+| Reviewed M3-003 Commit | `367047ab5a1e0d745f5862159acc4cb11476d107` |
+| Latest Feature Baseline | M3-003 merged at `main@42cf6c21201bc9806b696d6895c7f260fae02d0f` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #75 is closed after M3-002 completion |
+| Current Task Contract | None; #79 is closed after M3-003 completion |
 | Open PR | None |
-| Current Code Gate | 247 tests passed on merged `main@39efaa4` |
+| Current Code Gate | 264 tests passed on merged `main@42cf6c2` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -114,12 +115,21 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - frozen exact `ProviderAttemptClaim(record, created)` and runtime Repository/Ledger claim methods preserve existing reserve behavior while exposing atomic execution ownership；
 - in-memory locking and SQLite `BEGIN IMMEDIATE` distinguish first reservation (`created=True`) from started/terminal replay (`created=False`) without get-then-reserve inference；
 - close/reopen and real two-instance exact-race evidence yields one execution owner and one replay observer, while cross-Authorization idempotency conflict and corrupted claim results fail safely。
+- frozen `ProductionExecutionResult` and explicit-injection `ProductionOrchestrator` validate one exact Production Request/media task before one atomic claim；
+- only a newly created claim invokes the matching deterministic Fake visual/voice adapter once, then persists a zero-charge terminal outcome；started/failed/succeeded claims return safe status or terminal replay without Adapter invocation；
+- terminal replay reconstructs the exact result without duplicate Adapter calls, while forged task/claim/result/complete records, noncanonical references and nonzero terminal charges fail closed in the independent mutation audit。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 247 tests — OK
+Ran 264 tests — OK
+
+uv run python -m unittest tests.production.test_orchestrator -v
+Ran 15 tests — OK
+
+uv run python -m unittest tests.integration.test_offline_production_orchestrator -v
+Ran 2 tests — OK
 
 uv run python -m unittest tests.production.test_provider_attempt_repository_contract -v
 Ran 14 tests — OK
@@ -221,11 +231,11 @@ git diff --check
 OK
 ```
 
-This proves the current offline planning/Budget/durable-runtime slices plus provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture output through the task Workspace. Budget pricing and Fake media remain local deterministic Fixtures. It does not prove broader Workflow gates, a Production Orchestrator, Composer/FFmpeg, playable media, any real Provider invocation, live pricing, paid media, UI or deployment behavior.
+This proves the current offline planning/Budget/durable-runtime slices plus provider-neutral visual/voice interfaces, deterministic non-playable Fake Fixture output through the task Workspace, and the claim-gated offline Production Orchestrator behavior described above. Budget pricing and Fake media remain local deterministic Fixtures. The Orchestrator invokes only the matching Fake adapter for a newly created claim, persists zero-charge terminal outcomes, and safely replays terminal state without a duplicate call. It does not prove broader Workflow gates, Composer/FFmpeg, subtitle/video Artifacts, playable media, Final Review/export, any real Provider invocation, live pricing, paid media, UI or deployment behavior.
 
 ## 3. Not Implemented
 
-- Production Orchestrator, broader Workflow gates and production-side authorization enforcement；
+- broader Workflow gates and production orchestration beyond the bounded single-Scene claim-gated slice；
 - task-level production application use cases and local Web Workspace；
 - Composer/FFmpeg, playable media generation and real Visual/TTS Provider adapters；
 - Final Video Review and scene retry/replace；
@@ -284,7 +294,10 @@ This proves the current offline planning/Budget/durable-runtime slices plus prov
 - GitHub reported no status checks for PR #72; its merge evidence is the 241-test local run, exact-result/canonical-envelope/replay/conflict/type-mutation checks and main-controller independent Review, not remote CI or real Provider/playable-media evidence.
 - Issue #75 is closed as completed; its sole M3-002 atomic Provider-attempt execution-claim Task Contract was delivered by merged PR #76.
 - `main@39efaa4` contains reviewed execution-claim commit `c48177a`.
-- GitHub reported no status checks for PR #76; its merge evidence is the 247-test local run, close/reopen claim replay, repeated two-instance one-owner races, forged-claim and cross-Authorization idempotency mutations and main-controller independent Review, not remote CI or Provider execution evidence.
+- GitHub reported no status checks for PR #76; its historical M3-002 merge evidence is the 247-test local run, close/reopen claim replay, repeated two-instance one-owner races, forged-claim and cross-Authorization idempotency mutations and main-controller independent Review, not remote CI or Provider execution evidence. The current merged baseline is 264 tests at `main@42cf6c2`.
+- Issue #79 is closed as completed; its sole M3-003 claim-gated offline Production Orchestrator Task Contract was independently approved and delivered by merged PR #80.
+- PR #80 implementation commit is `367047a`; merge commit is `42cf6c2` (`main@42cf6c2`).
+- Its evidence is 15 focused unit tests, 2 focused integration tests, 264 full regression tests, compile/diff checks, and an independent mutation audit. The audit covered forged task/claim/result/complete records, noncanonical references and nonzero terminal charges; each failed closed. GitHub reported no status checks for PR #80, so this is local review evidence, not remote CI, Provider, playable-media or product-runtime evidence.
 
 ## 5. Protected Untracked Materials
 
@@ -309,8 +322,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #75 was interrupted immediately after each completed handoff to release the execution slot |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff4c1-55ee-7113-b0a9-71a93adc2d28` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #79 was interrupted after the completed handoff to release the execution slot |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -489,6 +502,16 @@ Issue #75 implementation is isolated in reviewed commit `c48177a` and changes on
 
 The exact Luna added one atomic execution-claim signal while preserving the prior Provider-attempt methods. Independent Review reproduced a cross-Authorization idempotency regression in the in-memory group validator and an incorrect storage-failure category. The same Luna corrected the group-owner binding and safe failure normalization; the orchestrator reran focused/full gates and repeated the two-instance claim race, returned `APPROVED`, and closed the worker immediately after handoff.
 
+Issue #79 implementation is isolated in reviewed commit `367047a` and changes only:
+
+- `src/ai_course_factory/production/__init__.py`；
+- `src/ai_course_factory/production/model.py`；
+- `src/ai_course_factory/production/orchestrator.py`；
+- `tests/production/test_orchestrator.py`；
+- `tests/integration/test_offline_production_orchestrator.py`。
+
+The exact Luna implemented one explicit-injection, claim-gated offline Orchestrator for one exact Production Request/media task. It invokes only the matching deterministic Fake adapter for `created=True`, persists a zero-charge terminal outcome, and safely reconstructs terminal replay without a duplicate Adapter call. Independent Review killed forged task/claim/result/complete records, noncanonical references and nonzero terminal-charge mutations; the final verdict was `APPROVED`. Fake Fixture bytes remain non-playable, and no Composer/FFmpeg, subtitle/video Artifact, Final Review/export, real Provider, network, live pricing, fees, UI or deployment behavior was added.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -528,9 +551,11 @@ The exact Luna added one atomic execution-claim signal while preserving the prio
 
 - M3-001 is independently approved and merged by PR #72 at `main@60af4d2`；
 - M3-002 is independently approved and merged by PR #76 at `main@39efaa4`；
+- M3-003 is independently approved and merged by PR #80 at `main@42cf6c2` (implementation commit `367047a`)；
 - provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture adapters now write only through the task Workspace with exact replay/conflict evidence；
 - atomic Provider-attempt claims now distinguish the one new execution owner from restart/concurrent replay before a future Adapter call；
-- M3 remains active: Production Orchestrator, Composer/FFmpeg, playable media, Final Review and export are not implemented；
+- the offline Production Orchestrator now validates one exact Request/media task, invokes only the matching Fake adapter after a new claim, persists zero-charge terminal outcomes and safely replays terminal state；
+- M3 remains active: Composer/FFmpeg, subtitle/video Artifacts, playable media, Final Review and export are not implemented；
 - no real Provider, credential, fee, SDK, network or deployment evidence exists。
 
 ### Blocks only real Provider milestone
@@ -549,5 +574,5 @@ The exact Luna added one atomic execution-claim signal while preserving the prio
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M3-003 Task Contract for the provider-neutral Production Orchestrator to consume one exact Production Request and matching Budget Authorization, acquire the atomic Provider-attempt claim before invoking deterministic Fake visual/voice interfaces, and persist the normalized terminal outcome; do not select or call a real Provider, incur fees, add Composer/FFmpeg or claim playable media.
+1. Establish a separate bounded Composer/FFmpeg Task Contract and review for offline composition of validated Fake visual/voice outputs; do not select or call a real Provider, incur fees, add UI/deployment, or claim playable media until media-probe evidence exists.
 2. Keep all real Provider, cost and deployment gates closed.
