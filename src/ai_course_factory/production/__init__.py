@@ -23,8 +23,11 @@ from .attempt import (
     ProviderAttemptReservation,
 )
 from .sqlite_attempt import SQLiteProviderAttemptRepository
-from .interfaces import VisualGenerator, VoiceGenerator
+from .interfaces import MediaComposer, VisualGenerator, VoiceGenerator
 from .model import (
+    MediaCompositionResult,
+    MediaCompositionScene,
+    MediaCompositionTask,
     MediaGenerationResult,
     ProductionExecutionResult,
     ProductionMediaFailure,
@@ -34,6 +37,7 @@ from .model import (
 from .adapters import (
     DeterministicFakeVisualGenerator,
     DeterministicFakeVoiceGenerator,
+    FFmpegMediaComposer,
     FFmpegFixtureVisualGenerator,
     FFmpegFixtureVoiceGenerator,
 )
@@ -59,6 +63,10 @@ __all__ = [
     "ProviderAttemptRepository",
     "ProviderAttemptReservation",
     "SQLiteProviderAttemptRepository",
+    "MediaCompositionResult",
+    "MediaCompositionScene",
+    "MediaCompositionTask",
+    "MediaComposer",
     "MediaGenerationResult",
     "ProductionExecutionResult",
     "ProductionMediaFailure",
@@ -68,6 +76,7 @@ __all__ = [
     "VoiceGenerator",
     "DeterministicFakeVisualGenerator",
     "DeterministicFakeVoiceGenerator",
+    "FFmpegMediaComposer",
     "FFmpegFixtureVisualGenerator",
     "FFmpegFixtureVoiceGenerator",
     "ProductionOrchestrator",
