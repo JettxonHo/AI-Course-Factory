@@ -26,13 +26,14 @@
 | Reviewed M3-002 Commit | `c48177a7ba2ff2e0f92381fa35ab6c08cdbe52b4` |
 | Reviewed M3-003 Commit | `367047ab5a1e0d745f5862159acc4cb11476d107` |
 | Reviewed M3-004 Commit | `b8e2d706edeec210532d724cfc21360253965058` |
-| Latest Feature Baseline | M3-004 merged by PR #84 at `main@88309e0b79722243ac264d29be36ceb7e1e1dda4` |
+| Reviewed M3-005 Commit | `fb9ef21d2264ac6773f2ff3c589684c8003146b8` |
+| Latest Feature Baseline | M3-005 merged by PR #88 at `main@27412008a6e14bbc101362d3fd5f72087bdee644` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; the closed M3-004 contract has no successor yet; next implementation requires a separate MediaComposer Task Contract |
+| Current Task Contract | None; the M3-005 contract is closed; next implementation requires a separate product-path composition and exact media Artifact Commit/recovery Task Contract |
 | Open PR | None |
-| Current Code Gate | 271 tests passed on merged `main@88309e0` |
+| Current Code Gate | 280 tests passed on merged `main@2741200` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -122,12 +123,16 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - frozen `ProductionExecutionResult` and explicit-injection `ProductionOrchestrator` validate one exact Production Request/media task before one atomic claim；
 - only a newly created claim invokes the matching deterministic Fake visual/voice adapter once, then persists a zero-charge terminal outcome；started/failed/succeeded claims return safe status or terminal replay without Adapter invocation；
 - terminal replay reconstructs the exact result without duplicate Adapter calls, while forged task/claim/result/complete records, noncanonical references and nonzero terminal charges fail closed in the independent mutation audit。
+- frozen, slotted `MediaCompositionScene`, `MediaCompositionTask` and `MediaCompositionResult` records plus runtime-checkable `MediaComposer` interface；
+- explicit-injection `FFmpegMediaComposer` validates exact ordered composition tasks and bounded subtitle text/timing before Workspace reads or process execution；
+- local composer re-probes every exact Workspace visual/voice input, generates canonical UTF-8 subtitle cues, concatenates at least two ordered Scene inputs, and emits MP4-family H.264 `540x960` `24 fps` `yuv420p` + AAC `48 kHz` mono + one attached `mov_text` subtitle stream；
+- composed output carries deterministic task-binding metadata and is committed only through the task Workspace with exact replay, changed-input conflict/no-overwrite, malformed-output and safe failure evidence；
 
 Verification evidence on 2026-08-12:
 
 M3-003 historical pre-PR #84 baseline: 264 full regression tests passed on `main@42cf6c2`; this historical count is retained only as M3-003 evidence.
 
-M3-004 current merge gates:
+M3-004 historical merge gates at `main@88309e0` (271 tests; retained as the prior feature evidence):
 
 ```text
 uv run python -m unittest discover -s tests -v
@@ -245,15 +250,39 @@ git diff --check
 OK
 ```
 
-This proves the current offline planning/Budget/durable-runtime slices, provider-neutral visual/voice interfaces, deterministic non-playable Fake Fixture output, playable per-operation local FFmpeg Fixture media through the task Workspace, and the claim-gated offline Production Orchestrator behavior described above. Budget pricing and both Fake/FFmpeg media remain local deterministic Fixtures. The FFmpeg adapters validate real probe output before Workspace commit, preserve exact replay/conflict behavior, and use zero-charge terminal restart replay through the Orchestrator. This does not prove broader Workflow gates, MediaComposer, subtitle/audio/master media Artifacts, a final composed MP4, Final Review/export, any real Provider invocation, prompt-faithful visual, spoken TTS, live pricing, paid media, UI or deployment behavior.
+M3-005 current merge gates at `main@2741200` (PR #88 evidence):
+
+```text
+uv run python -m unittest tests.production.test_ffmpeg_composer -v
+Ran 3 tests — OK
+
+uv run python -m unittest tests.integration.test_ffmpeg_composer -v
+Ran 6 tests — OK
+
+uv run python -m unittest discover -s tests -v
+Ran 280 tests — OK
+
+uv run python -m compileall -q src tests
+OK
+
+real FFmpeg/ffprobe 9.0 capability: libx264, native AAC, mov_text, fps/tpad/apad/concat
+independent output evidence: H.264 540x960 24 fps yuv420p + AAC 48 kHz mono + one mov_text stream; ordered SRT timing/text; MP4-family ftyp and deterministic binding metadata
+git diff --check plus tracked/untracked diff checks
+OK
+```
+
+M3-005 Review history: the main-controller first paused at the 580-line soft cap; semantic reuse reduced the composer implementation to 511 lines. Review returned `CHANGES_REQUESTED` for a fake timeout and insufficient exact/reorder/timing evidence; the same Luna corrected both. Main then independently reran the 3 focused unit tests, 6 integration tests and 280-test full regression, compileall, FFmpeg/ffprobe capability and output/subtitle probes, plus a forged 44.1 kHz final-audio mutation that failed generically before Workspace commit. GitHub has no hosted checks, so this is local evidence only.
+
+This proves the current offline planning/Budget/durable-runtime slices, provider-neutral visual/voice interfaces, deterministic non-playable Fake Fixture output, playable per-operation local FFmpeg Fixture media through the task Workspace, claim-gated offline Production Orchestrator behavior and local FFmpeg composition described above. Budget pricing, Fake media, FFmpeg media and the composed MP4 remain deterministic local Fixture evidence; Fake Fixture bytes are non-playable, while FFmpeg media and the composed MP4 are synthetic color/tone output with attached subtitles rather than prompt-faithful visual or spoken TTS. This does not prove product-path Orchestrator composition, Subtitle/Master Audio/Video Artifact Commit, Task/gate integration, Final Review/export, any real Provider invocation, live pricing, paid media, UI or deployment behavior.
 
 ## 3. Not Implemented
 
-Playable per-operation local FFmpeg Fixture media is implemented; the following remain not implemented:
+Playable per-operation local FFmpeg Fixture media and local FFmpeg composition are implemented; the following remain not implemented:
 
+- product-path composition through ProductionOrchestrator and exact Subtitle/Master Audio/Video Artifact Commit/recovery；
 - broader Workflow gates and production orchestration beyond the bounded single-Scene claim-gated slice；
 - task-level production application use cases and local Web Workspace；
-- MediaComposer/final composition, subtitle/audio/master media Artifact generation and real Visual/TTS Provider adapters；
+- real Visual/TTS Provider adapters and product media Artifact generation beyond the local composer output；
 - Final Video Review and scene retry/replace；
 - publish package/export；
 - product Model Runtime and real media Provider evidence。
@@ -319,6 +348,11 @@ Playable per-operation local FFmpeg Fixture media is implemented; the following 
 - PR #84 exports separate `FFmpegFixtureVisualGenerator` and `FFmpegFixtureVoiceGenerator` behind the existing media protocols. Visual output is synthetic H.264 `540x960`, `24 fps`, `yuv420p`, no audio; voice output is synthetic AAC `48 kHz`, mono, no video; both are playable MP4-family Fixture bytes with exact task-binding metadata, real ffprobe validation before Workspace commit, immutable byte-exact replay/conflict and zero-charge terminal restart replay.
 - Main-controller review first returned `CHANGES_REQUESTED` for missing frame-rate/container validators and missing failed-terminal replay evidence; the same Luna corrected both. Main then independently ran 5 focused adapter tests, 2 focused integration tests, 271 full regression tests, compileall, real FFmpeg/ffprobe capability and probe checks, and avg-frame-rate/voice-container mutation audits. GitHub reported no status checks for PR #84, so this is local review/runtime evidence, not remote CI, real Provider/TTS, prompt-faithful media or full product-runtime evidence.
 - The verification host exposes FFmpeg/ffprobe 9.0; FFmpeg runs with `-nostdin`, while ffprobe 9.0 rejects that option and is run with stdin=`DEVNULL` as the bounded compatibility path.
+- Issue #87 is closed as completed; its sole M3-005 local FFmpeg MediaComposer Task Contract was independently approved and delivered by merged PR #88.
+- PR #88 implementation commit is `fb9ef21d2264ac6773f2ff3c589684c8003146b8`; merge commit is `27412008a6e14bbc101362d3fd5f72087bdee644` (`main@2741200`).
+- PR #88 adds frozen `MediaCompositionScene`, `MediaCompositionTask` and `MediaCompositionResult` records, the runtime-checkable `MediaComposer` interface and explicit-injection `FFmpegMediaComposer`. It composes at least two ordered playable visual/voice Scene inputs only after real Workspace re-probes, writes canonical attached subtitle cues, and emits MP4-family H.264 `540x960` 24 fps `yuv420p` + AAC 48 kHz mono + one `mov_text` stream with deterministic task-binding metadata.
+- PR #88 commits only through the task Workspace and proves exact result/byte replay, changed ordered inputs/timing/subtitle/lineage conflict without overwrite, safe generic failures and independent final-output/subtitle probes. Main review recorded the 580-line soft-cap pause, semantic reuse to 511 lines, `CHANGES_REQUESTED` for fake timeout and insufficient exact/reorder/timing evidence, same-Luna correction, 3 focused tests, 6 integration tests, 280 full tests, compileall/tool/probe checks and a forged 44.1 kHz final-audio mutation. GitHub reported no status checks for PR #88, so this is local synthetic Fixture evidence only.
+- The #88 evidence boundary is playable composed synthetic output (color clips, artificial tones and attached subtitles), not product-path ProductionOrchestrator composition, Subtitle/Master Audio/Video Artifact Commit, Task/gate integration, Final Review, export, prompt-faithful visual, spoken TTS, real Provider, paid media, UI or deployment evidence.
 
 ## 5. Protected Untracked Materials
 
@@ -343,9 +377,9 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #83 was closed immediately after the completed handoff; no active worker remains |
-| Last independently exposed Luna runtime | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max`; this is the last independently exposed Luna runtime evidence and does not claim the Issue #83 runtime |
-| Issue #83 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route was used and the worker was closed after handoff; this turn exposes no independent Issue #83 task UUID or host `turn_context`, so its runtime model is not separately claimed |
+| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #87 was closed immediately after the completed handoff; no active worker remains |
+| Last independently exposed Luna runtime | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max`; this is the last independently exposed Luna runtime evidence and does not claim the Issue #87 runtime |
+| Issue #87 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route was used and the worker was closed after handoff; this turn exposes no independent Issue #87 task UUID or host `turn_context`, so its runtime model is not separately claimed |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -575,11 +609,13 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 - M3-002 is independently approved and merged by PR #76 at `main@39efaa4`；
 - M3-003 is independently approved and merged by PR #80 at `main@42cf6c2` (implementation commit `367047a`)；
 - M3-004 is independently approved and merged by PR #84 at `main@88309e0` (implementation commit `b8e2d70`)；
+- M3-005 is independently approved and merged by PR #88 at `main@2741200` (implementation commit `fb9ef21`)；
 - provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture adapters now write only through the task Workspace with exact replay/conflict evidence；
 - atomic Provider-attempt claims now distinguish the one new execution owner from restart/concurrent replay before a future Adapter call；
 - the offline Production Orchestrator now validates one exact Request/media task, invokes only the matching Fake adapter after a new claim, persists zero-charge terminal outcomes and safely replays terminal state；
 - separate playable local FFmpeg Fixture visual/voice adapters now validate real ffprobe output before Workspace commit, preserve exact task-bound bytes on replay/conflict, and support zero-charge terminal restart replay；
-- M3 remains active: MediaComposer, subtitle/audio/master media Artifacts, final composed MP4, Final Review and export are not implemented；
+- the local `FFmpegMediaComposer` now validates and re-probes at least two ordered playable Scene inputs, emits a deterministic MP4-family H.264/AAC output with one attached `mov_text` subtitle stream, and preserves Workspace-only replay/conflict/no-overwrite behavior；
+- M3 remains active: product-path Orchestrator composition, Subtitle/Master Audio/Video Artifact Commit/recovery, Task/gate integration, Final Review and export are not implemented；
 - no real Provider, credential, fee, SDK, network or deployment evidence exists。
 
 ### Blocks only real Provider milestone
@@ -598,5 +634,5 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded MediaComposer Task Contract and review for offline composition of validated playable FFmpeg Fixture visual/voice outputs; do not invent its public interface, select or call a real Provider, incur fees, or add UI/deployment.
+1. Establish a separate bounded product-path composition plus exact media Artifact Commit/recovery Task Contract and architecture review; do not invent a public API, select or call a real Provider, incur fees, or add UI/deployment.
 2. Keep all real Provider, cost and deployment gates closed.

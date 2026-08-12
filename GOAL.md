@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0, M1 and M2 complete; M3-001 through M3-004 complete; the next bounded MediaComposer task awaits its own Task Contract and review |
+| Status | ACTIVE — M0, M1 and M2 complete; M3-001 through M3-005 complete; the next bounded product-path composition and exact media Artifact Commit/recovery task requires its own Task Contract and architecture review |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 271 tests：
+当前 `main@2741200` 已完成并通过 280 tests：
 
 ```text
 Public GitHub
@@ -77,9 +77,11 @@ Public GitHub
   -> playable local FFmpeg Fixture visual/voice media committed only through the task Workspace
   -> claim-gated offline Production Orchestrator for one exact visual/voice Scene operation
   -> zero-charge terminal Provider-attempt outcome with safe terminal restart replay
+  -> exact ordered MediaComposition task with validated playable visual/voice Scene inputs and bounded subtitle text/timing
+  -> local FFmpeg MediaComposer output with attached mov_text subtitles and deterministic task-binding metadata
 ```
 
-未完成：本地工作台、MediaComposer、subtitle/audio/master media Artifacts、最终合成 MP4、真实 Provider、Final Review 和导出。Artifact Version、Script/Storyboard Creator decisions、Budget Authorization、现有 Script Review Workflow checkpoint、Task projection、task-scoped filesystem workspace、Provider-attempt ledger、visual/voice Fake Fixture 输出、playable local FFmpeg Fixture media 与 claim-gated offline Production Orchestrator 已具备有界证据。Budget price、Fake media 与 FFmpeg media evidence remain deterministic local Fixtures; Fake Fixture bytes are non-playable, FFmpeg media is synthetic color/tone output rather than prompt-faithful visual or spoken TTS, and the Orchestrator evidence is not live pricing, Provider readiness, or full product runtime evidence。
+未完成：本地工作台、Production Orchestrator 中的产品路径 composition、Subtitle/Master Audio/Video Artifact Commit 与 recovery、Task/gate integration、真实 Provider、Final Review 和导出。Artifact Version、Script/Storyboard Creator decisions、Budget Authorization、现有 Script Review Workflow checkpoint、Task projection、task-scoped filesystem workspace、Provider-attempt ledger、visual/voice Fake Fixture 输出、playable local FFmpeg Fixture media、claim-gated offline Production Orchestrator 与本地 FFmpeg MediaComposer 已具备有界证据。Budget price、Fake media、FFmpeg media 与 composition evidence remain deterministic local Fixtures; Fake Fixture bytes are non-playable, FFmpeg media and the composed MP4 are synthetic color/tone output rather than prompt-faithful visual or spoken TTS, and the Orchestrator/composer evidence is not product-path runtime, live pricing, Provider readiness, or full product runtime evidence。
 
 ## 5. In Scope
 
@@ -164,18 +166,19 @@ Exit：**PASSED** — exact Artifact/decision/authorization/checkpoint/Task/work
 
 ### M3 — Safe Offline Production Closure
 
-Status：**ACTIVE** — M3-001 至 M3-004 已独立批准并合并；MediaComposer、最终媒体 Artifacts、Final Review 和导出仍待后续有界任务。
+Status：**ACTIVE** — M3-001 至 M3-005 已独立批准并合并；产品路径 composition、最终媒体 Artifacts、Final Review 和导出仍待后续有界任务。
 
-Outcome：无费用环境中用 Fake Visual/TTS + local FFmpeg Fixtures 生成可播放 per-operation 媒体，再完成 MediaComposer、Final Review 和导出。
+Outcome：无费用环境中用 Fake Visual/TTS + local FFmpeg Fixtures 生成可播放 per-operation 媒体和本地合成 MP4，再接入产品路径、完成最终媒体 Artifacts、Final Review 和导出。
 
 Results：
 
 - Production Orchestrator（**COMPLETE** — PR #80 at `main@42cf6c2`, implementation commit `367047a`; one exact Production Request/media task acquires one atomic claim, invokes only the matching deterministic Fake adapter for `created=True`, persists a zero-charge terminal outcome, and safely replays terminal state without a duplicate adapter call）；
-- visual/voice/composer interfaces（**PARTIAL** — provider-neutral visual/voice interfaces completed by PR #72 and playable local FFmpeg Fixture adapters by PR #84; MediaComposer remains pending）；
-- Fake Adapters（**PARTIAL** — deterministic visual/voice non-playable Fixture adapters completed by PR #72; separate playable per-operation FFmpeg Fixture adapters completed by PR #84, while final composition remains pending）；
+- visual/voice/composer interfaces（**PARTIAL** — provider-neutral visual/voice interfaces completed by PR #72, playable local FFmpeg Fixture adapters by PR #84, and the MediaComposer seam/local implementation by PR #88; product-path composition remains pending）；
+- Fake Adapters（**PARTIAL** — deterministic visual/voice non-playable Fixture adapters completed by PR #72; separate playable per-operation FFmpeg Fixture adapters completed by PR #84; local composition is complete in PR #88, while product-path Orchestrator wiring remains pending）；
 - playable local FFmpeg Fixture media（**COMPLETE** — PR #84; visual H.264 540x960 24 fps `yuv420p` with no audio, voice AAC 48 kHz mono with no video, MP4-family bytes; exact task-binding metadata, real ffprobe validation before Workspace commit, byte-exact replay/conflict and zero-charge terminal restart replay）；
+- MediaComposer seam and local FFmpeg composition（**COMPLETE** — PR #88 at `main@2741200`, reviewed implementation commit `fb9ef21`; frozen `MediaCompositionScene` / `MediaCompositionTask` / `MediaCompositionResult` records, runtime `MediaComposer`, and `FFmpegMediaComposer` compose at least two ordered playable Scene inputs after real input probes, generate canonical attached subtitle cues, produce MP4-family H.264 540x960 24 fps `yuv420p` + AAC 48 kHz mono + one `mov_text` stream, bind deterministic task metadata, and commit only through Workspace with exact replay/conflict/no-overwrite evidence）；
 - Provider Execution Record、attempt 和 bounded retry（**PARTIAL** — persistent attempts and atomic new-vs-existing execution claims completed by PR #68/#76; bounded offline Orchestrator execution completed by PR #80; automatic retry remains pending）；
-- subtitle/audio/master media Artifacts；
+- product-path Subtitle/Master Audio/Video media Artifacts and exact Commit/recovery；
 - Final Review、scene retry/replace；
 - Manifest/Publish Package。
 
