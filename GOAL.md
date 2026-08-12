@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0, M1 and M2 complete; M3 awaits its first bounded Task Contract |
+| Status | ACTIVE — M0, M1 and M2 complete; M3-001 complete and M3-002 awaits its bounded Task Contract |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 230 tests：
+当前 `main` 已完成并通过 241 tests：
 
 ```text
 Public GitHub
@@ -71,9 +71,11 @@ Public GitHub
   -> persistent Task projection with exact selected References, stale impact, history and command replay
   -> task-scoped filesystem workspace with atomic immutable blob commit and restart/race proof
   -> persistent Provider-attempt ledger with pre-call Budget reservation and terminal-outcome recovery
+  -> provider-neutral visual/voice generation interfaces
+  -> deterministic non-playable Fake visual/voice Fixture bytes committed only through the task Workspace
 ```
 
-未完成：Production Orchestrator、本地工作台、Provider、媒体合成、Final Review 和导出。Artifact Version、Script/Storyboard Creator decisions、Budget Authorization、现有 Script Review Workflow checkpoint、Task projection、task-scoped filesystem workspace 与 Provider-attempt ledger 已具备 restart/replay 证据。Budget price evidence is a deterministic local Fixture, not live pricing or Provider readiness。
+未完成：Production Orchestrator、本地工作台、Composer/FFmpeg、可播放媒体、真实 Provider、Final Review 和导出。Artifact Version、Script/Storyboard Creator decisions、Budget Authorization、现有 Script Review Workflow checkpoint、Task projection、task-scoped filesystem workspace、Provider-attempt ledger 与 visual/voice Fake Fixture 输出已具备有界证据。Budget price and Fake media evidence remain deterministic local Fixtures, not live pricing, playable media or Provider readiness。
 
 ## 5. In Scope
 
@@ -163,8 +165,8 @@ Outcome：无费用环境中用 Fake Visual/TTS + FFmpeg 生成可播放视频�
 Results：
 
 - Production Orchestrator；
-- visual/voice/composer interfaces；
-- Fake Adapters；
+- visual/voice/composer interfaces（**PARTIAL** — provider-neutral visual/voice interfaces completed by PR #72; Composer remains pending）；
+- Fake Adapters（**PARTIAL** — deterministic visual/voice non-playable Fixture adapters completed by PR #72; playable local composition remains pending）；
 - Provider Execution Record、attempt 和 bounded retry；
 - subtitle/audio/video Artifact；
 - Final Review、scene retry/replace；
