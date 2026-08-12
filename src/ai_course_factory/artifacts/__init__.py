@@ -16,9 +16,11 @@ from .script_decision import (
     ScriptDecisionBoundary,
     ScriptDecisionFailure,
     ScriptDecisionRecord,
+    ScriptDecisionRepository,
     ScriptGateAssessment,
     ScriptGateFinding,
 )
+from .sqlite_script_decision import SQLiteScriptDecisionRepository
 from .storyboard_decision import (
     StoryboardDecisionBoundary,
     StoryboardDecisionFailure,
@@ -40,10 +42,12 @@ __all__ = [
     "ScriptDecisionBoundary",
     "ScriptDecisionFailure",
     "ScriptDecisionRecord",
+    "ScriptDecisionRepository",
     "ScriptGateAssessment",
     "ScriptGateFinding",
     "StoryboardDecisionBoundary",
     "StoryboardDecisionFailure",
     "StoryboardDecisionRecord",
     "SQLiteArtifactRepository",
+    "SQLiteScriptDecisionRepository",
 ]

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 import math
+from typing import Protocol, runtime_checkable
 
 from .model import ArtifactReference, ArtifactVersion
 
@@ -60,6 +61,21 @@ class ScriptDecisionRecord:
     decision_context: str
 
 
+@runtime_checkable
+class ScriptDecisionRepository(Protocol):
+    """Persistence seam for immutable Script decision records."""
+
+    def save(
+        self, record: ScriptDecisionRecord
+    ) -> ScriptDecisionRecord | ScriptDecisionFailure:
+        """Persist one record or return a bounded failure."""
+
+    def get(
+        self, decision_id: str
+    ) -> ScriptDecisionRecord | ScriptDecisionFailure:
+        """Retrieve one record by its exact decision identity."""
+
+
 class _DecisionValidation(Exception):
     def __init__(self, code: str, message: str) -> None:
         super().__init__(message)
@@ -67,11 +83,111 @@ class _DecisionValidation(Exception):
         self.message = message
 
 
-class ScriptDecisionBoundary:
-    """Assess exact Script lineage without Reviewer, Workflow or Commit calls."""
+def _validate_decision_record(record: object) -> ScriptDecisionFailure | None:
+    """Validate a decoded or directly supplied immutable decision record.
+
+    The decision boundary performs the assessment and lineage checks.  This
+    smaller record check is shared by repository implementations so storage
+    adapters do not duplicate those domain rules.
+    """
+
+    try:
+        if not isinstance(record, ScriptDecisionRecord):
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision record is invalid"
+            )
+        for value, code, message in (
+            (record.decision_id, "INVALID_DECISION_ID", "decision identity is required"),
+            (record.task_id, "INVALID_TASK_ID", "task identity is required"),
+            (record.thread_id, "INVALID_THREAD_ID", "thread identity is required"),
+            (record.creator_id, "INVALID_CREATOR_ID", "Creator identity is required"),
+        ):
+            ScriptDecisionBoundary._validate_identity(value, code, message)
+        if record.gate_kind != "script_review":
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision record gate kind is invalid"
+            )
+        ScriptDecisionBoundary._validate_reference(record.script_reference, "script")
+        ScriptDecisionBoundary._validate_reference(record.knowledge_reference, "knowledge")
+        ScriptDecisionBoundary._validate_reference(record.course_plan_reference, "content_plan")
+        ScriptDecisionBoundary._validate_reference(record.episode_plan_reference, "content_plan")
+        if record.assessment_disposition not in {"pass", "hard_block"}:
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision assessment disposition is invalid"
+            )
+        if not isinstance(record.finding_codes, tuple) or any(
+            not isinstance(code, str) or not code.strip() for code in record.finding_codes
+        ):
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision finding codes are invalid"
+            )
+        if record.assessment_disposition == "pass" and record.finding_codes:
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "Pass decision cannot contain findings"
+            )
+        if record.assessment_disposition == "hard_block" and not record.finding_codes:
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "Hard Block decision requires findings"
+            )
+        if record.action not in {"approve", "reject", "revise"}:
+            raise _DecisionValidation(
+                "INVALID_DECISION_RECORD", "decision action is invalid"
+            )
+        ScriptDecisionBoundary._validate_decision_context(record.decision_context, record.action)
+        if record.assessment_disposition == "hard_block" and record.action == "approve":
+            raise _DecisionValidation(
+                "HARD_BLOCK_APPROVAL_FORBIDDEN",
+                "Hard Block Script cannot be approved",
+            )
+    except _DecisionValidation as exc:
+        return ScriptDecisionFailure("validation", exc.code, exc.message)
+    except Exception:
+        return ScriptDecisionFailure(
+            "execution", "SCRIPT_DECISION_FAILED", "script decision could not be recorded"
+        )
+    return None
+
+
+class _InMemoryScriptDecisionRepository:
+    """Default repository preserving the original process-local behavior."""
 
     def __init__(self) -> None:
         self._records: dict[str, ScriptDecisionRecord] = {}
+
+    def save(self, record: ScriptDecisionRecord) -> ScriptDecisionRecord | ScriptDecisionFailure:
+        invalid = _validate_decision_record(record)
+        if invalid is not None:
+            return invalid
+        existing = self._records.get(record.decision_id)
+        if existing is not None:
+            if existing == record:
+                return existing
+            return ScriptDecisionFailure(
+                "validation",
+                "DECISION_CONFLICT",
+                "decision identity was already used with different input",
+            )
+        self._records[record.decision_id] = record
+        return record
+
+    def get(self, decision_id: str) -> ScriptDecisionRecord | ScriptDecisionFailure:
+        if not isinstance(decision_id, str) or not decision_id.strip():
+            return ScriptDecisionFailure(
+                "validation", "INVALID_DECISION_ID", "decision identity is required"
+            )
+        try:
+            return self._records[decision_id]
+        except KeyError:
+            return ScriptDecisionFailure(
+                "validation", "DECISION_NOT_FOUND", "decision record does not exist"
+            )
+
+
+class ScriptDecisionBoundary:
+    """Assess exact Script lineage without Reviewer, Workflow or Commit calls."""
+
+    def __init__(self, repository: ScriptDecisionRepository | None = None) -> None:
+        self._repository = repository if repository is not None else _InMemoryScriptDecisionRepository()
         self._assessments: dict[int, ScriptGateAssessment] = {}
 
     def assess(
@@ -165,16 +281,14 @@ class ScriptDecisionBoundary:
                 action=action,
                 decision_context=decision_context,
             )
-            existing = self._records.get(decision_id)
-            if existing is not None:
-                if existing == record:
-                    return existing
-                raise _DecisionValidation(
-                    "DECISION_CONFLICT",
-                    "decision identity was already used with different input",
+            persisted = self._repository.save(record)
+            if isinstance(persisted, ScriptDecisionFailure):
+                return persisted
+            if not isinstance(persisted, ScriptDecisionRecord) or persisted != record:
+                return ScriptDecisionFailure(
+                    "execution", "SCRIPT_DECISION_FAILED", "script decision could not be recorded"
                 )
-            self._records[decision_id] = record
-            return record
+            return persisted
         except _DecisionValidation as exc:
             return ScriptDecisionFailure("validation", exc.code, exc.message)
         except Exception:
@@ -188,9 +302,16 @@ class ScriptDecisionBoundary:
         if not isinstance(decision_id, str) or not decision_id.strip():
             return ScriptDecisionFailure("validation", "INVALID_DECISION_ID", "decision identity is required")
         try:
-            return self._records[decision_id]
-        except KeyError:
-            return ScriptDecisionFailure("validation", "DECISION_NOT_FOUND", "decision record does not exist")
+            result = self._repository.get(decision_id)
+            if isinstance(result, (ScriptDecisionRecord, ScriptDecisionFailure)):
+                return result
+            return ScriptDecisionFailure(
+                "execution", "SCRIPT_DECISION_FAILED", "script decision lookup failed"
+            )
+        except Exception:
+            return ScriptDecisionFailure(
+                "execution", "SCRIPT_DECISION_FAILED", "script decision lookup failed"
+            )
 
     @staticmethod
     def _validate_reference(reference: object, artifact_type: str) -> None:
