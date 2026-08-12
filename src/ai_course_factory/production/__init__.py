@@ -31,7 +31,12 @@ from .model import (
     VisualGenerationTask,
     VoiceSynthesisTask,
 )
-from .adapters import DeterministicFakeVisualGenerator, DeterministicFakeVoiceGenerator
+from .adapters import (
+    DeterministicFakeVisualGenerator,
+    DeterministicFakeVoiceGenerator,
+    FFmpegFixtureVisualGenerator,
+    FFmpegFixtureVoiceGenerator,
+)
 from .orchestrator import ProductionOrchestrator
 
 __all__ = [
@@ -63,5 +68,7 @@ __all__ = [
     "VoiceGenerator",
     "DeterministicFakeVisualGenerator",
     "DeterministicFakeVoiceGenerator",
+    "FFmpegFixtureVisualGenerator",
+    "FFmpegFixtureVoiceGenerator",
     "ProductionOrchestrator",
 ]
