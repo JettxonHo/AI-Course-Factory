@@ -21,13 +21,14 @@
 | Reviewed M2-005 Commit | `31df853567adbe65033ccb4cde463b05ccb8209c` |
 | Reviewed M2-006 Commit | `71ca0dafab7615861c98d53bba6f7d6008f3530a` |
 | Reviewed M2-007 Commit | `91dbdc38bae9a82c74960ac89779f7fc017c1d2e` |
-| Latest Feature Baseline | M2-007 merged at `main@1ae961b6dd180232f92a2fa64ea3d4af543b576c` |
+| Reviewed M2-008 Commit | `0c63f3e0cc5f20cbc9cec0d8b76ecfeacdc6f45a` |
+| Latest Feature Baseline | M2-008 merged at `main@437d8ca91b6ae990e5e7ae4f0d315b9979ec00aa` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; #63 is closed after M2-007 completion |
+| Current Task Contract | None; #67 is closed after M2-008 completion |
 | Open PR | None |
-| Current Code Gate | 214 tests passed on merged `main@1ae961b` |
+| Current Code Gate | 230 tests passed on merged `main@437d8ca` |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -99,12 +100,23 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - descriptor-relative `O_NOFOLLOW` traversal and canonical directory-chain revalidation prevent root/tasks/task/area and final-file symlink escape, including directory-swap mutations；
 - temp-file write + file `fsync` + same-filesystem no-replace hardlink promotion provide immutable replay/conflict behavior and failure cleanup；
 - workspace bytes survive adapter reconstruction, compose with a restarted SQLite Task projection, and serialize equal/different two-adapter races without orphan temporary files。
+- runtime-checkable `ProviderAttemptRepository` and `ProviderAttemptLedger` load one exact durable Budget Authorization before repository mutation；
+- each provider-neutral Scene/operation reservation derives exact Request/Budget/currency/amount/caps from the canonical Authorization snapshot and persists `started` before any future side effect；
+- aggregate reserved micros, per-Scope attempt numbering, one unknown/nonterminal attempt, idempotency, exact replay/conflict and failed-attempt retry caps are enforced atomically in memory and SQLite；
+- terminal success/failure outcomes retain safe charge/result and exact Workspace references; valid terminal replay succeeds while changed outcomes or static lineage fail closed；
+- SQLite close/reopen, two-instance serialization, trigger rollback, full Authorization binding, impossible group/corrupt/future/open/closed state and JSON bounds have mutation-sensitive recovery evidence。
 
 Verification on 2026-08-12:
 
 ```text
 uv run python -m unittest discover -s tests -v
-Ran 214 tests — OK
+Ran 230 tests — OK
+
+uv run python -m unittest tests.production.test_provider_attempt_repository_contract -v
+Ran 10 tests — OK
+
+uv run python -m unittest tests.integration.test_sqlite_provider_attempt_ledger -v
+Ran 6 tests — OK
 
 uv run python -m unittest tests.persistence.test_workspace -v
 Ran 13 tests — OK
@@ -194,15 +206,13 @@ git diff --check
 OK
 ```
 
-This proves the current offline and no-Provider planning/Budget slices plus durable Artifact, Script/Storyboard decision, Budget Authorization, existing Script Review Workflow-checkpoint, exact Task-projection restart behavior and task-scoped filesystem persistence. Budget pricing is a deterministic local Fixture. It does not prove other future Workflow gates, budget consumption, Provider-attempt reservation, live pricing, production-side authorization enforcement, paid Provider, media or deployment behavior.
+This proves the current offline and no-Provider planning/Budget slices plus durable Artifact, Script/Storyboard decision, Budget Authorization, existing Script Review Workflow-checkpoint, exact Task-projection restart behavior, task-scoped filesystem persistence and pre-call Provider-attempt reservation/outcome recovery. Budget pricing is a deterministic local Fixture. It does not prove broader Workflow gates, a Production Orchestrator, any Provider invocation, live pricing, paid media, UI or deployment behavior.
 
 ## 3. Not Implemented
 
-- persistent Provider-attempt storage and broader Workflow gates；
-- task-level application and local Web Workspace；
-- production-side authorization enforcement；
-- Production Orchestrator or Provider adapters；
-- Visual/TTS/media generation；
+- Production Orchestrator, broader Workflow gates and production-side authorization enforcement；
+- task-level production application use cases and local Web Workspace；
+- Visual/TTS/Composer adapters and media generation；
 - Final Video Review and scene retry/replace；
 - publish package/export；
 - product Model Runtime and real media Provider evidence。
@@ -251,6 +261,9 @@ This proves the current offline and no-Provider planning/Budget slices plus dura
 - Issue #63 is closed as completed; its sole M2-007 task-scoped filesystem workspace Task Contract was delivered by merged PR #64.
 - `main@1ae961b` contains reviewed workspace commit `91dbdc3`.
 - GitHub reported no status checks for PR #64; its merge evidence is the 214-test local run, descriptor-chain and directory-swap mutations, atomic write/link cleanup, exact restart/race behavior and main-controller independent Review, not remote CI.
+- Issue #67 is closed as completed; its sole M2-008 persistent Provider-attempt ledger Task Contract was delivered by merged PR #68.
+- `main@437d8ca` contains reviewed Provider-attempt commit `0c63f3e`.
+- GitHub reported no status checks for PR #68; its merge evidence is the 230-test local run, exact Authorization/pre-call reservation, restart/retry/terminal replay, atomic race/rollback, record-fingerprint/group corruption mutations and main-controller independent Review, not remote CI.
 
 ## 5. Protected Untracked Materials
 
@@ -275,8 +288,8 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #63 was interrupted immediately after each completed handoff to release the execution slot |
-| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff46a-0e3e-7d80-9405-2fab345af756` `turn_context`: `gpt-5.6-luna / max` |
+| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #67 was interrupted immediately after each completed handoff to release the execution slot |
+| Actual subagent runtime model | RUNTIME_VERIFIED | Luna task `019ff47e-6876-7ee3-926c-bae3d89a64b8` `turn_context`: `gpt-5.6-luna / max` |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -423,6 +436,16 @@ Issue #63 implementation is isolated in reviewed commit `91dbdc3` and changes on
 
 The exact Luna recorded the missing public persistence module RED and implemented only the task-scoped filesystem seam. Independent Review reproduced a real directory-swap/symlink escape between validation and commit, returned `CHANGES_REQUESTED`, and required descriptor-relative no-follow operations plus identity revalidation. The same Luna corrected the bounded defect, added mutation-sensitive cleanup and partial-write evidence, and was closed immediately after handoff. The orchestrator independently killed the original escape mutation, reran focused/full gates and returned `APPROVED`.
 
+Issue #67 implementation is isolated in reviewed commit `0c63f3e` and changes only:
+
+- `src/ai_course_factory/production/attempt.py`；
+- `src/ai_course_factory/production/sqlite_attempt.py`；
+- `src/ai_course_factory/production/__init__.py`；
+- `tests/production/test_provider_attempt_repository_contract.py`；
+- `tests/integration/test_sqlite_provider_attempt_ledger.py`。
+
+The exact Luna recorded the missing repository-interface RED and stopped at the no-Provider pre-call/outcome persistence seam. Independent Review rejected an over-cap first draft, then reproduced Authorization-return, row/fingerprint binding, terminal-lineage, changed-Authorization retry and attempt-sequence corruption defects. The same Luna corrected each bounded issue, the orchestrator independently reran all focused/full gates and the original mutations, returned `APPROVED`, and closed the worker immediately after each completed handoff.
+
 ## 8. Open Decisions and Blockers
 
 ### M1 milestone review
@@ -447,6 +470,7 @@ The exact Luna recorded the missing public persistence module RED and implemente
 - M2 result 5 is independently approved and merged by PR #57 at `main@6a7217e`；
 - M2 result 6 is independently approved and merged by PR #60 at `main@eca9fb5`；
 - M2 result 7 is independently approved and merged by PR #64 at `main@1ae961b`；
+- M2 result 8 is independently approved and merged by PR #68 at `main@437d8ca`；
 - exact Artifact Versions and logical Commit replay now survive SQLite close/reopen；
 - exact Script Creator decisions now survive SQLite close/reopen and are persisted before Workflow resume；
 - exact Storyboard decisions now survive SQLite close/reopen and reach Timeline by exact record；
@@ -454,8 +478,8 @@ The exact Luna recorded the missing public persistence module RED and implemente
 - the existing Script Review Workflow checkpoint now survives SQLite close/reopen with exact pending/terminal replay and safe corruption handling；
 - the Task projection now survives SQLite close/reopen with exact selected References, immutable history, command replay, dependency-edge stale impact and safe two-instance writes；
 - the task-scoped filesystem workspace now survives adapter reconstruction with exact immutable bytes, fixed areas, safe no-follow traversal and two-adapter race behavior；
-- Provider-attempt persistence remains open；
-- M2 exit is not yet passed。
+- Provider-attempt reservations and terminal outcomes now survive SQLite close/reopen with exact Authorization binding, aggregate budget/attempt caps, unknown-started recovery and safe corruption handling；
+- M2 exit is `PASSED`: all approved durable-runtime results have independent Review and restart/replay evidence while all external Provider and cost gates remain closed。
 
 ### Blocks only real Provider milestone
 
@@ -473,5 +497,5 @@ The exact Luna recorded the missing public persistence module RED and implemente
 
 ## 9. Next Ordered Actions
 
-1. Establish a separate bounded M2-008 Task Contract for persistent Provider-attempt records and reservation/replay safety; do not call a Provider or bundle media composition or new Workflow gates.
+1. Establish a separate bounded M3-001 Task Contract for the provider-neutral production orchestration interface and deterministic Fake boundary; do not select or call a real Provider, incur fees or bundle media composition beyond the approved contract.
 2. Keep all real Provider, cost and deployment gates closed.
