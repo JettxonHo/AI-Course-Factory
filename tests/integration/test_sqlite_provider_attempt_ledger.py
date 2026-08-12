@@ -14,6 +14,7 @@ from ai_course_factory.production import (
     BudgetAuthorizationBoundary,
     BudgetDecisionOutcome,
     BudgetFailure,
+    ProviderAttemptClaim,
     ProviderAttemptFailure,
     ProviderAttemptLedger,
     ProviderAttemptOutcome,
@@ -124,6 +125,48 @@ class SQLiteProviderAttemptLedgerIntegrationTests(unittest.TestCase):
                 self.assertEqual(len([item for item in results if isinstance(item, ProviderAttemptRecord)]), 1)
                 self.assertEqual(len([item for item in results if isinstance(item, ProviderAttemptFailure) and item.code == "ATTEMPT_IN_PROGRESS"]), 1)
                 self.assertTrue(any(isinstance(first.get(item), ProviderAttemptRecord) for item in ("attempt:race:1", "attempt:race:2")))
+            finally:
+                first.close(); second.close(); budget_repository.close()
+
+    def test_claim_replay_after_restart_returns_detached_false_signal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database, budget_repository, authorization, _workspace, reservation = self._fixture(directory, "authorization:claim-restart")
+            repository = SQLiteProviderAttemptRepository(database)
+            first = ProviderAttemptLedger(lambda _id: authorization, repository).claim(reservation)
+            self.assertIsInstance(first, ProviderAttemptClaim)
+            self.assertIs(first.created, True)
+            repository.close(); budget_repository.close()
+
+            reopened = SQLiteProviderAttemptRepository(database)
+            try:
+                replay = ProviderAttemptLedger(lambda _id: authorization, reopened).claim(reservation)
+                self.assertIsInstance(replay, ProviderAttemptClaim)
+                self.assertIs(replay.created, False)
+                self.assertEqual(replay.record, first.record)
+                changed = replace(reservation, provider="other-provider")
+                self.assertEqual(ProviderAttemptLedger(lambda _id: authorization, reopened).claim(changed).code, "ATTEMPT_CONFLICT")
+            finally:
+                reopened.close()
+
+    def test_two_sqlite_instances_exact_claim_race_has_one_owner(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database, budget_repository, authorization, _workspace, reservation = self._fixture(directory, "authorization:claim-race")
+            first = SQLiteProviderAttemptRepository(database)
+            second = SQLiteProviderAttemptRepository(database)
+            barrier = Barrier(2)
+
+            def claim(repository):
+                barrier.wait(timeout=5)
+                return ProviderAttemptLedger(lambda _id: authorization, repository).claim(reservation)
+
+            try:
+                with ThreadPoolExecutor(max_workers=2) as executor:
+                    results = list(executor.map(claim, (first, second)))
+                self.assertEqual(sorted(item.created for item in results if isinstance(item, ProviderAttemptClaim)), [False, True])
+                claims = [item for item in results if isinstance(item, ProviderAttemptClaim)]
+                self.assertEqual(len(claims), 2)
+                self.assertEqual(claims[0].record, claims[1].record)
+                self.assertEqual(first.list_for_authorization(reservation.authorization_id), (claims[0].record,))
             finally:
                 first.close(); second.close(); budget_repository.close()
 

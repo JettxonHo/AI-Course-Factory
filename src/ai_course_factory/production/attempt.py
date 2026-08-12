@@ -74,8 +74,14 @@ class ProviderAttemptFailure:
     code: str
     message: str
 
+@dataclass(frozen=True, slots=True)
+class ProviderAttemptClaim:
+    record: ProviderAttemptRecord
+    created: bool
+
 @runtime_checkable
 class ProviderAttemptRepository(Protocol):
+    def claim(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptClaim | ProviderAttemptFailure: ...
     def reserve(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptRecord | ProviderAttemptFailure: ...
     def complete(self, outcome: ProviderAttemptOutcome) -> ProviderAttemptRecord | ProviderAttemptFailure: ...
     def get(self, attempt_id: str) -> ProviderAttemptRecord | ProviderAttemptFailure: ...
@@ -262,6 +268,15 @@ def _record(value: object) -> ProviderAttemptRecord:
         raise _Invalid("INVALID_STORED_RECORD", "provider attempt record is invalid")
     return value
 
+def _claim(value: object) -> ProviderAttemptClaim:
+    if type(value) is not ProviderAttemptClaim or type(value.created) is not bool or type(value.record) is not ProviderAttemptRecord:
+        raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
+    try:
+        _record(value.record)
+    except _Invalid as exc:
+        raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed") from exc
+    return value
+
 def _auth_fp(auth: BudgetAuthorizationRecord) -> tuple[Any, ...]:
     s = auth.price_snapshot
     return (
@@ -314,7 +329,7 @@ class _MemoryProviderAttemptRepository:
     def __init__(self) -> None:
         self._lock = RLock(); self._records: dict[str, ProviderAttemptRecord] = {}; self._keys: dict[str, str] = {}; self._auth: dict[str, tuple[Any, ...]] = {}; self._order: list[str] = []
 
-    def reserve(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptRecord | ProviderAttemptFailure:
+    def claim(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptClaim | ProviderAttemptFailure:
         try:
             with self._lock:
                 reservation = _reservation(reservation); authorization, amounts = _authorization(authorization)
@@ -325,10 +340,21 @@ class _MemoryProviderAttemptRepository:
                     return _bad("SCENE_OPERATION_NOT_AUTHORIZED", "Scene operation is not authorized")
                 existing = self._records.get(reservation.attempt_id); fingerprint = _auth_fp(authorization)
                 if existing is not None:
-                    return existing if _static(existing, reservation, authorization, amount) and self._auth.get(existing.attempt_id) == fingerprint else _bad("ATTEMPT_CONFLICT", "attempt identity was already used with different input")
+                    _record(existing); stored_fingerprint = self._auth.get(existing.attempt_id)
+                    if stored_fingerprint is None:
+                        return _STORAGE
+                    self._validate_group(existing.authorization_id, stored_fingerprint)
+                    return _claim(ProviderAttemptClaim(existing, False)) if _static(existing, reservation, authorization, amount) and stored_fingerprint == fingerprint else _bad("ATTEMPT_CONFLICT", "attempt identity was already used with different input")
                 if reservation.idempotency_key in self._keys:
+                    key_record = self._records[self._keys[reservation.idempotency_key]]
+                    _record(key_record); stored_fingerprint = self._auth.get(key_record.attempt_id)
+                    if stored_fingerprint is None:
+                        return _STORAGE
+                    self._validate_group(key_record.authorization_id, stored_fingerprint)
                     return _bad("IDEMPOTENCY_CONFLICT", "idempotency key was already used with different input")
                 authorization_records = [r for r in self._records.values() if r.authorization_id == authorization.authorization_id]
+                group_fingerprint = self._auth.get(authorization_records[0].attempt_id, fingerprint) if authorization_records else fingerprint
+                self._validate_group(authorization.authorization_id, group_fingerprint)
                 if any(self._auth.get(r.attempt_id) != fingerprint for r in authorization_records):
                     return _bad("ATTEMPT_CONFLICT", "authorization identity was already used with different input")
                 related = [r for r in authorization_records if r.scene_id == reservation.scene_id and r.operation == reservation.operation]
@@ -343,11 +369,35 @@ class _MemoryProviderAttemptRepository:
                     return _bad("BUDGET_LIMIT", "approved attempt budget has been exhausted")
                 record = ProviderAttemptRecord(reservation.attempt_id, reservation.task_id, reservation.authorization_id, authorization.production_request_reference, authorization.budget_reference, reservation.scene_id, reservation.operation, reservation.provider, number, reservation.idempotency_key, reservation.request_record_reference, authorization.currency, amount, "started", reservation.reserved_at, None, None, None, None, ())
                 _record(record); self._records[record.attempt_id] = record; self._keys[record.idempotency_key] = record.attempt_id; self._auth[record.attempt_id] = fingerprint; self._order.append(record.attempt_id)
-                return record
+                return _claim(ProviderAttemptClaim(record, True))
         except _Invalid as exc:
-            return _bad(exc.code, exc.message)
+            return _STORAGE if exc.code == _STORAGE.code else _bad(exc.code, exc.message)
         except Exception:
             return _STORAGE
+
+    def reserve(self, reservation: ProviderAttemptReservation, authorization: BudgetAuthorizationRecord) -> ProviderAttemptRecord | ProviderAttemptFailure:
+        result = self.claim(reservation, authorization)
+        return result.record if isinstance(result, ProviderAttemptClaim) else result
+
+    def _validate_group(self, authorization_id: str, fingerprint: tuple[Any, ...]) -> None:
+        if type(fingerprint) is not tuple or len(fingerprint) != 16 or fingerprint[0] != authorization_id:
+            raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
+        if type(fingerprint[8]) is not int or not 1 <= fingerprint[8] <= _MAX_INT or type(fingerprint[9]) is not int or not 1 <= fingerprint[9] <= 3:
+            raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
+        records = [record for record in self._records.values() if record.authorization_id == authorization_id]
+        for record in records:
+            _record(record)
+            if self._auth.get(record.attempt_id) != fingerprint:
+                raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
+        if sum(record.reserved_amount_micros for record in records) > fingerprint[8]:
+            raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
+        scopes: dict[tuple[str, str], list[ProviderAttemptRecord]] = {}
+        for record in records:
+            scopes.setdefault((record.scene_id, record.operation), []).append(record)
+        for scoped in scopes.values():
+            ordered = sorted(scoped, key=lambda item: item.attempt_number)
+            if any(item.attempt_number > fingerprint[9] for item in ordered) or [item.attempt_number for item in ordered] != list(range(1, len(ordered) + 1)) or any(item.status != "failed" for item in ordered[:-1]):
+                raise _Invalid("ATTEMPT_STORAGE_FAILED", "provider attempt persistence failed")
     def complete(self, outcome: ProviderAttemptOutcome) -> ProviderAttemptRecord | ProviderAttemptFailure:
         try:
             with self._lock:
@@ -392,6 +442,10 @@ class ProviderAttemptLedger:
         self._lookup_source = authorization_lookup; self._repository: ProviderAttemptRepository = repository or _MemoryProviderAttemptRepository()
 
     def reserve(self, reservation: ProviderAttemptReservation) -> ProviderAttemptRecord | ProviderAttemptFailure:
+        result = self.claim(reservation)
+        return result.record if isinstance(result, ProviderAttemptClaim) else result
+
+    def claim(self, reservation: ProviderAttemptReservation) -> ProviderAttemptClaim | ProviderAttemptFailure:
         try:
             reservation = _reservation(reservation); raw = self._lookup(reservation.authorization_id)
             if isinstance(raw, BudgetFailure):
@@ -402,31 +456,42 @@ class ProviderAttemptLedger:
             amount = amounts.get((reservation.scene_id, reservation.operation))
             if amount is None:
                 return _bad("SCENE_OPERATION_NOT_AUTHORIZED", "Scene operation is not authorized")
-            prior = self._repository.get(reservation.attempt_id)
-            if isinstance(prior, ProviderAttemptFailure) and prior.code != "ATTEMPT_NOT_FOUND":
-                return prior
-            prior_record = None if isinstance(prior, ProviderAttemptFailure) else prior
-            result = self._repository.reserve(reservation, authorization)
+            result = self._repository.claim(reservation, authorization)
             if isinstance(result, ProviderAttemptFailure):
-                return result
+                return _STORAGE if result.code == _STORAGE.code else result
             try:
-                _record(result)
+                claim = _claim(result)
+                record = claim.record
             except _Invalid:
                 return _STORAGE
-            if not _static(result, reservation, authorization, amount) or result.attempt_number > authorization.maximum_attempts:
-                return _STORAGE
-            if prior_record is not None:
-                return result if result == prior_record else _STORAGE
-            if result.status != "started":
+            if not _static(record, reservation, authorization, amount) or record.attempt_number > authorization.maximum_attempts:
                 return _STORAGE
             listed = self._repository.list_for_authorization(authorization.authorization_id)
             if isinstance(listed, ProviderAttemptFailure) or type(listed) is not tuple:
                 return _STORAGE
-            related = [item for item in listed if item.scene_id == reservation.scene_id and item.operation == reservation.operation]
-            others = [item for item in related if item.attempt_id != result.attempt_id]
-            if result not in related or result.attempt_number != max((item.attempt_number for item in others), default=0) + 1:
+            if any(type(item) is not ProviderAttemptRecord for item in listed):
                 return _STORAGE
-            return result
+            for item in listed:
+                try:
+                    _record(item)
+                except _Invalid:
+                    return _STORAGE
+                if item.authorization_id != authorization.authorization_id or item.task_id != authorization.task_id or item.production_request_reference != authorization.production_request_reference or item.budget_reference != authorization.budget_reference or item.currency != authorization.currency or item.attempt_number > authorization.maximum_attempts or item.reserved_amount_micros != amounts.get((item.scene_id, item.operation)):
+                    return _STORAGE
+            if sum(item.reserved_amount_micros for item in listed) > authorization.maximum_approved_amount_micros:
+                return _STORAGE
+            related = [item for item in listed if item.scene_id == reservation.scene_id and item.operation == reservation.operation]
+            others = [item for item in related if item.attempt_id != record.attempt_id]
+            ordered = sorted(related, key=lambda item: item.attempt_number)
+            if record not in related or [item.attempt_number for item in ordered] != list(range(1, len(ordered) + 1)) or any(item.status != "failed" for item in ordered[:-1]):
+                return _STORAGE
+            if claim.created and record.attempt_number != max((item.attempt_number for item in others), default=0) + 1:
+                return _STORAGE
+            if claim.created and record.status != "started":
+                return _STORAGE
+            if not claim.created and record not in listed:
+                return _STORAGE
+            return claim
         except _Invalid as exc:
             return _bad(exc.code, exc.message)
         except Exception:
