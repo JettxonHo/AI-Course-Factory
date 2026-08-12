@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from .model import (
+    MediaCompositionResult,
+    MediaCompositionTask,
     MediaGenerationResult,
     ProductionMediaFailure,
     VisualGenerationTask,
@@ -22,4 +24,9 @@ class VoiceGenerator(Protocol):
     def synthesize(self, task: VoiceSynthesisTask) -> MediaGenerationResult | ProductionMediaFailure: ...
 
 
-__all__ = ["VisualGenerator", "VoiceGenerator"]
+@runtime_checkable
+class MediaComposer(Protocol):
+    def compose(self, task: MediaCompositionTask) -> MediaCompositionResult | ProductionMediaFailure: ...
+
+
+__all__ = ["MediaComposer", "VisualGenerator", "VoiceGenerator"]
