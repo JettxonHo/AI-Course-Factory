@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 and M1 complete; M2 results 1–2 complete, result 3 awaits a bounded Task Contract |
+| Status | ACTIVE — M0 and M1 complete; M2 results 1–3 complete, result 4 awaits a bounded Task Contract |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前 `main` 已完成并通过 142 tests：
+当前 `main` 已完成并通过 152 tests：
 
 ```text
 Public GitHub
@@ -65,9 +65,10 @@ Public GitHub
   -> shared ArtifactRepository contract
   -> durable SQLite Artifact commit/get, restart and replay proof
   -> persistent exact Script Creator decision before Workflow resume
+  -> persistent exact Storyboard approve/skip decision accepted by Timeline after restart
 ```
 
-未完成：Storyboard/Budget/Checkpoint/Provider-attempt 持久化、task aggregate、本地工作台、Provider、媒体合成、Final Review 和导出。Artifact Version 与 Script Creator decision 现已具备 SQLite restart/replay 证据；Budget Authorization 和 Workflow state 仍是 in-memory。Budget price evidence is a deterministic local Fixture, not live pricing or Provider readiness。
+未完成：Budget/Checkpoint/Provider-attempt 持久化、task aggregate、本地工作台、Provider、媒体合成、Final Review 和导出。Artifact Version 与 Script/Storyboard Creator decisions 现已具备 SQLite restart/replay 证据；Budget Authorization 和 Workflow state 仍是 in-memory。Budget price evidence is a deterministic local Fixture, not live pricing or Provider readiness。
 
 ## 5. In Scope
 
@@ -135,14 +136,14 @@ Exit：**PASSED** — the offline cross-slice proof traces every planning Artifa
 
 ### M2 — Durable Local Task Runtime
 
-Status：**ACTIVE** — results 1–2 independently `APPROVED` and merged; result 2 was delivered by PR #47 at `main@6593ed1`; result 3 awaits its own bounded Task Contract.
+Status：**ACTIVE** — results 1–3 independently `APPROVED` and merged; result 3 was delivered by PR #50 with test hardening in PR #52 at `main@5ec30a0`; result 4 awaits its own bounded Task Contract.
 
 Outcome：当前纵向切片和 M1 结果在进程重启后可恢复，并具有最小本地任务应用接口。
 
 Results：
 
 - Artifact repository interface contract 和 SQLite Adapter（**COMPLETE** — PR #44）；
-- persistent Decision/Budget/Provider attempt records（Script decision **COMPLETE** — PR #47；其余 pending）；
+- persistent Decision/Budget/Provider attempt records（Script/Storyboard decisions **COMPLETE** — PR #47/#50, with Storyboard test hardening in PR #52；其余 pending）；
 - persistent LangGraph checkpoint；
 - task aggregate、selected refs、status/stale/impact；
 - task-scoped filesystem workspace；
