@@ -22,6 +22,14 @@ from .attempt import (
     ProviderAttemptReservation,
 )
 from .sqlite_attempt import SQLiteProviderAttemptRepository
+from .interfaces import VisualGenerator, VoiceGenerator
+from .model import (
+    MediaGenerationResult,
+    ProductionMediaFailure,
+    VisualGenerationTask,
+    VoiceSynthesisTask,
+)
+from .adapters import DeterministicFakeVisualGenerator, DeterministicFakeVoiceGenerator
 
 __all__ = [
     "BudgetAuthorizationBoundary",
@@ -42,4 +50,12 @@ __all__ = [
     "ProviderAttemptRepository",
     "ProviderAttemptReservation",
     "SQLiteProviderAttemptRepository",
+    "MediaGenerationResult",
+    "ProductionMediaFailure",
+    "VisualGenerationTask",
+    "VoiceSynthesisTask",
+    "VisualGenerator",
+    "VoiceGenerator",
+    "DeterministicFakeVisualGenerator",
+    "DeterministicFakeVoiceGenerator",
 ]
