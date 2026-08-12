@@ -10,7 +10,12 @@ from langgraph.types import Command, interrupt
 from ai_course_factory.artifacts.commit import ArtifactCommitBoundary, ArtifactNotFoundError
 from ai_course_factory.artifacts.model import ArtifactReference
 
-from .checkpoint import CheckpointNotFoundError, InMemoryCheckpointAdapter
+from .checkpoint import (
+    CheckpointAdapter,
+    CheckpointNotFoundError,
+    CheckpointStorageError,
+    InMemoryCheckpointAdapter,
+)
 from .model import (
     ALLOWED_SCRIPT_REVIEW_ACTIONS,
     ScriptReviewCommand,
@@ -20,6 +25,9 @@ from .model import (
     decode_reference,
     encode_reference,
 )
+
+
+_MAX_ID_LENGTH = 256
 
 
 class _ScriptReviewState(TypedDict, total=False):
@@ -52,14 +60,14 @@ class ScriptReviewWorkflow:
     def __init__(
         self,
         artifact_store: ArtifactCommitBoundary,
-        checkpoint_adapter: InMemoryCheckpointAdapter | None = None,
+        checkpoint_adapter: CheckpointAdapter | None = None,
     ) -> None:
         self._artifact_store = artifact_store
-        self._checkpoint_adapter = checkpoint_adapter or InMemoryCheckpointAdapter()
+        self._checkpoint_adapter = checkpoint_adapter if checkpoint_adapter is not None else InMemoryCheckpointAdapter()
         self._graph = self._build_graph()
 
     @property
-    def checkpoint_adapter(self) -> InMemoryCheckpointAdapter:
+    def checkpoint_adapter(self) -> CheckpointAdapter:
         return self._checkpoint_adapter
 
     def start(
@@ -77,25 +85,27 @@ class ScriptReviewWorkflow:
         except WorkflowControlError as exc:
             return WorkflowResult(status="failure", error_code=exc.code, error_message=str(exc))
 
-        if self._checkpoint_adapter.has_checkpoint(thread_id):
-            try:
+        try:
+            has_checkpoint = self._checkpoint_adapter.has_checkpoint(thread_id)
+            if has_checkpoint:
                 snapshot = self.snapshot(thread_id)
-            except WorkflowNotFoundError:
-                return WorkflowResult(
-                    status="failure",
-                    error_code="CHECKPOINT_INVALID",
-                    error_message="workflow checkpoint is not readable",
-                )
-            if snapshot.task_id != task_id or snapshot.script_reference != reference:
-                return WorkflowResult(
-                    status="failure",
-                    snapshot=snapshot,
-                    error_code="THREAD_BINDING_CONFLICT",
-                    error_message="thread is already bound to another task or Script Version",
-                )
-            return self._result_for_snapshot(snapshot)
+                if snapshot.task_id != task_id or snapshot.script_reference != reference:
+                    return WorkflowResult(
+                        status="failure",
+                        snapshot=snapshot,
+                        error_code="THREAD_BINDING_CONFLICT",
+                        error_message="thread is already bound to another task or Script Version",
+                    )
+                return self._result_for_snapshot(snapshot)
+        except WorkflowNotFoundError:
+            return WorkflowResult(
+                status="failure",
+                error_code="CHECKPOINT_INVALID",
+                error_message="workflow checkpoint is not readable",
+            )
+        except CheckpointStorageError:
+            return self._execution_failure()
 
-        config = self._checkpoint_adapter.config(thread_id)
         initial_state: _ScriptReviewState = {
             "task_id": task_id,
             "thread_id": thread_id,
@@ -107,6 +117,7 @@ class ScriptReviewWorkflow:
             "resume_position": "script_review_start",
         }
         try:
+            config = self._checkpoint_adapter.config(thread_id)
             self._graph.invoke(initial_state, config)
             return self._result_for_snapshot(self.snapshot(thread_id))
         except Exception:
@@ -125,6 +136,8 @@ class ScriptReviewWorkflow:
         except (WorkflowControlError, WorkflowNotFoundError) as exc:
             code = exc.code if isinstance(exc, WorkflowControlError) else "WORKFLOW_NOT_FOUND"
             return WorkflowResult(status="failure", error_code=code, error_message=str(exc))
+        except CheckpointStorageError:
+            return self._execution_failure(snapshot=None)
 
         try:
             state = self._checkpoint_adapter.inspect(command.thread_id)
@@ -150,6 +163,18 @@ class ScriptReviewWorkflow:
             self._require_script(command.script_reference)
         except WorkflowControlError as exc:
             return self._failure(snapshot, exc.code, str(exc))
+        except CheckpointNotFoundError:
+            return self._failure(
+                snapshot,
+                "WORKFLOW_EXECUTION_FAILED",
+                "workflow execution could not be completed",
+            )
+        except CheckpointStorageError:
+            return self._failure(
+                snapshot,
+                "WORKFLOW_EXECUTION_FAILED",
+                "workflow execution could not be completed",
+            )
 
         decision = {
             "task_id": command.task_id,
@@ -166,7 +191,14 @@ class ScriptReviewWorkflow:
                 "WORKFLOW_EXECUTION_FAILED",
                 "workflow execution could not be completed",
             )
-        return self._result_for_snapshot(self.snapshot(command.thread_id))
+        try:
+            return self._result_for_snapshot(self.snapshot(command.thread_id))
+        except (CheckpointStorageError, WorkflowNotFoundError):
+            return self._failure(
+                snapshot,
+                "WORKFLOW_EXECUTION_FAILED",
+                "workflow execution could not be completed",
+            )
 
     def snapshot(self, thread_id: str) -> WorkflowSnapshot:
         """Read a normalized projection from the latest workflow checkpoint."""
@@ -174,8 +206,14 @@ class ScriptReviewWorkflow:
         try:
             values = self._checkpoint_adapter.inspect(thread_id)
             return self._snapshot_from_values(thread_id, values)
-        except CheckpointNotFoundError as exc:
-            raise WorkflowNotFoundError(thread_id) from exc
+        except CheckpointNotFoundError:
+            raise WorkflowNotFoundError(thread_id) from None
+        except CheckpointStorageError:
+            raise CheckpointStorageError() from None
+        except WorkflowNotFoundError:
+            raise
+        except Exception as exc:
+            raise CheckpointStorageError() from None
 
     def _build_graph(self):
         graph = StateGraph(_ScriptReviewState)
@@ -249,7 +287,7 @@ class ScriptReviewWorkflow:
         if not isinstance(command, ScriptReviewCommand):
             raise WorkflowControlError("INVALID_COMMAND", "resume requires a ScriptReviewCommand")
         self._validate_identity(command.task_id, command.thread_id)
-        if not isinstance(command.command_id, str) or not command.command_id.strip():
+        if not self._is_safe_identity(command.command_id):
             raise WorkflowControlError("INVALID_COMMAND", "command identity is required")
         if command.action not in ALLOWED_SCRIPT_REVIEW_ACTIONS:
             raise WorkflowControlError("INVALID_ACTION", "unsupported Script Review action")
@@ -257,10 +295,19 @@ class ScriptReviewWorkflow:
 
     @staticmethod
     def _validate_identity(task_id: str, thread_id: str) -> None:
-        if not isinstance(task_id, str) or not task_id.strip():
+        if not ScriptReviewWorkflow._is_safe_identity(task_id):
             raise WorkflowControlError("INVALID_TASK_ID", "task identity is required")
-        if not isinstance(thread_id, str) or not thread_id.strip():
+        if not ScriptReviewWorkflow._is_safe_identity(thread_id):
             raise WorkflowControlError("INVALID_THREAD_ID", "thread identity is required")
+
+    @staticmethod
+    def _is_safe_identity(value: object) -> bool:
+        return (
+            isinstance(value, str)
+            and bool(value.strip())
+            and len(value) <= _MAX_ID_LENGTH
+            and not any(ord(character) < 0x20 or ord(character) == 0x7F for character in value)
+        )
 
     @staticmethod
     def _validate_script_reference(reference: ArtifactReference) -> ArtifactReference:
@@ -292,20 +339,82 @@ class ScriptReviewWorkflow:
     @staticmethod
     def _snapshot_from_values(thread_id: str, values: dict[str, Any]) -> WorkflowSnapshot:
         try:
-            reference = decode_reference(values["selected_script_ref"])
+            if not isinstance(values, dict):
+                raise CheckpointStorageError()
             task_id = values["task_id"]
+            stored_thread_id = values["thread_id"]
+            ScriptReviewWorkflow._validate_stored_identity(task_id)
+            ScriptReviewWorkflow._validate_stored_identity(stored_thread_id)
+            if stored_thread_id != thread_id:
+                raise CheckpointStorageError()
+
+            reference = decode_reference(values["selected_script_ref"])
+            if reference.artifact_type != "script":
+                raise WorkflowControlError(
+                    "INVALID_SCRIPT_REFERENCE",
+                    "reference must target a Script Artifact",
+                )
             lifecycle_state = values["lifecycle_state"]
             current_stage = values["current_stage"]
-            pending_gate = values.get("pending_gate")
-            allowed_actions = tuple(values.get("allowed_actions", ()))
+            pending_gate = values["pending_gate"]
+            stored_allowed_actions = values["allowed_actions"]
             resume_position = values["resume_position"]
+            if current_stage != "script_review":
+                raise CheckpointStorageError()
+            if lifecycle_state == "script_review_pending":
+                if (
+                    pending_gate != "script_review"
+                    or not isinstance(stored_allowed_actions, list)
+                    or stored_allowed_actions != list(ALLOWED_SCRIPT_REVIEW_ACTIONS)
+                    or resume_position != "script_review_decision"
+                    or values.get("command_record") is not None
+                ):
+                    raise CheckpointStorageError()
+                allowed_actions = tuple(stored_allowed_actions)
+                last_command_id = None
+            elif lifecycle_state in {"script_approved", "script_revision_required"}:
+                expected_action = (
+                    ("approve",)
+                    if lifecycle_state == "script_approved"
+                    else ("reject", "revise")
+                )
+                expected_resume_position = lifecycle_state
+                if (
+                    pending_gate is not None
+                    or not isinstance(stored_allowed_actions, list)
+                    or stored_allowed_actions
+                    or resume_position != expected_resume_position
+                ):
+                    raise CheckpointStorageError()
+                record = values.get("command_record")
+                if not isinstance(record, dict) or set(record) != {
+                    "task_id",
+                    "thread_id",
+                    "command_id",
+                    "action",
+                    "script_reference",
+                }:
+                    raise CheckpointStorageError()
+                record_task_id = ScriptReviewWorkflow._validate_stored_identity(record["task_id"])
+                record_thread_id = ScriptReviewWorkflow._validate_stored_identity(record["thread_id"])
+                command_id = ScriptReviewWorkflow._validate_stored_identity(record["command_id"])
+                record_reference = decode_reference(record["script_reference"])
+                if (
+                    record_task_id != task_id
+                    or record_thread_id != stored_thread_id
+                    or record_reference != reference
+                    or record["action"] not in expected_action
+                ):
+                    raise CheckpointStorageError()
+                allowed_actions = ()
+                last_command_id = command_id
+            else:
+                raise CheckpointStorageError()
         except (KeyError, TypeError, WorkflowControlError) as exc:
-            raise WorkflowNotFoundError(thread_id) from exc
-        record = values.get("command_record")
-        last_command_id = record.get("command_id") if isinstance(record, dict) else None
+            raise CheckpointStorageError() from None
         return WorkflowSnapshot(
             task_id=task_id,
-            thread_id=thread_id,
+            thread_id=stored_thread_id,
             lifecycle_state=lifecycle_state,
             current_stage=current_stage,
             script_reference=reference,
@@ -316,6 +425,12 @@ class ScriptReviewWorkflow:
         )
 
     @staticmethod
+    def _validate_stored_identity(value: object) -> str:
+        if not ScriptReviewWorkflow._is_safe_identity(value):
+            raise CheckpointStorageError()
+        return value
+
+    @staticmethod
     def _result_for_snapshot(snapshot: WorkflowSnapshot) -> WorkflowResult:
         status = "pending" if snapshot.pending_gate else "success"
         return WorkflowResult(status=status, snapshot=snapshot)
@@ -323,3 +438,12 @@ class ScriptReviewWorkflow:
     @staticmethod
     def _failure(snapshot: WorkflowSnapshot, code: str, message: str) -> WorkflowResult:
         return WorkflowResult(status="failure", snapshot=snapshot, error_code=code, error_message=message)
+
+    @staticmethod
+    def _execution_failure(snapshot: WorkflowSnapshot | None = None) -> WorkflowResult:
+        return WorkflowResult(
+            status="failure",
+            snapshot=snapshot,
+            error_code="WORKFLOW_EXECUTION_FAILED",
+            error_message="workflow execution could not be completed",
+        )
