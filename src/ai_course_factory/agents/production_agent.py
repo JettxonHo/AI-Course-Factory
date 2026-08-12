@@ -27,6 +27,7 @@ from .runtime import (
     ModelRuntimePort,
     ModelRuntimeRequest,
     ProductionModelRuntimeResult,
+    ProductionRequestModelRuntimeResult,
     StoryboardModelRuntimeResult,
     TimelineModelRuntimeResult,
 )
@@ -55,6 +56,25 @@ _TIMELINE_SCENE_FIELDS = {
     "start_seconds",
     "duration_seconds",
     "end_seconds",
+}
+_TIMELINE_PAYLOAD_FIELDS = {
+    "script_reference",
+    "approval_decision_id",
+    "character_reference",
+    "storyboard_reference",
+    "storyboard_decision_id",
+    "timeline",
+}
+_REQUEST_FIELDS = {"language", "aspect_ratio", "duration_seconds", "scenes"}
+_REQUEST_SCENE_FIELDS = {
+    "scene_id",
+    "start_seconds",
+    "duration_seconds",
+    "end_seconds",
+    "narration",
+    "visual_intent",
+    "character_action",
+    "continuity_notes",
 }
 
 _CHARACTER_FIELDS = {
@@ -434,6 +454,277 @@ class ProductionAgent:
                 "PRODUCTION_AGENT_FAILED",
                 "production agent execution failed",
             )
+
+    def plan_request(
+        self,
+        script_reference: ArtifactReference,
+        resolved_script: ArtifactVersion,
+        script_decision: ScriptDecisionRecord,
+        character_reference: ArtifactReference,
+        resolved_character: ArtifactVersion,
+        storyboard_reference: ArtifactReference,
+        resolved_storyboard: ArtifactVersion,
+        storyboard_decision: StoryboardDecisionRecord,
+        timeline_reference: ArtifactReference,
+        resolved_timeline: ArtifactVersion,
+        *,
+        request_identity: str,
+        request_commit_id: str,
+    ) -> ArtifactCandidate | ProductionAgentFailure:
+        """Return a validated provider-neutral Production Request Candidate."""
+
+        try:
+            self._validate_timeline_identity(
+                request_identity,
+                "INVALID_PRODUCTION_REQUEST_IDENTITY",
+                "Production Request identity is required",
+            )
+            self._validate_timeline_identity(
+                request_commit_id,
+                "INVALID_PRODUCTION_REQUEST_COMMIT_ID",
+                "logical Commit identity is required",
+            )
+            for reference, artifact_type in (
+                (script_reference, "script"),
+                (character_reference, "character"),
+                (storyboard_reference, "storyboard"),
+                (timeline_reference, "timeline"),
+            ):
+                self._validate_timeline_reference(reference, artifact_type)
+
+            script_upstream = self._validate_script(script_reference, resolved_script)
+            language = self._bounded_text(
+                resolved_script.payload.get("language"),
+                "INVALID_SCRIPT_LANGUAGE",
+                "Script language is invalid",
+            )
+            aspect_ratio, _ = self._validate_storyboard_script(resolved_script)
+            script_duration, timed_scenes = self._validate_timeline_script(resolved_script)
+            script_scenes = tuple(
+                (
+                    scene_id,
+                    duration,
+                    self._bounded_text(
+                        scene["narration"],
+                        "INVALID_SCRIPT_NARRATION",
+                        "Script narration is invalid",
+                    ),
+                )
+                for scene, (scene_id, duration) in zip(
+                    resolved_script.payload["scenes"], timed_scenes
+                )
+            )
+            self._validate_approval(script_decision, script_reference, script_upstream)
+            self._validate_character_input(
+                character_reference,
+                resolved_character,
+                script_reference,
+                script_decision,
+            )
+            storyboard_scene_ids = self._validate_timeline_storyboard(
+                storyboard_reference,
+                resolved_storyboard,
+                script_reference,
+                character_reference,
+                script_decision,
+                resolved_script,
+                timed_scenes,
+            )
+            self._validate_storyboard_decision(
+                storyboard_decision,
+                storyboard_reference,
+                script_reference,
+                character_reference,
+                script_decision,
+            )
+            timeline = self._validate_request_timeline(
+                timeline_reference,
+                resolved_timeline,
+                script_reference,
+                character_reference,
+                storyboard_reference,
+                script_decision,
+                storyboard_decision,
+                script_duration,
+                timed_scenes,
+                storyboard_scene_ids,
+            )
+            result = self._invoke_request_runtime(
+                ModelRuntimeRequest(
+                    purpose="production_request_planning",
+                    inputs=MappingProxyType(
+                        {
+                            "script_reference": script_reference,
+                            "script_payload": resolved_script.payload,
+                            "approval_decision_id": script_decision.decision_id,
+                            "character_reference": character_reference,
+                            "character_payload": resolved_character.payload,
+                            "storyboard_reference": storyboard_reference,
+                            "storyboard_payload": resolved_storyboard.payload,
+                            "storyboard_decision_id": storyboard_decision.decision_id,
+                            "timeline_reference": timeline_reference,
+                            "timeline_payload": resolved_timeline.payload,
+                        }
+                    ),
+                    constraints=MappingProxyType({}),
+                )
+            )
+            production_request = self._validate_request_result(
+                result.production_request,
+                language,
+                aspect_ratio,
+                script_scenes,
+                timeline,
+                resolved_storyboard,
+            )
+            return ArtifactCandidate(
+                artifact_type="production_request",
+                identity=request_identity,
+                payload={
+                    "script_reference": script_reference,
+                    "approval_decision_id": script_decision.decision_id,
+                    "character_reference": character_reference,
+                    "storyboard_reference": storyboard_reference,
+                    "storyboard_decision_id": storyboard_decision.decision_id,
+                    "timeline_reference": timeline_reference,
+                    "production_request": production_request,
+                },
+                provenance=(
+                    {
+                        "purpose": "production_request_planning",
+                        "script_reference": script_reference,
+                        "character_reference": character_reference,
+                        "storyboard_reference": storyboard_reference,
+                        "timeline_reference": timeline_reference,
+                        "approval_decision_id": script_decision.decision_id,
+                        "storyboard_decision_id": storyboard_decision.decision_id,
+                    },
+                ),
+                dependencies=(
+                    script_reference,
+                    character_reference,
+                    storyboard_reference,
+                    timeline_reference,
+                ),
+                validated=True,
+                commit_id=request_commit_id,
+            )
+        except _ProductionValidation as exc:
+            return ProductionAgentFailure("validation", exc.code, exc.message)
+        except _ProductionExecution as exc:
+            return ProductionAgentFailure("execution", exc.code, exc.message)
+        except Exception:
+            return ProductionAgentFailure(
+                "execution",
+                "PRODUCTION_AGENT_FAILED",
+                "production agent execution failed",
+            )
+
+    @classmethod
+    def _validate_request_timeline(
+        cls,
+        reference: ArtifactReference,
+        version: ArtifactVersion,
+        script_reference: ArtifactReference,
+        character_reference: ArtifactReference,
+        storyboard_reference: ArtifactReference,
+        script_decision: ScriptDecisionRecord,
+        storyboard_decision: StoryboardDecisionRecord,
+        script_duration: float,
+        script_scenes: tuple[tuple[str, float], ...],
+        storyboard_scene_ids: tuple[str, ...],
+    ) -> Mapping[str, Any]:
+        if not isinstance(version, ArtifactVersion):
+            raise _ProductionValidation("INVALID_TIMELINE_VERSION", "a resolved Timeline Version is required")
+        if version.reference != reference:
+            raise _ProductionValidation("TIMELINE_REFERENCE_MISMATCH", "Timeline Reference does not match Version")
+        if version.dependencies != (script_reference, character_reference, storyboard_reference):
+            raise _ProductionValidation("TIMELINE_LINEAGE_MISMATCH", "Timeline dependencies are invalid")
+        payload = version.payload
+        if (
+            not isinstance(payload, Mapping)
+            or set(payload) != _TIMELINE_PAYLOAD_FIELDS
+            or payload.get("script_reference") != script_reference
+            or payload.get("character_reference") != character_reference
+            or payload.get("storyboard_reference") != storyboard_reference
+            or payload.get("approval_decision_id") != script_decision.decision_id
+            or payload.get("storyboard_decision_id") != storyboard_decision.decision_id
+        ):
+            raise _ProductionValidation("TIMELINE_LINEAGE_MISMATCH", "Timeline lineage is invalid")
+        for value in (payload["approval_decision_id"], payload["storyboard_decision_id"]):
+            cls._validate_timeline_identity(
+                value, "INVALID_TIMELINE_PAYLOAD", "Timeline decision identity is invalid"
+            )
+        normalized = cls._validate_timeline_result(
+            payload["timeline"], script_duration, script_scenes, storyboard_scene_ids
+        )
+        if normalized != payload["timeline"]:
+            raise _ProductionValidation("INVALID_TIMELINE_PAYLOAD", "Timeline payload is not normalized")
+        return normalized
+
+    def _invoke_request_runtime(
+        self, request: ModelRuntimeRequest
+    ) -> ProductionRequestModelRuntimeResult:
+        runtime_invoke = getattr(self._runtime, "invoke", None)
+        if not callable(runtime_invoke):
+            raise _ProductionValidation("INVALID_RUNTIME", "model runtime is required")
+        try:
+            result = runtime_invoke(request)
+        except Exception:
+            raise _ProductionExecution("MODEL_RUNTIME_FAILED", "model runtime execution failed") from None
+        if isinstance(result, ModelRuntimeFailure):
+            raise _ProductionExecution("MODEL_RUNTIME_FAILED", "model runtime execution failed")
+        if not isinstance(result, ProductionRequestModelRuntimeResult):
+            raise _ProductionValidation("INVALID_MODEL_RESULT", "model runtime result is invalid")
+        self._validate_diagnostics(result.diagnostics)
+        if any(self._has_control(item) for item in result.diagnostics):
+            raise _ProductionValidation("INVALID_MODEL_RESULT", "model runtime result is invalid")
+        return result
+
+    @classmethod
+    def _validate_request_result(
+        cls,
+        value: object,
+        language: str,
+        aspect_ratio: str,
+        script_scenes: tuple[tuple[str, float, str], ...],
+        timeline: Mapping[str, Any],
+        storyboard_version: ArtifactVersion,
+    ) -> Mapping[str, Any]:
+        if not isinstance(value, Mapping) or set(value) != _REQUEST_FIELDS:
+            raise _ProductionValidation("INVALID_PRODUCTION_REQUEST_RESULT", "Production Request result is invalid")
+        storyboard_payload = storyboard_version.payload
+        storyboard_scenes = storyboard_payload["storyboard"]["scenes"]
+        expected_scenes = tuple(
+            {
+                "scene_id": scene_id,
+                "start_seconds": timing["start_seconds"],
+                "duration_seconds": timing["duration_seconds"],
+                "end_seconds": timing["end_seconds"],
+                "narration": narration,
+                "visual_intent": storyboard_scene["visual_intent"],
+                "character_action": storyboard_scene["character_action"],
+                "continuity_notes": storyboard_scene["continuity_notes"],
+            }
+            for (scene_id, _duration, narration), timing, storyboard_scene in zip(
+                script_scenes, timeline["scenes"], storyboard_scenes
+            )
+        )
+        expected = {
+            "language": language,
+            "aspect_ratio": aspect_ratio,
+            "duration_seconds": timeline["duration_seconds"],
+            "scenes": expected_scenes,
+        }
+        scenes = value.get("scenes")
+        if (
+            not isinstance(scenes, tuple)
+            or len(scenes) != len(expected_scenes)
+            or any(not isinstance(scene, Mapping) or set(scene) != _REQUEST_SCENE_FIELDS for scene in scenes)
+            or value != expected
+        ):
+            raise _ProductionValidation("INVALID_PRODUCTION_REQUEST_RESULT", "Production Request result is invalid")
+        return expected
 
     @classmethod
     def _normalize_constraints(
