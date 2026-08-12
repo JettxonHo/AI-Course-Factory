@@ -86,6 +86,21 @@ class MediaCompositionResult:
 
 
 @dataclass(frozen=True, slots=True)
+class ProductionCompositionResult:
+    task_id: str
+    composition_id: str
+    production_request_reference: ArtifactReference
+    timeline_reference: ArtifactReference
+    scene_clip_references: tuple[ArtifactReference, ...]
+    scene_audio_references: tuple[ArtifactReference, ...]
+    subtitle_reference: ArtifactReference
+    master_audio_reference: ArtifactReference
+    video_reference: ArtifactReference
+    output_reference: WorkspaceFileReference
+    result_code: str
+
+
+@dataclass(frozen=True, slots=True)
 class ProductionExecutionResult:
     task_id: str
     attempt_id: str
@@ -102,6 +117,7 @@ __all__ = [
     "MediaCompositionScene",
     "MediaCompositionTask",
     "MediaGenerationResult",
+    "ProductionCompositionResult",
     "ProductionExecutionResult",
     "ProductionMediaFailure",
     "VisualGenerationTask",
