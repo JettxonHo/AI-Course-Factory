@@ -22,6 +22,7 @@ from .runtime import (
     ModelRuntimeRequest,
     ModelRuntimeResult,
     ProductionModelRuntimeResult,
+    ProductionRequestModelRuntimeResult,
     StoryboardModelRuntimeResult,
     TimelineModelRuntimeResult,
 )
@@ -45,6 +46,7 @@ __all__ = [
     "ProductionAgent",
     "ProductionAgentFailure",
     "ProductionModelRuntimeResult",
+    "ProductionRequestModelRuntimeResult",
     "StoryboardModelRuntimeResult",
     "StoryboardPlanningConstraints",
     "TimelineModelRuntimeResult",

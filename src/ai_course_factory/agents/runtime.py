@@ -65,6 +65,14 @@ class TimelineModelRuntimeResult:
 
 
 @dataclass(frozen=True, slots=True)
+class ProductionRequestModelRuntimeResult:
+    """Provider-neutral normalized output for Production Request planning."""
+
+    production_request: Mapping[str, Any]
+    diagnostics: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class ModelRuntimeFailure:
     """Normalized technical failure returned by a model runtime."""
 
@@ -84,6 +92,7 @@ class ModelRuntimePort(Protocol):
         | ProductionModelRuntimeResult
         | StoryboardModelRuntimeResult
         | TimelineModelRuntimeResult
+        | ProductionRequestModelRuntimeResult
         | ModelRuntimeFailure
     ):
         """Return a normalized result or normalized technical failure."""
