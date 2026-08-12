@@ -30,13 +30,14 @@
 | Reviewed M3-006 Commit | `26bffd61b4f5f04039c2d33c1e881ac99e007f8d` |
 | Reviewed M3-007 Commit | `6fc259eb2f9836f517785dbc41b2206e82ca2a7e` |
 | Reviewed M3-008 Commit | `e99e75c76e0852343ac4495b4e900bb17a19e734` |
-| Latest Feature Baseline | M3-008 merged by PR #100 at `main@f3e536dce655d16d188b8924066c978254e83c6d` |
+| Reviewed M3-009 Commit | `5b8d9f7ea3624a7ac88389f76898eeec3b7f732f` |
+| Latest Feature Baseline | M3-009 merged by PR #104 at `main@682ecbd1633ff22f181cb5d5161bea6b0a05433e` |
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; M3-008/Issue #99 is closed through PR #100; Issue #101 is docs-only and authorizes no next implementation; any follow-up requires a separate Task Contract for Task projection media lifecycle, scene retry/replace or export |
+| Current Task Contract | None; M3-009/Issue #103 is closed through PR #104; Issue #105 is docs-only and authorizes no next implementation; any follow-up requires a separate Task Contract for Task projection media lifecycle integration or scene retry/replace |
 | Open PR | None |
-| Current Code Gate | 329 full local tests passed and compileall passed on merged `main@f3e536dce655d16d188b8924066c978254e83c6d`; GitHub reported no hosted checks |
+| Current Code Gate | 340 full local tests passed and compileall passed on merged `main@682ecbd1633ff22f181cb5d5161bea6b0a05433e`; GitHub reported no hosted checks |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
 | Real Provider | Not selected or authorized |
 | Deployment | None |
@@ -138,6 +139,10 @@ STATUS is a verified snapshot, not a source of product requirements or coding au
 - the in-memory default and SQLite v1 Final Video decision repositories preserve exact replay/conflict, close/reopen, two-instance visibility and safe corruption/storage failure behavior without storing media payloads or Workflow state；
 - the durable namespaced Final Video Review Workflow + Application gate persists one exact Final Video decision before Workflow state advance, while the Script default checkpoint namespace and `final_video_review` coexist for the same public thread in one SQLite database；
 - six read-only Workflow result projections are restored, and exact-type/AlwaysEqual Video plus decision-binding mutations fail closed in the independently reviewed gate；
+- public `PackagingFailure`, `PublishPackageResult` and `PublishPackageBuilder` provide the deterministic Publish Package seam；
+- exact approved Video + Subtitle + reachable Source Record produce one deterministic local ZIP in Workspace `exports`, then exact Artifact Manifest and Publish Package v1 facts；
+- ZIP order is Video, canonical SRT, source attribution without source text, Artifact Manifest; deterministic metadata and byte/hash facts are verified；
+- exact Final Video decision and lineage validation precede Workspace/Artifact side effects, and replay/conflict/no-v2 plus Manifest/Package staged recovery are verified；
 
 Verification evidence through 2026-08-13:
 
@@ -330,17 +335,32 @@ GitHub reported no hosted checks
 
 M3-008 Review history: independent Review corrected exact-type/AlwaysEqual Video and decision-binding defects and restored six read-only Workflow result projections; the final result was `APPROVED`. The durable gate uses the fixed `final_video_review` checkpoint namespace, persists the exact Final Video decision before Workflow state advance, and keeps the Script default namespace separately readable for the same public thread in one SQLite database.
 
-M3-008 evidence is limited to the namespaced durable Final Video Review Workflow + Application gate. No hosted checks, real Provider, fees, deployment, Task projection media lifecycle, scene retry/replace, export/package or UI evidence exists; the next bounded Task Contract is not authorized by Issue #101.
+M3-008 evidence is limited to the namespaced durable Final Video Review Workflow + Application gate. No hosted checks, real Provider, fees, deployment, Task projection media lifecycle, scene retry/replace or UI evidence exists; the next bounded Task Contract was not authorized by Issue #101.
+
+M3-009 merge gates at `main@682ecbd1633ff22f181cb5d5161bea6b0a05433e` (Issue #103 / PR #104 evidence; reviewed implementation commit `5b8d9f7ea3624a7ac88389f76898eeec3b7f732f`):
+
+```text
+focused public contract: 10 passed
+durable integration: 1 passed
+full local regression: 340 passed
+compileall: passed
+git diff --check: passed
+exact four-file allowlist and protected-five audit: passed
+GitHub reported no hosted checks
+```
+
+M3-009 Review history: the initial `tests/packaging` namespace shadowed third-party `packaging.version` during full unittest discovery and was corrected to `tests/test_packaging_builder.py`. Main returned two bounded `CHANGES_REQUESTED` rounds for exact type/lineage/media/public evidence/private coupling; the same Luna corrected them, and `builder.py` is 647 lines below the 650 hard cap.
+
+M3-009 evidence: public `PackagingFailure`, `PublishPackageResult` and `PublishPackageBuilder` consume exact approved Video, Subtitle and reachable Source Record facts, validate the exact Final Video approval and lineage before Workspace/Artifact side effects, write one deterministic ZIP to Workspace `exports`, then commit exact Artifact Manifest and Publish Package v1 facts. ZIP order is Video, canonical SRT, source attribution without source text, Artifact Manifest; deterministic metadata and byte/hash facts are verified. Replay/conflict/no-v2 and Manifest/Package staged recovery are verified. Durable evidence uses SQLite Artifact + Final Video decision repositories, FilesystemWorkspace restart, independent ZIP parse, byte-equal playable MP4 and optional ffprobe. No real Provider, network service, fees, deployment, external publication, Task media projection, scene retry or UI evidence exists; GitHub reported no hosted checks, evidence is local only, and Issue #105 is docs-only with no open implementation Task Contract authorized.
 
 ## 3. Not Implemented
 
-Playable per-operation local FFmpeg Fixture media, local FFmpeg composition and bounded product-path media Artifact composition are implemented; the following remain not implemented:
+Playable per-operation local FFmpeg Fixture media, local FFmpeg composition, bounded product-path media Artifact composition and deterministic local Publish Package/Artifact Manifest are implemented; the following remain not implemented:
 
 - broader Task projection/media-lifecycle integration and production orchestration beyond the bounded composition and Final Video gate slices；
 - task-level production application use cases and local Web Workspace；
 - real Visual/TTS Provider adapters and non-Fixture product media generation beyond the local composer output；
 - Task projection media lifecycle integration, scene retry/replace；
-- publish package/export；
 - product Model Runtime, UI and deployment evidence。
 
 ## 4. GitHub State
@@ -424,6 +444,12 @@ Playable per-operation local FFmpeg Fixture media, local FFmpeg composition and 
 - PR #100 persists the exact Final Video decision before Workflow state advance through the fixed `final_video_review` namespace; the Script default namespace and Final Video namespace coexist for the same public thread in one SQLite checkpoint database. Review corrections covered exact-type/AlwaysEqual Video and decision binding, and restored six read-only Workflow result projections.
 - PR #100 merge evidence is 10 workflow tests, 12 application tests, 2 durable integration tests, 329 full local regression tests, compileall and diff checks. GitHub reported no hosted checks.
 - The #100 evidence boundary excludes real Provider, fees, deployment, Task projection media lifecycle, scene retry/replace, export/package and UI evidence. Issue #101 is the docs-only alignment and authorizes no next Task Contract or public API.
+- Issue #103 is closed as completed; its sole M3-009 deterministic approved-video Publish Package and Artifact Manifest Task Contract was independently approved and delivered by merged PR #104.
+- PR #104 implementation commit is `5b8d9f7ea3624a7ac88389f76898eeec3b7f732f`; merge commit is `682ecbd1633ff22f181cb5d5161bea6b0a05433e` (`main@682ecbd`).
+- PR #104 adds the public `PackagingFailure`, `PublishPackageResult` and `PublishPackageBuilder` seam. Exact approved Video + Subtitle + reachable Source Record facts produce one deterministic local ZIP in Workspace `exports`, then exact Artifact Manifest and Publish Package v1 facts; ZIP order is Video, canonical SRT, source attribution without source text, Artifact Manifest, with deterministic metadata and byte/hash facts verified.
+- PR #104 validates the exact Final Video decision and lineage before Workspace/Artifact side effects, and verifies replay/conflict/no-v2 plus Manifest/Package staged recovery. Durable evidence uses SQLite Artifact + Final Video decision repositories, FilesystemWorkspace restart, independent ZIP parse, byte-equal playable MP4 and optional ffprobe.
+- PR #104 merge evidence is focused public contract 10, durable integration 1, full local regression 340, compileall and diff/allowlist/protected gates passed. The initial `tests/packaging` namespace shadowed third-party `packaging.version` under full discovery and was corrected to `tests/test_packaging_builder.py`; main returned two bounded `CHANGES_REQUESTED` rounds for exact type/lineage/media/public evidence/private coupling, the same Luna corrected them, and `builder.py` is 647 lines below the 650 hard cap. GitHub reported no hosted checks; evidence is local only.
+- The #104 evidence boundary excludes real Provider, network service, fees, deployment, external publication, Task media projection, scene retry and UI evidence. Issue #105 is the docs-only alignment and authorizes no open implementation Task Contract or public API.
 
 ## 5. Protected Untracked Materials
 
@@ -448,13 +474,15 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Current main task runtime | RUNTIME_VERIFIED | Current task `turn_context` records model `gpt-5.6-sol` and effort `xhigh` |
 | `luna-worker` file | CONFIG_VERIFIED | `~/.codex/agents/luna-worker.toml` parsed with Python 3.12 |
 | Luna configured model | CONFIG_VERIFIED | `gpt-5.6-luna / max` |
-| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #99 was closed after the completed handoff; no active worker remains; this is route/closure evidence, not independent Issue #99 runtime identity |
-| Last independently exposed Luna runtime | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max`; this remains the last independently exposed Luna runtime evidence and does not claim the Issue #99 or Issue #101 runtime |
+| Luna current discoverability | Completed and closed after handoff | exact `luna-worker` for Issue #103 was closed after the completed handoff; no active worker remains; this is route/closure evidence, not independent Issue #103 runtime identity |
+| Last independently exposed Luna runtime | RUNTIME_VERIFIED | Issue #79 Luna task `019ff4d3-628a-7eb0-a7cb-c4d6c390a205` host `turn_context`: `gpt-5.6-luna / max`; this remains the last independently exposed Luna runtime evidence and does not claim the Issue #103 or Issue #105 runtime |
 | Issue #95 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route is required by the Task Contract; this snapshot exposes no independent Issue #95 task UUID or host `turn_context`, so its runtime model is not separately claimed |
 | Issue #99 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route is required by the Task Contract; this snapshot exposes no independent Issue #99 task UUID or host `turn_context`, so its runtime model is not separately claimed |
+| Issue #103 Luna route | UNVERIFIED_RUNTIME_MODEL | Exact `luna-worker` route is required by the Task Contract; this snapshot exposes no independent Issue #103 task UUID or host `turn_context`, so its runtime model is not separately claimed |
 | Issue #93 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #93 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Issue #97 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #97 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Issue #101 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #101 task UUID or host `turn_context`; no runtime identity/model claim is made |
+| Issue #105 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #105 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -688,6 +716,7 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 - M3-006 is independently approved and merged by PR #92 at `main@8f48681` (implementation commit `26bffd6`)；
 - M3-007 is independently approved and merged by PR #96 at `main@b3f2999` (implementation commit `6fc259e`)；
 - M3-008 is independently approved and merged by PR #100 at `main@f3e536d` (implementation commit `e99e75c`)；
+- M3-009 is independently approved and merged by PR #104 at `main@682ecbd` (implementation commit `5b8d9f7`)；
 - provider-neutral visual/voice interfaces and deterministic non-playable Fake Fixture adapters now write only through the task Workspace with exact replay/conflict evidence；
 - atomic Provider-attempt claims now distinguish the one new execution owner from restart/concurrent replay before a future Adapter call；
 - the offline Production Orchestrator now validates one exact Request/media task, invokes only the matching Fake adapter after a new claim, persists zero-charge terminal outcomes and safely replays terminal state；
@@ -696,7 +725,8 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 - product-path `ProductionOrchestrator.compose` now validates the exact committed Request/Timeline and terminal Scene attempts, stages Scene Clip/Scene Audio, Subtitle, logical Master Audio and Video Artifact commits, and preserves exact lineage, replay and staged recovery；
 - the durable Final Video Review decision seam now assesses exact Video structural lineage, enforces hard-block and Creator action rules, and persists exact decisions through in-memory and SQLite repositories with replay/conflict/restart/corruption evidence；
 - the namespaced Final Video Review Workflow + Application gate now persists the exact Final Video decision before state advance; Script default and `final_video_review` checkpoint namespaces coexist for one public thread in one SQLite database, with 10 workflow, 12 application, 2 durable integration and 329 full local tests recorded；
-- M3 remains active: Task projection media lifecycle integration, scene retry/replace, export, real Provider, fees, UI and deployment are not implemented or authorized；
+- the deterministic local Publish Package seam now validates exact approved Video/Subtitle/Source lineage, writes the ordered ZIP and exact Manifest/Package v1 facts through Workspace/Artifact boundaries, and preserves replay/conflict/no-v2 and staged recovery evidence；
+- M3 remains active: Task projection media lifecycle integration and scene retry/replace remain not implemented or authorized; bounded local export/package is complete, while real Provider, fees, UI and deployment remain closed；
 - no real Provider, credential, fee, SDK, network or deployment evidence exists。
 
 ### Blocks only real Provider milestone
@@ -715,5 +745,5 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 
 ## 9. Next Ordered Actions
 
-1. Issue #101 authorizes no next Task Contract. If work resumes, establish a separate bounded Task Contract and architecture review for Task projection media lifecycle, scene retry/replace or export; do not invent a public API, select or call a real Provider, incur fees, or add UI/deployment.
+1. Issue #105 is docs-only and authorizes no next implementation Task Contract. If work resumes, establish a separate bounded Task Contract and architecture review for Task projection media lifecycle integration or scene retry/replace; do not invent a public API, select or call a real Provider, incur fees, or add UI/deployment.
 2. Keep all real Provider, cost and deployment gates closed.
