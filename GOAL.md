@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ACTIVE — M0 complete; M1 results 1–3 merged; result 4 independently approved under Issue #31 and awaiting merge |
+| Status | ACTIVE — M0 complete; M1 results 1–4 merged; result 5 awaits its own Task Contract |
 | Approval | Product Owner, 2026-08-12 |
 | Goal Owner | Product Owner |
 | Orchestrator | ORCHESTRATOR_REVIEWER — `gpt-5.6-sol / xhigh` |
@@ -38,7 +38,7 @@ Goal 的唯一完成结论必须由运行证据证明，而不是由文档、Fak
 
 ## 4. Current Starting Point
 
-当前分支的 independently reviewed M1-004 候选已通过 98 tests：
+当前 `main` 已完成并通过 98 tests：
 
 ```text
 Public GitHub
@@ -57,7 +57,7 @@ Public GitHub
   -> exact Timeline Reference through the existing Artifact Store
 ```
 
-未完成：Production Request、Budget、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character/Storyboard/decision/Timeline 证据只覆盖 no-Provider、in-memory planning boundary；Timeline 尚未合并到 `main`。
+未完成：Production Request、Budget、持久化、本地工作台、Provider、媒体合成、Final Review、恢复和导出。当前 Character/Storyboard/decision/Timeline 证据只覆盖 no-Provider、in-memory planning boundary。
 
 ## 5. In Scope
 
@@ -107,7 +107,7 @@ Exit：
 
 ### M1 — Approved Script to Authorized Production Request
 
-Status：**ACTIVE** — results 1–3 of 7 are independently `APPROVED` and merged; result 4 is independently `APPROVED` at implementation commit `77a360d` under Issue #31 and awaits publication/merge; results 5–7 remain pending and unauthorized without their own Task Contracts.
+Status：**ACTIVE** — results 1–4 of 7 are independently `APPROVED` and merged; result 4 was delivered by PR #32 at `main@4241554`; results 5–7 remain pending and unauthorized without their own Task Contracts.
 
 Outcome：现有 exact approved Script 形成 provider-neutral、预算受控的生产入口。
 
