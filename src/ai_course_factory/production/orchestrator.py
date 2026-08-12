@@ -14,9 +14,12 @@ from .attempt import (
     ProviderAttemptReservation,
 )
 from .budget import _validate_request
+from .composition import compose_product_path
 from .interfaces import VisualGenerator, VoiceGenerator
 from .model import (
     MediaGenerationResult,
+    MediaCompositionTask,
+    ProductionCompositionResult,
     ProductionExecutionResult,
     ProductionMediaFailure,
     VisualGenerationTask,
@@ -279,7 +282,10 @@ def _execution_result(
 class ProductionOrchestrator:
     """Execute exactly one claimed visual or voice operation."""
 
-    __slots__ = ("_attempt_ledger", "_visual_generator", "_voice_generator", "_clock")
+    __slots__ = (
+        "_attempt_ledger", "_visual_generator", "_voice_generator", "_clock",
+        "_media_composer", "_artifact_repository",
+    )
 
     def __init__(
         self,
@@ -288,11 +294,15 @@ class ProductionOrchestrator:
         voice_generator: VoiceGenerator,
         *,
         clock: Callable[[], datetime],
+        media_composer: object | None = None,
+        artifact_repository: object | None = None,
     ) -> None:
         self._attempt_ledger = attempt_ledger
         self._visual_generator = visual_generator
         self._voice_generator = voice_generator
         self._clock = clock
+        self._media_composer = media_composer
+        self._artifact_repository = artifact_repository
 
     def execute(
         self,
@@ -394,6 +404,26 @@ class ProductionOrchestrator:
         if not succeeded:
             return _generation_failure()
         return _execution_result(record, reference, media_task.output_reference)
+
+    def compose(
+        self,
+        production_request_reference: ArtifactReference,
+        production_request_version: ArtifactVersion,
+        composition_task: MediaCompositionTask,
+        *,
+        artifact_identity: str,
+        composition_commit_id: str,
+    ) -> ProductionCompositionResult | ProductionMediaFailure:
+        return compose_product_path(
+            self._attempt_ledger,
+            self._media_composer,
+            self._artifact_repository,
+            production_request_reference,
+            production_request_version,
+            composition_task,
+            artifact_identity=artifact_identity,
+            composition_commit_id=composition_commit_id,
+        )
 
 
 __all__ = ["ProductionOrchestrator"]
