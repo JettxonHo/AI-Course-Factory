@@ -118,7 +118,7 @@ The MVP is accepted when one browser-driven Demo proves:
 
 Required evidence is the browser flow, the exported package, F2A visual-asset evidence plus the local GPT-SoVITS execution records, focused tests for changed behavior and the full regression run before merge/acceptance.
 
-Issue #117's now-accepted F2A evidence covers six local image inputs, exact preflight failure, local H.264 conversion, visual-only replacement, restart replay and honest external-source attribution. It satisfies the visual side of `PR-019`; F2B TTS and the F3 browser acceptance remain outstanding.
+Issue #117's accepted F2A evidence covers six local image inputs, exact preflight failure, local H.264 conversion, visual-only replacement, restart replay and honest external-source attribution. Issue #119 accepted the local GPT-SoVITS TTS path. Issue #123 then completed the fresh browser acceptance described above and the main controller returned `GOAL_APPROVED` for the fixed local MVP.
 
 ## 8. Non-goals
 
@@ -136,4 +136,4 @@ Issue #117's now-accepted F2A evidence covers six local image inputs, exact pref
 - `PD-002` Approved: local GPT-SoVITS v2 through explicit external Python 3.11/repository/model configuration and the fixed synthetic Serena reference, with zero external charge.
 - `PD-003` Smoke-test and full-Demo cost/attempt caps remain unchanged and local F2B inference does not incur external charge.
 
-FAST-MVP approval does not authorize cloud credentials, paid calls, fees or deployment. F2A's external image generation remains outside the application, while F2B's local GPT-SoVITS inference uses no credentials or application Provider API call. F2.5 and F3 remain separate milestones.
+FAST-MVP acceptance does not authorize cloud credentials, paid calls, fees or deployment. F2A's external image generation remains outside the application, while F2B's local GPT-SoVITS inference uses no credentials or application Provider API call. F2.5 and F3 are completed local milestones, not cloud or deployed-runtime evidence.
