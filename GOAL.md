@@ -4,10 +4,10 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **ACTIVE / APPROVED** |
+| Status | **COMPLETE / GOAL_APPROVED** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Baseline | `main@65ce873f2dd5fccdcccf1ce5c5c1970071bb6261` |
+| Acceptance baseline | `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -45,13 +45,15 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 Observed on 2026-08-14:
 
 - The F1 implementation was based on `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc` and integrated through PR #114.
-- The merged baseline has 411 passing local regression tests and no claimed hosted CI evidence.
+- The merged F2.5 baseline has 414 passing local regression tests and no claimed hosted CI evidence.
 - Source-to-package offline modules, a durable facade and the local three-view workspace are integrated through Issue #113 / PR #114.
 - Issue #110 was independently reviewed and merged through PR #111; the durable Scene media projection is part of this baseline.
 - No cloud Provider credential, paid spend, deployment or public production runtime is authorized; PD-002 separately authorizes the bounded local GPT-SoVITS runtime for F2B.
 - F1 passed independent review and local acceptance; this evidence is not real Provider or deployed-runtime evidence.
 - F2A then merged through Issue #117 / PR #118 at `main@b2642c1` and was independently accepted COMPLETE after 397 local regression tests; its visuals are creator-supplied Desktop ImageGen assets generated outside the application.
 - F2B then merged through Issue #119 / PR #120 at `main@65ce873`; the bounded local GPT-SoVITS v2 adapter was independently accepted COMPLETE with the 411-test regression baseline.
+- F2.5 merged through Issue #121 / PR #122 at `main@e155d193`; its Warm Editorial three-view presentation passed independent 1440px/375px browser review and the 414-test regression.
+- F3 Issue #123 then completed a fresh real browser acceptance from a new data directory; the durable acceptance record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
 
 `docs/STATUS.md` owns the current factual snapshot if these facts change.
 
@@ -103,17 +105,17 @@ Exit: the accepted F2A local-import Visual adapter and F2B local GPT-SoVITS TTS 
 
 ### F2.5 — Warm Editorial Production Desk
 
-Status: **APPROVED FOR MERGE** (Issue #121)
+Status: **COMPLETE** (Issue #121 / PR #122 merged at `e155d193`)
 
 Issue #121 upgrades the existing exactly-three server-rendered views into the approved Warm Editorial Production Desk. It keeps the existing routes, view model, POST actions, media endpoints, security boundaries and provenance facts while adding a semantic three-stage track, task/stage/next-action hierarchy, progressive disclosure for visual prompt cards, storyboard scanning, a 9:16 final review with a sticky desktop decision rail, local favicon and responsive CSS-only polish. No JavaScript, SPA, editor, upload manager, provider behavior or public contract is added.
 
-Independent review accepted the real Diff after focused rendered-HTML/static checks, 1440px/375px browser review and the 414-test full regression. Merge closes this milestone without claiming F3 runtime evidence.
+Independent review accepted the real Diff after focused rendered-HTML/static checks, 1440px/375px browser review and the 414-test full regression. PR #122 merged without changing application behavior or claiming F3 evidence.
 
 ### F3 — Real end-to-end acceptance
 
-Status: **BLOCKED ON F2.5**
+Status: **COMPLETE / GOAL_APPROVED** (Issue #123)
 
-Run the fixed Demo from the browser with the accepted F2A visual assets and F2B local TTS adapter. Verify:
+The fixed Demo ran from a previously nonexistent data directory through the merged Warm Editorial browser with the accepted F2A visual assets and F2B local TTS adapter. It verified:
 
 - exact source and visible claim evidence;
 - Script, Budget and Final approvals;
@@ -123,7 +125,7 @@ Run the fixed Demo from the browser with the accepted F2A visual assets and F2B 
 - one bounded Scene retry/replace;
 - restart continuation and local MP4/SRT/source/Manifest export.
 
-Exit: evidence package is reviewed and the main controller returns `GOAL_APPROVED` or `GOAL_APPROVED_WITH_FOLLOW_UPS`.
+Exit: the evidence package was independently inspected and the main controller returned `GOAL_APPROVED`. This approves the fixed local MVP only; it is not deployment, adoption, paid Provider or cloud-runtime evidence.
 
 ## 7. Agent Operating Model
 
@@ -158,6 +160,6 @@ Do not stop merely because a hypothetical future edge case lacks a generalized d
 
 ## 10. Completion Definition
 
-The Goal is complete only when the fixed real browser Demo and export package satisfy PRD acceptance, focused and full tests pass, Provider/cost evidence is recorded, known limitations are honest, and the main controller independently approves the actual result.
+The Goal completed when the fixed real browser Demo and export package satisfied PRD acceptance, focused and full tests passed, local processing/cost evidence was recorded, known limitations were stated, and the main controller independently approved the actual result through Issue #123.
 
-Offline Fake success, code presence or a green regression suite alone cannot complete this Goal.
+The accepted result is supported by the fresh F3 run, not by Offline Fake success, code presence or a green regression suite alone.

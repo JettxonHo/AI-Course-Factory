@@ -8,7 +8,7 @@
 | Approval | Product Owner, 2026-08-13 |
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
-| Code Baseline | `main@65ce873f2dd5fccdcccf1ce5c5c1970071bb6261` |
+| Accepted local baseline | `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6` plus Issue #123 acceptance evidence |
 | Runtime | Python `>=3.12,<3.13` |
 | Supersedes | Implementation Spec v1.0 for daily development |
 
@@ -51,17 +51,13 @@ At `main@72ef53805aa33aa847d35f70d4a36303681ecec1`, the repository already conta
 - Final Video Review plus deterministic local Publish Package/Manifest;
 - the durable F1 application facade and three-view loopback workspace, including one local Scene replacement and package export.
 
-That historical baseline had the reusable provider-neutral interfaces and local Fixture path only. The current `main@65ce873` baseline additionally includes the independently accepted F2A local-import Visual adapter and F2B local GPT-SoVITS adapter; F2.5 remains the presentation candidate described below.
+That historical baseline had the reusable provider-neutral interfaces and local Fixture path only. F2A and F2B later added the independently accepted local-import Visual and local GPT-SoVITS adapters. F2.5 merged its presentation-only workspace through Issue #121 / PR #122 at `main@e155d193`.
 
-The starting baseline has 411 passing local regression tests after the merged F2B correction. This proves the merged offline workspace and bounded local GPT-SoVITS path, not a cloud Visual/TTS Provider path, deployed runtime or real end-to-end acceptance run.
+The merged F2.5 baseline has 414 passing local regression tests. Issue #123 adds a fresh real local end-to-end acceptance record; neither result proves a cloud Visual/TTS Provider path, deployment or adoption.
 
-## 4. Missing Vertical Product Capabilities
+## 4. Accepted Vertical Product Boundary
 
-1. F2A local-import Visual bridge (Issue #117 / PR #118) is independently accepted and merged; creator-supplied visuals satisfy the visual asset boundary without an automatic cloud Visual Provider.
-2. F2.5 Warm Editorial Production Desk presentation (Issue #121), pending independent review of the rendered three-view experience.
-3. One browser-driven F3 real end-to-end acceptance run.
-
-These gaps define the implementation order. New general repositories, compatibility frameworks or defensive utilities do not precede them.
+F2A local-import Visuals, F2B local GPT-SoVITS, the F2.5 Warm Editorial workspace and the F3 browser acceptance are independently accepted for the fixed local Demo. Automatic cloud Providers, deployment, multiple tasks/users and general production operations remain outside this implementation baseline.
 
 ## 5. Physical Direction
 
@@ -119,11 +115,11 @@ Issue #119 added one explicit local GPT-SoVITS v2 adapter behind the existing Vo
 
 Issue #121 upgrades only the existing three Jinja views and local stylesheet. It adds a semantic three-stage progress track, task/stage/next-action hierarchy, compact provenance, native details prompt cards, a Review decision zone/storyboard grid, and a Final 9:16 player with a sticky desktop decision rail and mobile one-column layout. A local text SVG favicon and CSS-only 150–250ms polish are included. Existing routes, view kinds, POST actions/field names, media endpoints, autoescape, same-origin checks, security headers and provider/fee/provenance facts remain unchanged. No application/domain/repository/production/packaging changes, JavaScript, SPA, external assets, editor or upload manager are authorized.
 
-F2.5 evidence is presentation-only and remains a candidate until focused rendered-HTML/static checks, 1440px/375px browser review, independent Diff review and the full regression are complete. It does not claim F3 runtime acceptance.
+F2.5 passed focused rendered-HTML/static checks, 1440px/375px browser review, independent Diff review and the 414-test full regression before PR #122 merged. Its evidence remains presentation-only; Issue #123 separately owns F3 runtime acceptance.
 
 ### F3 — Real Demo acceptance
 
-Wire the accepted F2A local-import Visual adapter and F2B local GPT-SoVITS adapter through the same composition root and run the fixed Demo from the browser. Repair only defects that block the acceptance contract. Record the exported package, local attempt/cost evidence and known limitations.
+Issue #123 ran the fixed Demo through the browser without a product-code correction. The accepted evidence includes Script v2, explicit Budget approval, six imported visuals, six real local GPT-SoVITS narrations, Video v2 after visual-only replacement, two restarts and an exact four-file package. The durable record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
 
 ## 8. Task Contract Minimum
 
@@ -160,11 +156,11 @@ F2A local-import success proves the accepted creator-supplied visual bridge and 
 
 ## 10. External Authorization
 
-The approved FAST-MVP Goal plus PD-002 authorize bounded no-cost local F2B development and the approved F2.5 presentation outcome. They do not authorize:
+The accepted FAST-MVP Goal and PD-002 authorize the completed no-cost local Demo. They do not authorize:
 
 - cloud Provider credentials or calls;
 - using credentials or incurring fees;
 - increasing a cost/attempt cap;
 - deployment, publication or sensitive data use.
 
-Stop before F3 until its separate acceptance gates are recorded; F2.5 does not authorize Provider credentials, fees or deployment.
+F3 acceptance does not authorize Provider credentials, fees, deployment, publication or a broader product scope.

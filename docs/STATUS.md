@@ -7,13 +7,14 @@ Observed: 2026-08-14 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| Current starting main | `main@65ce873f2dd5fccdcccf1ce5c5c1970071bb6261` |
+| F3 acceptance baseline | `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Active planning branch | `codex/121-warm-editorial-workspace` |
-| Current implementation task | Issue #121 F2.5 Warm Editorial Production Desk; independently reviewed and APPROVED FOR MERGE |
-| Historical merged regression evidence | 411 local tests passed after Issue #119 / PR #120; no hosted CI is claimed |
-| Rebaseline validation | 411/411 local tests passed on `main@65ce873` with the explicit `PYTHONPATH=src` command below |
-| Real product runtime | F2A Desktop ImageGen visual assets and local conversion independently accepted; F2B local GPT-SoVITS v2 is independently accepted COMPLETE; F2.5 local browser presentation is approved for merge, not F3 acceptance |
+| Acceptance branch | `codex/123-fast-mvp-f3-acceptance` |
+| Current task | Issue #123 fresh real FAST-MVP acceptance; main-controller verdict `GOAL_APPROVED` |
+| Historical merged regression evidence | 414 local tests passed after Issue #121 / PR #122; no hosted CI is claimed |
+| F3 repository gates | 37 focused tests and the complete 414-test local regression passed; `compileall` and Diff/ownership checks are clean |
+| F3 runtime evidence | Fresh browser run from a new data directory completed real local media, two restarts, Scene 2 replacement, Final approval and exact four-file export |
+| Product state | F1, F2A, F2B, F2.5 and F3 are COMPLETE for the fixed local FAST-MVP v1.1 Demo |
 | Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -35,16 +36,16 @@ This file is a current snapshot, not authorization and not a historical PR trans
 - Deterministic local Publish Package and Artifact Manifest.
 - Durable current/stale Scene and delivery media projection merged through Issue #110 / PR #111.
 
-These facts prove a substantial offline backend, accepted creator-supplied visuals and an accepted bounded local TTS path. They do not prove the final browser acceptance package, live pricing, paid execution, deployment or adoption.
+These facts plus Issue #123 prove the fixed local FAST-MVP browser flow and evidence package. They do not prove live pricing, paid execution, cloud Provider behavior, deployment or adoption.
 
 ## 3a. Issue #113 / PR #114 F1 Evidence (merged)
 
-- Branch: `codex/113-offline-workspace`, based on the F1 starting baseline `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc`, merged into current `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31` through PR #114.
+- Branch: `codex/113-offline-workspace`, based on the F1 starting baseline `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc`, merged through PR #114 at the historical `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31` snapshot.
 - Facade focused evidence: 16 tests passed, including durable create/open, exact source evidence, versioned Script revision/rejection, script/planning/budget gates, FFmpeg Fixture production, one local Scene replacement with unchanged Provider-attempt facts, final rejection/approval, package export and restart replay.
 - Web focused evidence: 12 tests passed, including the three server-rendered view loop, versioned Script actions, Final rejection, bounded failure category/action, same-origin mutation boundaries, browser process reconstruction, playable video/SRT responses and package ZIP response.
 - Final candidate regression: 386 local `unittest` tests passed; `compileall` and `git diff --check` are clean on this branch.
 - Loopback command smoke: `PYTHONPATH=src uv run python -m ai_course_factory.web --data-dir <explicit-dir> --port 8765` bound `127.0.0.1` and returned the Start view with local security headers.
-- These are local deterministic Fixture/code-path facts only; F2/F3 and real Provider/runtime acceptance remain incomplete.
+- These were local deterministic Fixture/code-path facts only; later F2A/F2B/F3 evidence is recorded separately below.
 
 ## 3c. Issue #119 / PR #120 F2B Evidence (merged)
 
@@ -52,12 +53,9 @@ These facts prove a substantial offline backend, accepted creator-supplied visua
 - Independent focused review and the opt-in local GPT-SoVITS v2 smoke accepted the explicit external Python 3.11/repository/model/reference configuration, zero-charge attempt records, no Fixture fallback and additive package attribution.
 - The 411-test local regression baseline is evidence for the merged code path only; it is not cloud Provider, paid-spend or deployed-runtime evidence.
 
-## 3. Missing for FAST-MVP
+## 3. FAST-MVP Acceptance
 
-With F1, F2A and F2B accepted, remaining FAST-MVP work is:
-
-1. Independent acceptance of the F2.5 Warm Editorial Production Desk presentation.
-2. One capped browser-driven real end-to-end Demo and exported evidence package.
+All approved FAST-MVP v1.1 milestones are complete for the fixed local Demo. Issue #123 started from a new data directory and completed exact source/Script v2 review, planning, unchanged Budget approval, six imported visuals, six local GPT-SoVITS narrations, playable MP4/SRT, a restart, Scene 2 visual-only replacement, exact Video v2 approval, four-file ZIP export and a second restart replay. The durable evidence is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
 
 ## 3b. Issue #115 / PR #116 F1 Correction Evidence
 
@@ -65,13 +63,23 @@ With F1, F2A and F2B accepted, remaining FAST-MVP work is:
 - Explicit zero amount or attempts fails closed at `budget_review`, with no Budget decision, authorization, production attempt or Provider side effect.
 - Focused facade verification passed 18 tests; the post-correction full regression passed 388 tests, with `compileall` and `git diff --check` clean.
 
-## 3d. Issue #121 F2.5 Approved-for-merge Evidence
+## 3d. Issue #121 / PR #122 F2.5 Evidence (merged)
 
 - The Warm Editorial Production Desk changes only the frozen templates, stylesheet, text SVG favicon, web presentation test and approved truth-doc updates.
 - Independent focused verification passes 15 core web tests and 19 affected web tests; the final full regression passes 414 tests, with `compileall` and `git diff --check` clean.
 - Independent browser review completed the Fixture flow and read-only durable F2A/F2B restart view at 1440x900 and 375x812. It confirms no horizontal overflow, active/completed/upcoming navigation, visible focus, 44px targets, playable video, replace/approve/export reachability, compact source/attempt/charge attribution and no raw machine paths.
 - The CSS/static contract has no external imports/assets or JavaScript and includes reduced-motion, visible-focus, mobile-breakpoint and long-content wrapping rules. A first review correction raised normal-text contrast above 4.5:1; a compatibility correction restored existing attempt/charge facts in Final.
-- Main-controller verdict is APPROVED FOR MERGE. This is not F3 acceptance or FAST-MVP completion.
+- PR #122 merged at `main@e155d193`; F2.5 is COMPLETE. Its presentation evidence is separate from the later F3 runtime acceptance.
+
+## 3e. Issue #123 F3 Acceptance Evidence
+
+- Fresh run: exact source and Script v2 decisions, unchanged 18,000-micros/two-attempt Budget approval, and no media side effect before authorization.
+- Real local media: six imported visual plus six GPT-SoVITS voice attempts, all succeeded at zero charge; H.264 540x960 24fps, AAC 48k mono, mov_text and six nonempty SRT cues.
+- Scene recovery: Scene 2 Clip and Video advanced to v2 while its voice, Scene Audio, Master Audio and every unaffected Scene selection stayed exact; no new voice attempt was created.
+- Recovery/export: two process restarts performed no regeneration; Video/SRT/ZIP endpoints replayed HTTP 200 and byte-identical outputs; the ZIP contains exactly video, subtitle, GitHub/visual/TTS attribution and Artifact Manifest.
+- UX: the Warm Editorial UI completed the full flow at 1440x900 and 375x812 without horizontal overflow, with visible keyboard focus and no raw machine paths.
+- Main-controller verdict: `GOAL_APPROVED` for the fixed local MVP, not cloud/deployed/adoption evidence.
+- Repository gates: 37 focused tests and the complete 414-test local regression passed; `compileall`, `git diff --check` and exact documentation-only ownership review are clean. The full regression does not rerun the opt-in heavy local model acceptance.
 
 ## 4. Current Concurrent Work
 
@@ -81,18 +89,15 @@ Issue #113 / PR #114 completed the single vertical F1 workspace contract.
 
 Issue #115 / PR #116 corrected explicit Budget cap binding without changing the F1 flow, Budget domain, Provider interfaces or F1 completion state.
 
-Issue #117 / PR #118 is merged and closed at `main@b2642c1`; F2A is independently accepted COMPLETE. Its two historical candidate-time document phrases are corrected in this feature PR rather than a status-only PR.
+Issue #117 / PR #118 is merged and closed at `main@b2642c1`; F2A is independently accepted COMPLETE. Its historical candidate-time document phrases were corrected with the next feature PR rather than a status-only PR.
 
 Issue #119 / PR #120 is merged and independently accepted COMPLETE. It adds local GPT-SoVITS v2 through explicit external Python 3.11/repository/model/reference configuration, with six zero-charge voice attempts, no Fixture fallback, and additive package attribution.
 
-Issue #121 is independently reviewed and APPROVED FOR MERGE. It upgrades only the three existing server-rendered views and local stylesheet with the approved Warm Editorial Production Desk direction; no route, view-model, form, media or Provider behavior changes are in scope. F3 remains blocked until this PR is merged.
+Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 then completed F3 acceptance without changing product code.
 
-## 5. Current Direction and Next Actions
+## 5. Current Direction
 
-1. Merge the independently accepted Issue #121 F2.5 presentation.
-2. Run F3 acceptance through the same browser flow after the F2.5 merge.
-
-Do not open new horizontal hardening, status-only or future-architecture tasks while F2 remains blocked unless an observed blocker requires them.
+Merge the concise Issue #123 acceptance record after final repository gates. No further FAST-MVP milestone is active. Any cloud Provider, paid use, deployment, publication, multiple-task/user expansion or new Goal requires separate Product Owner authorization.
 
 ## 6. Authorization and Evidence Boundary
 
@@ -100,8 +105,8 @@ Authorized now:
 
 - FAST-MVP planning/docs;
 - bounded maintenance of the merged F1 flow;
-- bounded F2.5 presentation implementation and no-cost local validation;
-- no-cost local validation.
+- maintenance of the accepted fixed local Demo;
+- no-cost local validation and evidence replay.
 
 Not authorized now:
 
