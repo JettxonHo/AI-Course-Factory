@@ -148,3 +148,46 @@ Historical Phase documents remain in place and must not be deleted. They are no 
 - Existing Phase 1.5 untracked files are protected until the Product Owner chooses archive or commit treatment.
 - The proposed Core MVP Goal still requires separate approval before feature coding.
 - Real Provider selection, credentials and budget remain separate human decisions.
+
+## Decision D-003 — Accept Scene-Scoped Task Media Projection Architecture
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted |
+| Decision Date | 2026-08-13 |
+| Decision Owner | Product Owner |
+| Applies To | M3 Task media lifecycle and bounded scene recovery |
+| Source Decision | Issue #107, accepted Option A on 2026-08-13 |
+| Recording Task | Issue #108 / M3-010A (docs-only) |
+
+### Context
+
+The durable Task projection currently represents the planning stages through Production Budget with ten singleton selections. The merged production path now creates per-Scene Clip and Scene Audio Artifacts plus singleton Subtitle, logical Master Audio, Video, Artifact Manifest and Publish Package Artifacts. The Provider Attempt Ledger records execution history and budget enforcement, while the Decision repository and Workflow checkpoint own review gates. The next architecture must make selected/current media state explicit without changing those ownership boundaries or pretending that a later implementation already exists.
+
+### Decision
+
+Accept **Option A — explicit scene-scoped Task media selections** from Issue #107:
+
+1. Preserve the existing ten singleton planning selections and their persisted compatibility.
+2. Add an additive structured Task media projection; do not encode Scene identity as dynamic `scene_clip:<scene_id>` or `scene_audio:<scene_id>` slot strings.
+3. Represent one exact `ArtifactReference` per Scene for Clip and Audio with `current|stale` projection state.
+4. Represent singleton delivery media selections for Subtitle, logical Master Audio, Video, Artifact Manifest and Publish Package.
+5. Bind Scene ordering to the exact Timeline/Production Request order, never lexical Scene ID order.
+6. Absence means not yet selected; do not create a mutable or pseudo-Artifact `missing` status.
+7. Keep ownership separated: the Artifact repository owns immutable Versions; the Task application projection owns selected/current/stale facts; the Attempt Ledger owns execution history and budget enforcement; Decision and Workflow repositories own gates.
+8. A later retry/replace operation replaces only one exact Scene media selection and marks only exact downstream Master Audio, Video, Artifact Manifest and Publish Package facts stale; unaffected Scene media remains current.
+9. Final Video decisions remain Decision Records and Workflow checkpoint state, not Artifact selections.
+
+The accepted architecture is a documentation baseline only. Issue #108 does not freeze implementation method signatures, execute schema migration, authorize retry execution, call a Provider, incur fees, or provide code, test or runtime evidence. A separate implementation Issue/Task Contract must be frozen after this docs-only alignment.
+
+### Rejected Alternatives
+
+- **Aggregate-only projection (Option B):** cannot represent selected Scene media before a Video exists and would derive exact Scene impact outside the generic Task projection.
+- **Dynamic slot strings:** would encode Scene identity in an untyped slot namespace and weaken ordering, uniqueness and compatibility invariants.
+- **Attempt Ledger as selected-state owner:** execution history and budget enforcement are not the Task projection's selected/current/stale facts.
+
+### Consequences
+
+- The canonical terms are **Task media projection**, **scene media selection** and **delivery media selection**.
+- System and Implementation Specs must describe an additive, typed, frozen/slotted value seam and backward-readable planning snapshots without inventing a concrete public API in this decision.
+- The later implementation Task Contract must choose the smallest verified application seam and backward-compatible SQLite schema evolution or additive table; no migration is performed by D-003.
