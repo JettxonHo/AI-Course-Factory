@@ -62,6 +62,9 @@ from ai_course_factory.production import (
     FFmpegFixtureVisualGenerator,
     FFmpegFixtureVoiceGenerator,
     FFmpegMediaComposer,
+    GPT_SOVITS_PROVIDER,
+    GPTSoVITSConfiguration,
+    GPTSoVITSSyntheticVoiceGenerator,
     LOCAL_IMPORTED_PROVIDER,
     LocalImportedVisualGenerator,
     MediaCompositionScene,
@@ -237,6 +240,9 @@ class ApplicationView:
     local_replacement_label: str | None = None
     prompt_cards: tuple[PromptCard, ...] = ()
     visual_mode: str = "fixture"
+    tts_engine: str | None = None
+    tts_reference_provenance: str | None = None
+    tts_external_charge_micros: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -271,6 +277,7 @@ class _State:
     failure_message: str | None = None
     replacement_done: bool = False
     visual_mode: str = "fixture"
+    tts_mode: str = "fixture"
 
 
 class _FixtureTransport:
@@ -487,6 +494,7 @@ class CourseFactoryApplication:
         ffmpeg_executable: str | None = None,
         ffprobe_executable: str | None = None,
         visual_import_dir: str | Path | None = None,
+        tts_configuration: GPTSoVITSConfiguration | None = None,
     ) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -508,6 +516,7 @@ class CourseFactoryApplication:
         self.checkpoints = SQLiteCheckpointAdapter(self.database_path)
         self.ffmpeg_executable = ffmpeg_executable or shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
         self.ffprobe_executable = ffprobe_executable or shutil.which("ffprobe") or "/opt/homebrew/bin/ffprobe"
+        self.tts_configuration = tts_configuration
         try:
             self.visual_import_dir = Path(visual_import_dir).expanduser().resolve() if visual_import_dir is not None else None
         except (OSError, TypeError, ValueError):
@@ -632,7 +641,7 @@ class CourseFactoryApplication:
         if result.status == "failure":
             return self._failure(result.error_code or "SCRIPT_REVIEW_FAILED", state, result.error_message)
         if action == "approve":
-            updated = _State(TASK_ID, "planning", "advance_planning", state.refs, {**state.decision_ids, "script": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, "planning", "advance_planning", state.refs, {**state.decision_ids, "script": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         try:
@@ -659,7 +668,7 @@ class CourseFactoryApplication:
             if started.status == "failure":
                 return self._failure(started.error_code or "SCRIPT_REVIEW_FAILED", state, started.error_message)
             refs = {**state.refs, "script": revised_reference}
-            updated = _State(TASK_ID, "script_review", "approve_script", refs, {**state.decision_ids, "script": decision_id, "script_revision": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, "script_review", "approve_script", refs, {**state.decision_ids, "script": decision_id, "script_revision": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -702,7 +711,7 @@ class CourseFactoryApplication:
             if created.status != "success":
                 return self._failure(created.error_code or "MEDIA_TASK_CREATE_FAILED", state)
             refs = {**state.refs, "character": character_reference, "storyboard": storyboard_reference, "timeline": timeline_reference, "production_request": request_reference, "production_budget": budget_reference}
-            updated = _State(TASK_ID, "budget_review", "approve_budget", refs, {**state.decision_ids, "storyboard": storyboard_decision.decision_id}, None, None, None, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, "budget_review", "approve_budget", refs, {**state.decision_ids, "storyboard": storyboard_decision.decision_id}, None, None, None, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -726,7 +735,7 @@ class CourseFactoryApplication:
             if not isinstance(outcome, BudgetDecisionOutcome):
                 return self._failure(getattr(outcome, "code", "BUDGET_DECISION_FAILED"), state, getattr(outcome, "message", None))
             authorization_id = outcome.authorization.authorization_id if outcome.authorization else None
-            updated = _State(TASK_ID, "production" if action == "approve" else "budget_review", "produce_offline" if action == "approve" else "approve_budget", state.refs, {**state.decision_ids, "budget": outcome.decision.decision_id}, authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, "production" if action == "approve" else "budget_review", "produce_offline" if action == "approve" else "approve_budget", state.refs, {**state.decision_ids, "budget": outcome.decision.decision_id}, authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -746,6 +755,12 @@ class CourseFactoryApplication:
                 preflight = imported.preflight()
                 if isinstance(preflight, ProductionMediaFailure):
                     return self._failure(preflight.code, state, preflight.message)
+            if state.tts_mode == "gpt-sovits" and self.tts_configuration is None:
+                return self._failure("GPT_SOVITS_CONFIG_REQUIRED", state)
+            if state.tts_mode == "gpt-sovits" and self.tts_configuration is not None:
+                voice_preflight = GPTSoVITSSyntheticVoiceGenerator(self.workspace, self.tts_configuration).preflight()
+                if isinstance(voice_preflight, ProductionMediaFailure):
+                    return self._failure(voice_preflight.code, state, voice_preflight.message)
             result, composition = self._run_production(state)
             if isinstance(result, ProductionMediaFailure):
                 return self._failure(result.code, state, result.message)
@@ -769,7 +784,7 @@ class CourseFactoryApplication:
                 if selected.status != "success":
                     return self._failure(selected.error_code or "MEDIA_SELECTION_FAILED", state)
                 snapshot = selected.snapshot
-            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, composition, state.package_output, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -806,12 +821,18 @@ class CourseFactoryApplication:
                 replacement_voice = task.scenes[index].voice_result
             else:
                 replacement_visual = self._local_replacement_visual(task, scene_payload, scene_id)
-                replacement_voice = self._local_replacement_voice(task, scene_payload, scene_id)
+                # A GPT-SoVITS task is visual-only on replacement as well: do
+                # not synthesize a Fixture voice or create a second TTS result.
+                replacement_voice = (
+                    task.scenes[index].voice_result
+                    if state.tts_mode == "gpt-sovits"
+                    else self._local_replacement_voice(task, scene_payload, scene_id)
+                )
             scenes = list(task.scenes)
             scenes[index] = MediaCompositionScene(scene_id, scenes[index].start_milliseconds, scenes[index].end_milliseconds, replacement_visual, replacement_voice, scenes[index].subtitle_text)
             replaced_task = MediaCompositionTask(task.task_id, task.composition_id, task.production_request_reference, task.timeline_reference, tuple(scenes), task.output_reference)
             previous_result = self._composition_result(composition)
-            orchestrator = self._orchestrator(state.visual_mode)
+            orchestrator = self._orchestrator(state.visual_mode, state.tts_mode)
             result = orchestrator.compose(state.refs["production_request"], request, replaced_task, artifact_identity="media:episode-1", composition_commit_id="composition-replaced-1", previous_result=previous_result)
             if isinstance(result, ProductionMediaFailure):
                 return self._failure(result.code, state, result.message)
@@ -831,7 +852,7 @@ class CourseFactoryApplication:
             if review_started.status == "failure":
                 return self._failure(review_started.error_code or "FINAL_REVIEW_FAILED", state, review_started.error_message)
             updated_composition = self._composition_json(replaced_task, result)
-            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, updated_composition, None, None, None, True, state.visual_mode)
+            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, updated_composition, None, None, None, True, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -864,7 +885,7 @@ class CourseFactoryApplication:
                 next_stage, next_action = "rejected", None
             else:
                 next_stage, next_action = "final_review", "replace_scene"
-            updated = _State(TASK_ID, next_stage, next_action, state.refs, {**state.decision_ids, "final": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, next_stage, next_action, state.refs, {**state.decision_ids, "final": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -880,11 +901,23 @@ class CourseFactoryApplication:
             media = self._media_snapshot()
             subtitle = next(item.reference for item in media.delivery_selections if item.role == "subtitle" and item.status == "current")
             output = WorkspaceFileReference(TASK_ID, "exports", "episode-01.zip")
-            result = PublishPackageBuilder(self.artifacts, self.final_decisions, self.workspace).build(TASK_ID, state.refs["source"], subtitle, state.refs["video"], state.decision_ids["final"], artifact_identity="delivery:episode-1", manifest_commit_id="manifest:episode-1", package_commit_id="package:episode-1", output_reference=output)
+            if state.tts_mode == "gpt-sovits" and self.tts_configuration is None:
+                return self._failure("GPT_SOVITS_CONFIG_REQUIRED", state)
+            tts_attribution = (
+                GPTSoVITSSyntheticVoiceGenerator(self.workspace, self.tts_configuration).engine_metadata
+                if state.tts_mode == "gpt-sovits" and self.tts_configuration is not None
+                else None
+            )
+            result = PublishPackageBuilder(self.artifacts, self.final_decisions, self.workspace).build(
+                TASK_ID, state.refs["source"], subtitle, state.refs["video"], state.decision_ids["final"],
+                artifact_identity="delivery:episode-1", manifest_commit_id="manifest:episode-1",
+                package_commit_id="package:episode-1", output_reference=output,
+                tts_attribution=tts_attribution,
+            )
             if isinstance(result, PackagingFailure):
                 return self._failure(result.code, state, result.message)
             refs = {**state.refs, "manifest": result.manifest_reference, "package": result.package_reference}
-            updated = _State(TASK_ID, "exported", None, refs, state.decision_ids, state.authorization_id, state.composition, output, None, None, state.replacement_done, state.visual_mode)
+            updated = _State(TASK_ID, "exported", None, refs, state.decision_ids, state.authorization_id, state.composition, output, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return ApplicationResult("success", self._view(updated), package=result)
         except Exception:
@@ -910,7 +943,7 @@ class CourseFactoryApplication:
         started = ScriptReviewApplicationService(self.artifacts, ScriptDecisionBoundary(self.script_decisions), ScriptReviewWorkflow(self.artifacts, self.checkpoints)).start(TASK_ID, _script_thread(script_reference), script_reference)
         if started.status == "failure":
             raise RuntimeError
-        state = _State(TASK_ID, "script_review", "approve_script", {"source": source_reference, "knowledge": knowledge_reference, "course_plan": course_reference, "episode_plan": episode_reference, "script": script_reference}, {}, None, None, None, None, None, False, "imported" if self.visual_import_dir is not None else "fixture")
+        state = _State(TASK_ID, "script_review", "approve_script", {"source": source_reference, "knowledge": knowledge_reference, "course_plan": course_reference, "episode_plan": episode_reference, "script": script_reference}, {}, None, None, None, None, None, False, "imported" if self.visual_import_dir is not None else "fixture", "gpt-sovits" if self.tts_configuration is not None else "fixture")
         self._save_state(state)
         return state
 
@@ -927,7 +960,7 @@ class CourseFactoryApplication:
             ffprobe_executable=self.ffprobe_executable,
         )
 
-    def _orchestrator(self, visual_mode: str = "fixture") -> ProductionOrchestrator:
+    def _orchestrator(self, visual_mode: str = "fixture", tts_mode: str = "fixture") -> ProductionOrchestrator:
         boundary = BudgetAuthorizationBoundary(self.budget_decisions)
         ledger = ProviderAttemptLedger(boundary.get_authorization, self.attempts)
         visual = (
@@ -935,7 +968,12 @@ class CourseFactoryApplication:
             if visual_mode == "imported"
             else FFmpegFixtureVisualGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable)
         )
-        return ProductionOrchestrator(ledger, visual, FFmpegFixtureVoiceGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), clock=lambda: datetime.now(timezone.utc), media_composer=FFmpegMediaComposer(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), artifact_repository=self.artifacts)
+        voice = (
+            GPTSoVITSSyntheticVoiceGenerator(self.workspace, self.tts_configuration)
+            if tts_mode == "gpt-sovits" and self.tts_configuration is not None
+            else FFmpegFixtureVoiceGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable)
+        )
+        return ProductionOrchestrator(ledger, visual, voice, clock=lambda: datetime.now(timezone.utc), media_composer=FFmpegMediaComposer(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), artifact_repository=self.artifacts)
 
     def _validate_original_scene_attempts(self, state: _State, composition: Mapping[str, Any], index: int) -> None:
         """Require exact successful original Fixture attempts before replacement."""
@@ -979,12 +1017,13 @@ class CourseFactoryApplication:
             return ProductionMediaFailure("validation", authorization.code, authorization.message), {}
         scenes: list[MediaCompositionScene] = []
         start_ms = 0
-        orchestrator = self._orchestrator(state.visual_mode)
+        orchestrator = self._orchestrator(state.visual_mode, state.tts_mode)
         visual_provider = LOCAL_IMPORTED_PROVIDER if state.visual_mode == "imported" else "ffmpeg-fixture-visual-v1"
+        voice_provider = GPT_SOVITS_PROVIDER if state.tts_mode == "gpt-sovits" else "ffmpeg-fixture-voice-v1"
         for index, scene in enumerate(request.payload["production_request"]["scenes"], start=1):
             end_ms = start_ms + int(scene["duration_seconds"] * 1000)
             visual_reservation = ProviderAttemptReservation(f"attempt:offline:visual:{index}", TASK_ID, authorization.authorization_id, scene["scene_id"], "visual", visual_provider, f"offline-key:visual:{index}", WorkspaceFileReference(TASK_ID, "provider-records", f"offline-visual-{index}.json"), datetime.now(timezone.utc))
-            voice_reservation = ProviderAttemptReservation(f"attempt:offline:voice:{index}", TASK_ID, authorization.authorization_id, scene["scene_id"], "voice", "ffmpeg-fixture-voice-v1", f"offline-key:voice:{index}", WorkspaceFileReference(TASK_ID, "provider-records", f"offline-voice-{index}.json"), visual_reservation.reserved_at)
+            voice_reservation = ProviderAttemptReservation(f"attempt:offline:voice:{index}", TASK_ID, authorization.authorization_id, scene["scene_id"], "voice", voice_provider, f"offline-key:voice:{index}", WorkspaceFileReference(TASK_ID, "provider-records", f"offline-voice-{index}.json"), visual_reservation.reserved_at)
             visual = orchestrator.execute(request_reference, request, visual_reservation, VisualGenerationTask(TASK_ID, visual_reservation.attempt_id, request_reference, scene["scene_id"], "9:16", scene["duration_seconds"], scene["visual_intent"], scene["character_action"], WorkspaceFileReference(TASK_ID, "media", f"scene-{index}.mp4")))
             voice = orchestrator.execute(request_reference, request, voice_reservation, VoiceSynthesisTask(TASK_ID, voice_reservation.attempt_id, request_reference, scene["scene_id"], request.payload["production_request"]["language"], scene["duration_seconds"], scene["narration"], WorkspaceFileReference(TASK_ID, "media", f"scene-{index}.m4a")))
             if not isinstance(visual, ProductionExecutionResult) or not isinstance(voice, ProductionExecutionResult):
@@ -1054,10 +1093,10 @@ class CourseFactoryApplication:
         value = json.loads(row[1])
         refs = {key: _ref_from(raw) for key, raw in value["refs"].items()}
         output = _workspace_from(value["package_output"]) if value.get("package_output") else None
-        return _State(value["task_id"], value["stage"], value.get("pending_action"), refs, dict(value.get("decision_ids", {})), value.get("authorization_id"), value.get("composition"), output, value.get("failure_category"), value.get("failure_message"), bool(value.get("replacement_done", False)), value.get("visual_mode", "fixture"))
+        return _State(value["task_id"], value["stage"], value.get("pending_action"), refs, dict(value.get("decision_ids", {})), value.get("authorization_id"), value.get("composition"), output, value.get("failure_category"), value.get("failure_message"), bool(value.get("replacement_done", False)), value.get("visual_mode", "fixture"), value.get("tts_mode", "fixture"))
 
     def _save_state(self, state: _State) -> None:
-        value = {"task_id": state.task_id, "stage": state.stage, "pending_action": state.pending_action, "refs": {key: _ref_json(ref) for key, ref in state.refs.items()}, "decision_ids": dict(state.decision_ids), "authorization_id": state.authorization_id, "composition": state.composition, "package_output": _workspace_json(state.package_output) if state.package_output else None, "failure_category": state.failure_category, "failure_message": state.failure_message, "replacement_done": state.replacement_done, "visual_mode": state.visual_mode}
+        value = {"task_id": state.task_id, "stage": state.stage, "pending_action": state.pending_action, "refs": {key: _ref_json(ref) for key, ref in state.refs.items()}, "decision_ids": dict(state.decision_ids), "authorization_id": state.authorization_id, "composition": state.composition, "package_output": _workspace_json(state.package_output) if state.package_output else None, "failure_category": state.failure_category, "failure_message": state.failure_message, "replacement_done": state.replacement_done, "visual_mode": state.visual_mode, "tts_mode": state.tts_mode}
         encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
         self._state_connection.execute("INSERT INTO application_state(singleton, schema_version, state_json) VALUES(1, ?, ?) ON CONFLICT(singleton) DO UPDATE SET schema_version=excluded.schema_version, state_json=excluded.state_json", (_STATE_SCHEMA, encoded))
 
@@ -1075,7 +1114,7 @@ class CourseFactoryApplication:
         category = _failure_category(code)
         safe_message = _safe_actionable_failure(code, category, message)
         if state is not None:
-            failure_state = _State(state.task_id, state.stage, state.pending_action, state.refs, state.decision_ids, state.authorization_id, state.composition, state.package_output, category, safe_message, state.replacement_done, state.visual_mode)
+            failure_state = _State(state.task_id, state.stage, state.pending_action, state.refs, state.decision_ids, state.authorization_id, state.composition, state.package_output, category, safe_message, state.replacement_done, state.visual_mode, state.tts_mode)
             if persist_state:
                 try:
                     self._save_state(failure_state)
@@ -1142,7 +1181,17 @@ class CourseFactoryApplication:
             else None
         )
         prompt_cards = _prompt_cards(script_scenes, production_scenes) if state.visual_mode == "imported" else ()
-        return ApplicationView(TASK_ID, state.stage, state.pending_action, source.payload["commit_sha"], source_units[0]["locator"], tuple(unit["locator"] for unit in source_units), state.refs["script"], scenes, budget_amount, budget_attempts, state.authorization_id is not None, selected_delivery.get("video"), selected_delivery.get("subtitle"), state.refs.get("package"), state.package_output, state.failure_category, state.failure_message, tuple(available), True, state.replacement_done, attempt_count, attempt_statuses, charged_amount, local_label, prompt_cards, state.visual_mode)
+        return ApplicationView(
+            TASK_ID, state.stage, state.pending_action, source.payload["commit_sha"], source_units[0]["locator"],
+            tuple(unit["locator"] for unit in source_units), state.refs["script"], scenes, budget_amount,
+            budget_attempts, state.authorization_id is not None, selected_delivery.get("video"),
+            selected_delivery.get("subtitle"), state.refs.get("package"), state.package_output,
+            state.failure_category, state.failure_message, tuple(available), True, state.replacement_done,
+            attempt_count, attempt_statuses, charged_amount, local_label, prompt_cards, state.visual_mode,
+            GPT_SOVITS_PROVIDER if state.tts_mode == "gpt-sovits" else None,
+            "locally generated Qwen3-TTS Serena synthetic reference" if state.tts_mode == "gpt-sovits" else None,
+            0 if state.tts_mode == "gpt-sovits" else None,
+        )
 
 
 __all__ = ["ApplicationDownload", "ApplicationResult", "ApplicationView", "CourseFactoryApplication", "PromptCard", "SceneView"]

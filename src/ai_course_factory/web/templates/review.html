@@ -17,6 +17,7 @@
   {% elif view.stage == "production" %}
   <div class="callout"><h3>Offline Fixture run</h3><p>FFmpeg creates deterministic local media. No Visual or TTS Provider is called, and no network request is made.</p></div>
   {% endif %}
+  {% if view.tts_engine %}<div class="callout"><h3>Local narration: {{ view.tts_engine }}</h3><p>Reference: {{ view.tts_reference_provenance }} · application cloud/provider call: no · external charge: {{ view.tts_external_charge_micros }} micros.</p></div>{% endif %}
   {% if view.prompt_cards %}
   <div class="callout"><h3>Desktop ImageGen cards</h3><ol>{% for card in view.prompt_cards %}<li><strong>{{ card.scene_id }} · {{ card.target_filename }}</strong> — {{ card.prompt }}</li>{% endfor %}</ol></div>
   {% endif %}

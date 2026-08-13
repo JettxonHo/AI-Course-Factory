@@ -7,7 +7,7 @@
 | Status | Approved FAST-MVP System Baseline |
 | Approval | Product Owner, 2026-08-13 |
 | Product Input | `docs/product/PRD.md` |
-| Code Baseline | `main@5d4cae8bcb45e15cba036c45fc673f6245117a6b` |
+| Code Baseline | `main@b2642c18449e6d79b3b19fec39b7aeff564bf711` |
 | Supersedes | System Spec v1.0 for daily development |
 
 This document defines the smallest stable system that can deliver the approved product job. Physical files, libraries and task sequencing belong in the Implementation Spec and `GOAL.md`.
@@ -92,6 +92,8 @@ Provider-specific request/response objects stay inside the corresponding Adapter
 
 The bounded F2A local-import Visual adapter is an explicit exception to the paid-provider path: it accepts only `scene-1.png` through `scene-6.png` from the operator-declared directory (and exact `scene-2-replacement.png` for the one visual replacement), decodes the complete set before any production side effect, then uses local FFmpeg/ffprobe to create playable clips. It does not search Downloads/Desktop, call a Visual Provider API or infer a latest file. Budget approval still gates the conversion, its charge is zero, and package attribution records the external source honestly.
 
+The F2B local GPT-SoVITS adapter is a second bounded local implementation behind `VoiceGenerator`. It requires explicit external Python 3.11, official repository commit/model/config paths, exact reference audio/transcript and local FFmpeg tools; it performs complete preflight before the first attempt, invokes the official CLI with `shell=False`, normalizes narration to 48 kHz mono AAC/m4a and records zero external charge. It never starts a WebUI/API server, reads credentials or falls back to Fixture voice. F2A creator-supplied visuals remain the accepted visual asset boundary; automatic cloud Visual Provider work is deferred.
+
 ### Packaging
 
 Consumes the exact approved Video and delivery evidence, then writes the local MP4/SRT/source/Manifest package. It does not regenerate media or publish externally.
@@ -154,7 +156,7 @@ For a known safe failure, the workspace may offer bounded retry. For an uncertai
 
 ## 9. Verification by Risk
 
-- Product flow: browser-driven offline end-to-end, then one authorized real-provider end-to-end.
+- Product flow: browser-driven offline end-to-end, then one authorized real/local-media end-to-end using the accepted F2A visual assets and F2B local TTS.
 - Money/external effects: authorization, cap, attempt reservation and uncertain-retry tests.
 - Data lineage: exact source/decision/media/export assertions.
 - Scene recovery: one retry/replace integration test proving unaffected media is retained.

@@ -14,6 +14,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 from ai_course_factory.application import ApplicationResult, CourseFactoryApplication
+from ai_course_factory.production import GPTSoVITSConfiguration, GPT_SOVITS_REFERENCE_TRANSCRIPT
 
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
@@ -138,7 +139,13 @@ def _failure_page(templates: Jinja2Templates, request: Request, view_name: str, 
     )
 
 
-def create_app(data_dir: str | Path | None = None, *, application: CourseFactoryApplication | None = None, visual_import_dir: str | Path | None = None) -> FastAPI:
+def create_app(
+    data_dir: str | Path | None = None,
+    *,
+    application: CourseFactoryApplication | None = None,
+    visual_import_dir: str | Path | None = None,
+    tts_configuration: GPTSoVITSConfiguration | None = None,
+) -> FastAPI:
     """Create the local workspace app with one durable facade instance."""
     configured_dir = data_dir or os.environ.get("AI_COURSE_FACTORY_DATA_DIR") or ".ai-course-factory"
     templates = _templates()
@@ -156,6 +163,7 @@ def create_app(data_dir: str | Path | None = None, *, application: CourseFactory
     app.state.course_factory = application
     app.state.course_factory_data_dir = configured_dir
     app.state.course_factory_visual_import_dir = visual_import_dir if visual_import_dir is not None else os.environ.get("AI_COURSE_FACTORY_VISUAL_IMPORT_DIR")
+    app.state.course_factory_tts_configuration = tts_configuration
     app.state.templates = templates
     app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
@@ -176,7 +184,11 @@ def create_app(data_dir: str | Path | None = None, *, application: CourseFactory
 
     def facade() -> CourseFactoryApplication:
         if app.state.course_factory is None:
-            app.state.course_factory = CourseFactoryApplication(app.state.course_factory_data_dir, visual_import_dir=app.state.course_factory_visual_import_dir)
+            app.state.course_factory = CourseFactoryApplication(
+                app.state.course_factory_data_dir,
+                visual_import_dir=app.state.course_factory_visual_import_dir,
+                tts_configuration=app.state.course_factory_tts_configuration,
+            )
         return app.state.course_factory
 
     @app.get("/", response_class=HTMLResponse, name="start")
@@ -305,11 +317,40 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the AI Course Factory offline workspace")
     parser.add_argument("--data-dir", required=True, help="explicit durable local data directory")
     parser.add_argument("--visual-import-dir", required=False, help="explicit directory containing scene-1.png through scene-6.png")
+    parser.add_argument("--tts-external-python", required=False)
+    parser.add_argument("--tts-repository-root", required=False)
+    parser.add_argument("--tts-repository-commit", required=False)
+    parser.add_argument("--tts-inference-script", required=False)
+    parser.add_argument("--tts-config", required=False)
+    parser.add_argument("--tts-gpt-model", required=False)
+    parser.add_argument("--tts-sovits-model", required=False)
+    parser.add_argument("--tts-reference-audio", required=False)
+    parser.add_argument("--tts-reference-transcript", default=GPT_SOVITS_REFERENCE_TRANSCRIPT)
+    parser.add_argument("--tts-model-identifier", default="gsv-v2final-pretrained")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     import uvicorn
 
-    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir), host="127.0.0.1", port=args.port, log_level="info")
+    tts_values = (
+        args.tts_external_python, args.tts_repository_root, args.tts_repository_commit,
+        args.tts_inference_script, args.tts_config, args.tts_gpt_model,
+        args.tts_sovits_model, args.tts_reference_audio,
+    )
+    tts_configuration = None
+    if any(value is not None for value in tts_values):
+        tts_configuration = GPTSoVITSConfiguration(
+            external_python=args.tts_external_python or "",
+            repository_root=args.tts_repository_root or "",
+            repository_commit=args.tts_repository_commit or "",
+            inference_script=args.tts_inference_script or "",
+            tts_config=args.tts_config or "",
+            gpt_model=args.tts_gpt_model or "",
+            sovits_model=args.tts_sovits_model or "",
+            reference_audio=args.tts_reference_audio or "",
+            reference_transcript=args.tts_reference_transcript,
+            model_identifier=args.tts_model_identifier,
+        )
+    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir, tts_configuration=tts_configuration), host="127.0.0.1", port=args.port, log_level="info")
 
 
 if __name__ == "__main__":  # pragma: no cover

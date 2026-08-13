@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Mapping
 import hashlib
 import io
 import json
@@ -29,6 +30,26 @@ _HEX = frozenset("0123456789abcdefABCDEF")
 _ALNUM = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 _TOKEN = _ALNUM | frozenset("._-:")
 _LOCAL_IMPORTED_PROVIDER = "local-import-operator-declared-external-source"
+_TTS_ATTRIBUTION_KEYS = frozenset({
+    "engine",
+    "engine_version",
+    "repository_commit",
+    "model_identifier",
+    "runtime",
+    "reference_provenance",
+    "reference_transcript",
+    "application_provider_api_call",
+    "external_charge_micros",
+})
+_TTS_ATTRIBUTION_VALUES = {
+    "engine": "local-gpt-sovits-v2",
+    "engine_version": "v2",
+    "repository_commit": "d523079fc05d9a8028d6085bffe4a2757c32abb6",
+    "model_identifier": "gsv-v2final-pretrained",
+    "runtime": "external Python 3.11 + GPT-SoVITS repository",
+    "reference_provenance": "locally generated Qwen3-TTS Serena synthetic reference",
+    "reference_transcript": "你好，我是小土豆。今天我们一起认识人工智能。",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +79,21 @@ class _Invalid(Exception):
         self.message = message
 def _failure(kind: str, code: str, message: str) -> PackagingFailure:
     return PackagingFailure(kind, code, message)
+
+
+def _tts_attribution(value: object) -> dict[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping) or any(type(key) is not str for key in value) or set(value) != _TTS_ATTRIBUTION_KEYS:
+        raise _Invalid("INVALID_TTS_ATTRIBUTION")
+    for key, expected in _TTS_ATTRIBUTION_VALUES.items():
+        if type(value.get(key)) is not str or value[key] != expected:
+            raise _Invalid("INVALID_TTS_ATTRIBUTION")
+    if type(value.get("application_provider_api_call")) is not bool or value["application_provider_api_call"] is not False:
+        raise _Invalid("INVALID_TTS_ATTRIBUTION")
+    if type(value.get("external_charge_micros")) is not int or isinstance(value["external_charge_micros"], bool) or value["external_charge_micros"] != 0:
+        raise _Invalid("INVALID_TTS_ATTRIBUTION")
+    return {key: value[key] for key in _TTS_ATTRIBUTION_KEYS}
 
 
 def _text(value: object, *, code: str, limit: int = _MAX_IDENTITY, token: bool = False) -> str:
@@ -546,6 +582,7 @@ class PublishPackageBuilder:
         manifest_commit_id: str,
         package_commit_id: str,
         output_reference: WorkspaceFileReference,
+        tts_attribution: Mapping[str, object] | None = None,
     ) -> PublishPackageResult | PackagingFailure:
         try:
             _text(task_id, code="INVALID_TASK_ID", token=True)
@@ -557,6 +594,7 @@ class PublishPackageBuilder:
             _text(manifest_commit_id, code="INVALID_MANIFEST_COMMIT_ID")
             _text(package_commit_id, code="INVALID_PACKAGE_COMMIT_ID")
             output_reference = _safe_workspace(output_reference, task_id, "exports", "INVALID_OUTPUT_REFERENCE", ".zip")
+            validated_tts_attribution = _tts_attribution(tts_attribution)
 
             source = self._get(source_record_reference, "SOURCE_NOT_FOUND")
             subtitle = self._get(subtitle_reference, "SUBTITLE_NOT_FOUND")
@@ -569,6 +607,8 @@ class PublishPackageBuilder:
             imported_visuals = _visual_import_attribution(self._artifacts, video_payload)
             if imported_visuals is not None:
                 source_attribution = {**source_attribution, "visual_assets": imported_visuals}
+            if validated_tts_attribution is not None:
+                source_attribution = {**source_attribution, "tts": validated_tts_attribution}
             cues = _subtitle_version(subtitle_reference, subtitle, video_payload)
             if not _reachable(self._artifacts, video, source_record_reference):
                 raise _Invalid("SOURCE_LINEAGE_MISMATCH")

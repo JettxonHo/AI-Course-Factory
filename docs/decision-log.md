@@ -210,7 +210,7 @@ The Product Owner asked for the smallest end-to-end MVP that preserves all core 
 
 ### Decision
 
-1. Optimize remaining work for one fixed, browser-driven vertical Demo: source -> grounded Script approval -> planning -> Budget approval -> real Visual/TTS -> FFmpeg -> one Scene recovery -> Final approval -> export.
+1. Optimize remaining work for one fixed, browser-driven vertical Demo: source -> grounded Script approval -> planning -> Budget approval -> accepted creator-supplied visuals plus real/local TTS -> FFmpeg -> one Scene recovery -> Final approval -> export. (At decision time, the visual path was still to be selected.)
 2. Preserve six release-blocking invariants: source traceability, exact Script/Final decisions, authorized spend, safe uncertain paid attempts, unaffected Scene preservation and playable evidenced export.
 3. Treat other corruption, concurrency, mutation and future-schema defenses as task-specific only when a concrete changed boundary carries that risk.
 4. Reuse accepted M0–M3-009 work; do not reopen it or refactor broadly before the vertical flow works.
@@ -252,7 +252,7 @@ The real Visual Provider/model/credential decision (`PD-001`) remains open, whil
 3. Convert imported stills locally with the existing shell-disabled FFmpeg/ffprobe path into H.264 `yuv420p` 540x960 24fps MP4 at each Scene duration. Budget approval remains required, but the local-processing marker has zero external charge and is not a ChatGPT Provider attempt.
 4. Scene 2 replacement is visual-only: reuse the exact predecessor voice result and Scene Audio/Master Audio references, rebuild stale Video, and preserve all other Scene visual/audio selections. Missing or invalid replacement input changes no state.
 5. Restart replays committed imported production/replacement/final/package state without reconversion. Package source attribution must retain the exact GitHub repository URL, commit SHA and units while adding only honest visual facts: creator-supplied via ChatGPT Desktop ImageGen, generated outside application, model version not verified by application, no application Provider API call, zero external charge and the selected replacement basename.
-6. This decision does not select a real Visual/TTS Provider, authorize credentials or fees, or complete F2/F3 acceptance. It is candidate evidence for F2A only.
+6. At decision time this did not select a real Visual/TTS Provider, authorize credentials or fees, or complete F2/F3 acceptance; subsequent Issue #117 / PR #118 independently accepted the F2A creator-supplied visual boundary. F2B local TTS and F3 acceptance remain separate.
 
 ### Consequences
 
@@ -266,3 +266,33 @@ The real Visual Provider/model/credential decision (`PD-001`) remains open, whil
 - **Infer files from Downloads/Desktop/latest:** rejected because it is nondeterministic and would make provenance and restart replay unverifiable.
 - **Add a new Provider API or cloud SDK:** rejected because Desktop generation is outside the application and `PD-001` is still unresolved.
 - **Generate a replacement voice/audio result:** rejected because F2A is a visual-only replacement and must preserve exact predecessor audio references.
+
+## Decision D-006 — PD-002 Local GPT-SoVITS v2 narration
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted for bounded F2B implementation |
+| Decision Date | 2026-08-13 |
+| Decision Owner | Product Owner |
+| Applies To | Issue #119 / local GPT-SoVITS v2 TTS |
+| Product Decision | `PD-002` |
+
+### Context
+
+F2A supplies six creator-generated Desktop ImageGen stills outside the application. The next vertical gap is real spoken narration without introducing cloud credentials, API fees or a heavy dependency into the project Python 3.12 environment.
+
+### Decision
+
+1. Use the official GPT-SoVITS v2 pretrained inference path through an explicitly configured external Python 3.11 environment, repository/model cache and exact repository commit.
+2. Require an operator-configured reference WAV and exact transcript `你好，我是小土豆。今天我们一起认识人工智能。`; provenance is `locally generated Qwen3-TTS Serena synthetic reference`, not a user recording or application Provider call.
+3. Invoke the official CLI with an argv list and shell disabled; do not start WebUI/API servers, train, upload or read credentials. Preflight Python, repository commit, model/config paths, reference decodeability and output/tool boundaries before the first attempt or media write.
+4. Normalize generated narration with local shell-disabled FFmpeg to 48 kHz mono AAC/m4a, padding silence only when needed. Reject invalid or overlong speech without truncation or material speed-up.
+5. Keep the existing VoiceGenerator, Workflow, Artifact, Budget and attempt contracts. Record six initial local GPT-SoVITS voice attempts with charged amount zero. Visual-only Scene 2 replacement reuses exact predecessor voice/Scene Audio/Master Audio and does not infer again.
+6. Add TTS facts to package attribution while preserving GitHub source and F2A visual assets: engine/version, repo commit/model identifier, local runtime, reference provenance, `application_provider_api_call=false`, and `external_charge_micros=0`.
+7. F2.5 remains a separate next milestone; F3 waits for independent F2B acceptance and the F2.5 outcome. F2A creator-supplied visuals already satisfy the FAST-MVP visual asset boundary; automatic cloud Visual Provider work is deferred.
+
+### Consequences
+
+- `GPTSoVITSSyntheticVoiceGenerator` owns runtime preflight, CLI invocation, output validation and normalization behind `VoiceGenerator`.
+- The application accepts explicit TTS configuration and keeps the three server-rendered views; no upload manager, SPA or plugin framework is introduced.
+- Model weights, reference audio, cache paths and generated binaries remain outside the repository.

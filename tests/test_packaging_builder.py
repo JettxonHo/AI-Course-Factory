@@ -238,6 +238,74 @@ class PublishPackageBuilderTests(unittest.TestCase):
             repository.get(ArtifactReference("artifact_manifest", "delivery:episode-1", 2))
         self.assertEqual(workspace.workspace.read(PACKAGE_OUTPUT), package)
 
+    def test_tts_attribution_is_additive_and_preserves_github_source(self):
+        repository, workspace, builder, _video = self._builder()
+        result = builder.build(
+            TASK_ID, SOURCE, SUBTITLE, VIDEO, "decision-final-1",
+            artifact_identity="delivery:tts-attribution",
+            manifest_commit_id="manifest-tts-attribution",
+            package_commit_id="package-tts-attribution",
+            output_reference=PACKAGE_OUTPUT,
+            tts_attribution={
+                "engine": "local-gpt-sovits-v2",
+                "engine_version": "v2",
+                "repository_commit": "d523079fc05d9a8028d6085bffe4a2757c32abb6",
+                "model_identifier": "gsv-v2final-pretrained",
+                "runtime": "external Python 3.11 + GPT-SoVITS repository",
+                "reference_provenance": "locally generated Qwen3-TTS Serena synthetic reference",
+                "reference_transcript": "你好，我是小土豆。今天我们一起认识人工智能。",
+                "application_provider_api_call": False,
+                "external_charge_micros": 0,
+            },
+        )
+        self.assertIsInstance(result, PublishPackageResult)
+        package = workspace.workspace.read(PACKAGE_OUTPUT)
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            attribution = json.loads(archive.read("source-attribution.json"))
+        self.assertEqual(attribution["repository_url"], "https://github.com/microsoft/AI-For-Beginners")
+        self.assertEqual(attribution["tts"]["engine"], "local-gpt-sovits-v2")
+        self.assertFalse(attribution["tts"]["application_provider_api_call"])
+        self.assertEqual(attribution["tts"]["external_charge_micros"], 0)
+
+    def test_malformed_tts_attribution_fails_before_workspace_or_artifact_side_effects(self):
+        for malformed in (
+            {
+                "engine": "local-gpt-sovits-v2",
+                "engine_version": "v2",
+                "repository_commit": "d523079fc05d9a8028d6085bffe4a2757c32abb6",
+                "model_identifier": "gsv-v2final-pretrained",
+                "runtime": "external Python 3.11 + GPT-SoVITS repository",
+                "reference_provenance": "locally generated Qwen3-TTS Serena synthetic reference",
+                "reference_transcript": "你好，我是小土豆。今天我们一起认识人工智能。",
+                "application_provider_api_call": False,
+                "external_charge_micros": 0,
+                "local_model_path": "/outside/project",
+            },
+            {
+                "engine": "local-gpt-sovits-v2",
+                "engine_version": "v2",
+                "repository_commit": "d523079fc05d9a8028d6085bffe4a2757c32abb6",
+                "model_identifier": "gsv-v2final-pretrained",
+                "runtime": "external Python 3.11 + GPT-SoVITS repository",
+                "reference_provenance": "locally generated Qwen3-TTS Serena synthetic reference",
+                "reference_transcript": "你好，我是小土豆。今天我们一起认识人工智能。",
+                "application_provider_api_call": False,
+                "external_charge_micros": 1,
+            },
+        ):
+            repository, workspace, builder, _video = self._builder()
+            failure = builder.build(
+                TASK_ID, SOURCE, SUBTITLE, VIDEO, "decision-final-1",
+                artifact_identity="delivery:invalid-tts",
+                manifest_commit_id="manifest-invalid-tts",
+                package_commit_id="package-invalid-tts",
+                output_reference=PACKAGE_OUTPUT,
+                tts_attribution=malformed,
+            )
+            self.assertIsInstance(failure, PackagingFailure)
+            self.assertEqual(failure.code, "INVALID_TTS_ATTRIBUTION")
+            self.assertEqual((workspace.reads, workspace.commits, repository.commits), (0, 0, 0))
+
     def test_approval_lineage_and_media_validation_happen_before_workspace_read(self):
         repository, workspace, builder, _video = self._builder()
         foreign_decision = replace(builder._decisions.get("decision-final-1"), task_id="foreign-task")
