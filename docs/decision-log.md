@@ -191,3 +191,42 @@ The accepted architecture is a documentation baseline only. Issue #108 does not 
 - The canonical terms are **Task media projection**, **scene media selection** and **delivery media selection**.
 - System and Implementation Specs must describe an additive, typed, frozen/slotted value seam and backward-readable planning snapshots without inventing a concrete public API in this decision.
 - The later implementation Task Contract must choose the smallest verified application seam and backward-compatible SQLite schema evolution or additive table; no migration is performed by D-003.
+
+## Decision D-004 — Rebaseline Remaining Work to a Vertical FAST-MVP
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted |
+| Decision Date | 2026-08-13 |
+| Decision Owner | Product Owner |
+| Applies To | Remaining Core MVP work after M3-009 |
+| Supersedes | Remaining M3–M6 sequencing in Goal v1.0 |
+
+### Context
+
+The repository has a strong offline backend but no user-operable workspace or real Visual/TTS end-to-end path. Planning and defensive validation grew faster than product closure: many small PRs proved increasingly narrow repository, corruption, exact-type and concurrency cases while the Creator still could not complete the job through a UI.
+
+The Product Owner asked for the smallest end-to-end MVP that preserves all core user value and explicitly approved the FAST-MVP rebaseline.
+
+### Decision
+
+1. Optimize remaining work for one fixed, browser-driven vertical Demo: source -> grounded Script approval -> planning -> Budget approval -> real Visual/TTS -> FFmpeg -> one Scene recovery -> Final approval -> export.
+2. Preserve six release-blocking invariants: source traceability, exact Script/Final decisions, authorized spend, safe uncertain paid attempts, unaffected Scene preservation and playable evidenced export.
+3. Treat other corruption, concurrency, mutation and future-schema defenses as task-specific only when a concrete changed boundary carries that risk.
+4. Reuse accepted M0–M3-009 work; do not reopen it or refactor broadly before the vertical flow works.
+5. Give the in-flight Issue #110 candidate one bounded review/full regression. Merge if it fits without architectural rework; otherwise park it intact and implement only the vertical workspace's minimum need.
+6. Deliver F1 as one offline vertical workspace Issue/PR. Implement Visual and TTS Adapters only after separate Provider and spend decisions, then run one real acceptance Demo.
+7. Put routine Goal/STATUS synchronization in feature PRs instead of standalone status PRs.
+
+### Consequences
+
+- The PRD, both Specs, Goal, STATUS, workflow and Agent rules use the compact FAST-MVP v1.1 baseline.
+- Existing detailed historical evidence remains in Git/GitHub and is not duplicated in daily STATUS.
+- Main-agent independent review and exact Luna routing remain mandatory.
+- This decision authorizes F0/F1 offline work, but not Provider selection, credentials, fees, deployment or publication.
+
+### Rejected Alternatives
+
+- **Continue horizontal hardening before UI:** rejected because it delays validation of the primary user job.
+- **Discard the current backend and rewrite:** rejected because the existing planning, persistence, production, composition and packaging seams are reusable.
+- **Remove all safeguards:** rejected because claim accuracy, money, exact approvals, Scene recovery and export integrity are real MVP risks.

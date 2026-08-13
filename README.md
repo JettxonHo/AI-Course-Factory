@@ -2,36 +2,34 @@
 
 AI Course Factory 是一个本地优先的 AI 教育短视频生产应用。它把公开 GitHub 仓库中的可追溯知识，转换为经过人工审核的脚本、生产计划、视频和可导出的发布包。
 
-当前代码已完成第一条离线纵向切片：
+当前代码已具备从 Source 到本地 Publish Package 的大部分离线后端能力；获批的 FAST-MVP 方向是把这些能力尽快接成可操作的本地产品：
 
 ```text
 Public GitHub source
-  -> Source Record
-  -> grounded Knowledge
-  -> Course / Episode Plan
-  -> versioned Script
-  -> mandatory Script Review
-  -> exact approved Script Version
+  -> grounded Script + human review
+  -> production plan + budget approval
+  -> Visual/TTS + FFmpeg
+  -> final review + local export
 ```
 
-Production Planning、媒体生成、本地工作台和发布包仍未实现。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前已批准开发目标见 [GOAL.md](GOAL.md)。
+本地 Web 工作台、真实 Visual/TTS Adapter 和真实端到端 Demo 尚未完成。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
 
 ## 开始之前
 
-Codex 和开发者必须先阅读：
+Codex 和开发者按以下顺序阅读：
 
-1. [AGENTS.md](AGENTS.md)
-2. [docs/README.md](docs/README.md)
-3. [GOAL.md](GOAL.md)
-4. [docs/STATUS.md](docs/STATUS.md)
+1. [docs/README.md](docs/README.md)
+2. [GOAL.md](GOAL.md)
+3. [docs/STATUS.md](docs/STATUS.md)
+4. [AGENTS.md](AGENTS.md)
 
 ## 当前验证命令
 
 ```bash
-uv run python -m unittest discover -s tests -v
+PYTHONPATH=src uv run python -m unittest discover -s tests -v
 ```
 
-运行要求：Python 3.12。项目当前只依赖 LangGraph；未来依赖必须通过批准的有界任务加入。
+运行要求：Python 3.12。新增依赖只在当前纵向任务确有需要时加入。
 
 ## 权威文档
 
