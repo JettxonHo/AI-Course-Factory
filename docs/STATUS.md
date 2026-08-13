@@ -7,11 +7,11 @@ Observed: 2026-08-13 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| Merged baseline | `origin/main@5d4cae8bcb45e15cba036c45fc673f6245117a6b` |
-| Active planning branch | `codex/fast-mvp-rebaseline` in an isolated worktree |
-| Current implementation task | GitHub Issue #110 is open in the primary worktree |
-| Merged regression evidence | 340 local tests passed for the M3-009 package baseline; no hosted CI is claimed |
-| Rebaseline validation | 340/340 local tests passed in the isolated worktree with the explicit `PYTHONPATH=src` command below |
+| Merged baseline | `origin/main@ec36d5e818315695e5462a95f8e48af33d8a5f98` |
+| Active planning branch | `codex/fast-mvp-rebaseline-integration` |
+| Current implementation task | None; F1 is Ready and needs one unique Task Contract |
+| Merged regression evidence | 356 local tests passed after M3-010; no hosted CI is claimed |
+| Rebaseline validation | 356/356 local tests passed on the integration branch with the explicit `PYTHONPATH=src` command below |
 | Real product runtime | Not yet verified: no local web workspace and no real Visual/TTS end-to-end evidence |
 | Provider authorization | Not granted; `PD-001`–`PD-003` remain required |
 
@@ -32,6 +32,7 @@ This file is a current snapshot, not authorization and not a historical PR trans
 - Exact Scene Clip/Audio, Subtitle, logical Master Audio and Video Artifacts.
 - Mandatory Final Video Review.
 - Deterministic local Publish Package and Artifact Manifest.
+- Durable current/stale Scene and delivery media projection merged through Issue #110 / PR #111.
 
 These facts prove a substantial offline backend. They do not prove a usable UI, prompt-faithful visuals, spoken TTS, live pricing, paid execution, deployment or adoption.
 
@@ -39,38 +40,23 @@ These facts prove a substantial offline backend. They do not prove a usable UI, 
 
 1. One application facade joining the existing modules into task-level use cases.
 2. A browser workspace for source input, evidence, approvals, status, video review, Scene action and export.
-3. Merged minimal Scene media selection/retry behavior.
-4. One authorized real Visual Adapter.
-5. One authorized real TTS Adapter.
-6. One capped browser-driven real end-to-end Demo and exported evidence package.
+3. One authorized real Visual Adapter.
+4. One authorized real TTS Adapter.
+5. One capped browser-driven real end-to-end Demo and exported evidence package.
 
 ## 4. Current Concurrent Work
 
-Issue #110 — **M3-010: durable scene-scoped Task media projection contract** — is open. At the time of this snapshot, the primary worktree contains an unmerged candidate touching:
+F0 is complete. Issue #110 passed independent review and merged through PR #111 at `main@ec36d5e`; focused tests were 10 application + 6 SQLite integration, and the post-merge full regression was 356/356.
 
-- `src/ai_course_factory/application/__init__.py`;
-- `src/ai_course_factory/application/media_task.py`;
-- `src/ai_course_factory/application/sqlite_media_task.py`;
-- `tests/application/test_task_media_projection.py`;
-- `tests/integration/test_sqlite_task_media_projection.py`.
-
-Reported focused evidence is 13 passing tests. The candidate is not merged evidence until the main controller independently reviews the actual Diff and runs the full regression.
-
-F0 disposition:
-
-- merge after one bounded review if it fits the vertical workspace without architectural rework; or
-- park it intact if another redesign/correction cycle is required.
-
-No other task may overwrite or clean these files.
+There is no current implementation Task Contract. F1 must remain one vertical workspace Issue and one main PR.
 
 ## 5. Current Direction and Next Actions
 
 1. Merge the FAST-MVP rebaseline.
-2. Resolve Issue #110 using the F0 rule.
-3. Open one F1 vertical workspace Issue/PR and dispatch exact `luna-worker`.
-4. Demonstrate the complete offline browser path with local/Fake media and FFmpeg.
-5. Ask the Product Owner for `PD-001`, `PD-002` and `PD-003` only when F1 can consume real Adapters.
-6. Implement the real Visual and TTS Adapters, then run F3 acceptance.
+2. Open one F1 vertical workspace Issue/PR and dispatch exact `luna-worker`.
+3. Demonstrate the complete offline browser path with local/Fake media and FFmpeg.
+4. Ask the Product Owner for `PD-001`, `PD-002` and `PD-003` only when F1 can consume real Adapters.
+5. Implement the real Visual and TTS Adapters, then run F3 acceptance.
 
 Do not open new horizontal hardening, status-only or future-architecture tasks before F1 unless an observed blocker requires them.
 

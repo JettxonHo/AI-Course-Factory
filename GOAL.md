@@ -7,7 +7,7 @@
 | Status | **ACTIVE / APPROVED** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Baseline | `main@5d4cae8bcb45e15cba036c45fc673f6245117a6b` |
+| Baseline | `main@ec36d5e818315695e5462a95f8e48af33d8a5f98` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -42,10 +42,10 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 
 Observed on 2026-08-13:
 
-- `origin/main` is `5d4cae8bcb45e15cba036c45fc673f6245117a6b`.
-- The merged baseline has 340 passing local regression tests and no claimed hosted CI evidence.
+- `origin/main` is `ec36d5e818315695e5462a95f8e48af33d8a5f98`.
+- The merged baseline has 356 passing local regression tests and no claimed hosted CI evidence.
 - Source-to-package offline modules exist; the web workspace and real Visual/TTS path do not.
-- Issue #110 is open. Its unmerged candidate exists in a separate primary worktree, with 13 focused tests reported green; it has not yet passed independent review or full regression and is not part of this baseline.
+- Issue #110 was independently reviewed and merged through PR #111; the durable Scene media projection is part of this baseline.
 - No real Provider, credential, spend, deployment or production runtime is authorized by this Goal approval.
 
 `docs/STATUS.md` owns the current factual snapshot if these facts change.
@@ -54,18 +54,17 @@ Observed on 2026-08-13:
 
 ### F0 — Rebaseline and resolve Issue #110
 
-Status: **READY**
+Status: **COMPLETE**
 
-1. Merge this FAST-MVP planning rebaseline.
-2. Give Issue #110 one bounded independent review and one full regression run.
-3. If it is compatible with the vertical workspace and needs no architecture rewrite, merge it.
-4. If review requires a second redesign/correction cycle, park it without deleting the candidate; F1 implements only the smallest Scene media state it actually needs.
+1. Issue #110 received one bounded independent review and one full regression run.
+2. The compatible candidate was merged through PR #111 without architectural rework.
+3. This FAST-MVP planning rebaseline is integrated after that merge.
 
 Exit: daily truth sources point to FAST-MVP, and #110 is either merged/closed or explicitly parked with preserved work.
 
 ### F1 — Offline usable workspace
 
-Status: **READY AFTER F0**
+Status: **READY**
 
 One Issue and one main PR deliver:
 
