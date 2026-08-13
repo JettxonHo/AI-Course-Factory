@@ -648,8 +648,8 @@ class CourseFactoryApplication:
             budget_reference = state.refs["production_budget"]
             request, budget = self.artifacts.get(request_reference), self.artifacts.get(budget_reference)
             estimate = budget.payload["estimate"]
-            maximum_attempts = maximum_attempts or budget.payload["retry_policy"]["maximum_attempts"]
-            maximum_approved_amount_micros = maximum_approved_amount_micros or estimate["policy_maximum_amount_micros"]
+            maximum_attempts = budget.payload["retry_policy"]["maximum_attempts"] if maximum_attempts is None else maximum_attempts
+            maximum_approved_amount_micros = estimate["policy_maximum_amount_micros"] if maximum_approved_amount_micros is None else maximum_approved_amount_micros
             boundary = BudgetAuthorizationBoundary(self.budget_decisions)
             outcome = boundary.decide(request_reference, request, budget_reference, budget, decision_id="decision:budget:offline", authorization_id="authorization:offline" if action == "approve" else None, task_id=TASK_ID, thread_id=THREAD_ID, creator_id=CREATOR_ID, decided_at=datetime.now(timezone.utc), action=action, maximum_approved_amount_micros=maximum_approved_amount_micros if action == "approve" else None, maximum_attempts=maximum_attempts if action == "approve" else None, decision_context=decision_context)
             if not isinstance(outcome, BudgetDecisionOutcome):
