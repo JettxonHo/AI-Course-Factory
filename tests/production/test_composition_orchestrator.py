@@ -245,6 +245,148 @@ class ProductionCompositionOrchestratorTests(unittest.TestCase):
         self.assertEqual(tuple(video.payload["scene_clip_references"]), result.scene_clip_references)
         self.assertEqual(video.payload["output_reference"], {"task_id": task.task_id, "area": "media", "name": "composition.mp4"})
 
+    def test_compose_scene_replace_reuses_unaffected_media_and_revises_derived_delivery(self):
+        request_reference, request, task, ledger, composer, repository = _composition_case()
+        orchestrator = ProductionOrchestrator(
+            ledger, object(), object(), clock=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            media_composer=composer, artifact_repository=repository,
+        )
+        first = orchestrator.compose(
+            request_reference, request, task,
+            artifact_identity="media:episode-1", composition_commit_id="composition-commit-1",
+        )
+        self.assertIsInstance(first, ProductionCompositionResult)
+
+        changed_scene = task.scenes[1]
+        replacement_visual = replace(
+            changed_scene.visual_result,
+            attempt_id="attempt:visual-replacement",
+            output_reference=WorkspaceFileReference(task.task_id, "media", "scene-2-replacement.mp4"),
+        )
+        replacement_voice = replace(
+            changed_scene.voice_result,
+            attempt_id="attempt:voice-replacement",
+            output_reference=WorkspaceFileReference(task.task_id, "media", "scene-2-replacement.m4a"),
+        )
+        replacement_visual_reservation = _reservation(
+            _authorization_and_request(task_id=task.task_id)[2],
+            attempt_id="attempt:visual-replacement", scene_id="scene-2",
+        )
+        replacement_voice_reservation = _reservation(
+            _authorization_and_request(task_id=task.task_id)[2],
+            attempt_id="attempt:voice-replacement", operation="voice", provider="fake-voice-v1", scene_id="scene-2",
+        )
+        # Keep the fixture's exact production request/budget lineage while
+        # adding terminal records for the bounded replacement attempts.
+        ledger.records["attempt:visual-replacement"] = _record(
+            request_reference, replacement_visual_reservation,
+            status="succeeded", output_references=(replacement_visual.output_reference,),
+            result_code="SUCCESS", charged=0, completed_at=datetime(2026, 8, 12, 0, 0, 1, tzinfo=timezone.utc),
+        )
+        ledger.records["attempt:voice-replacement"] = _record(
+            request_reference, replacement_voice_reservation,
+            status="succeeded", output_references=(replacement_voice.output_reference,),
+            result_code="SUCCESS", charged=0, completed_at=datetime(2026, 8, 12, 0, 0, 1, tzinfo=timezone.utc),
+        )
+        replaced_task = replace(
+            task,
+            scenes=(task.scenes[0], replace(changed_scene, visual_result=replacement_visual, voice_result=replacement_voice)),
+            output_reference=WorkspaceFileReference(task.task_id, "media", "composition-v2.mp4"),
+        )
+        second = orchestrator.compose(
+            request_reference, request, replaced_task,
+            artifact_identity="media:episode-1", composition_commit_id="composition-commit-2",
+            previous_result=first,
+        )
+        self.assertIsInstance(second, ProductionCompositionResult)
+        self.assertEqual(second.scene_clip_references[0], first.scene_clip_references[0])
+        self.assertEqual(second.scene_audio_references[0], first.scene_audio_references[0])
+        self.assertEqual(second.scene_clip_references[1].version, first.scene_clip_references[1].version + 1)
+        self.assertEqual(second.scene_audio_references[1].version, first.scene_audio_references[1].version + 1)
+        self.assertEqual(repository.get(second.scene_clip_references[1]).prior_reference, first.scene_clip_references[1])
+        self.assertEqual(repository.get(second.scene_audio_references[1]).prior_reference, first.scene_audio_references[1])
+        self.assertEqual(second.subtitle_reference, first.subtitle_reference)
+        self.assertEqual(second.master_audio_reference.version, first.master_audio_reference.version + 1)
+        self.assertEqual(repository.get(second.master_audio_reference).prior_reference, first.master_audio_reference)
+        self.assertEqual(second.video_reference.version, first.video_reference.version + 1)
+        self.assertEqual(repository.get(second.video_reference).prior_reference, first.video_reference)
+
+    def test_local_replacement_marker_requires_exactly_one_ordered_scene(self):
+        request_reference, request, task, ledger, composer, repository = _composition_case()
+        orchestrator = ProductionOrchestrator(
+            ledger, object(), object(), clock=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            media_composer=composer, artifact_repository=repository,
+        )
+        first = orchestrator.compose(
+            request_reference, request, task,
+            artifact_identity="media:episode-1", composition_commit_id="composition-commit-1",
+        )
+        self.assertIsInstance(first, ProductionCompositionResult)
+        marked_scenes = []
+        for scene in task.scenes:
+            marked_scenes.append(replace(
+                scene,
+                visual_result=replace(
+                    scene.visual_result,
+                    attempt_id=f"local-replace:{scene.scene_id}:visual",
+                    provider="ffmpeg-fixture-local-replacement-v1",
+                    output_reference=WorkspaceFileReference(task.task_id, "media", f"{scene.scene_id}-replacement.mp4"),
+                ),
+                voice_result=replace(
+                    scene.voice_result,
+                    attempt_id=f"local-replace:{scene.scene_id}:voice",
+                    provider="ffmpeg-fixture-local-replacement-v1",
+                    output_reference=WorkspaceFileReference(task.task_id, "media", f"{scene.scene_id}-replacement.m4a"),
+                ),
+            ))
+        repository_spy = _RepositorySpy(repository)
+        invalid = ProductionOrchestrator(
+            ledger, object(), object(), clock=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            media_composer=composer, artifact_repository=repository_spy,
+        ).compose(
+            request_reference, request, replace(task, scenes=tuple(marked_scenes)),
+            artifact_identity="media:episode-1", composition_commit_id="composition-forged-markers",
+            previous_result=first,
+        )
+        self.assertEqual(invalid.code, "INVALID_COMPOSITION_CONTEXT")
+        self.assertEqual(repository_spy.commit_calls, [])
+        self.assertEqual(len(composer.calls), 1)
+
+        selected = replace(
+            task.scenes[1],
+            visual_result=replace(
+                task.scenes[1].visual_result,
+                attempt_id="local-replace:scene-2:visual",
+                provider="ffmpeg-fixture-local-replacement-v1",
+                output_reference=WorkspaceFileReference(task.task_id, "media", "scene-2-replacement.mp4"),
+            ),
+            voice_result=replace(
+                task.scenes[1].voice_result,
+                attempt_id="local-replace:scene-2:voice",
+                provider="ffmpeg-fixture-local-replacement-v1",
+                output_reference=WorkspaceFileReference(task.task_id, "media", "scene-2-replacement.m4a"),
+            ),
+        )
+        forged_unaffected = replace(
+            task.scenes[0],
+            visual_result=replace(
+                task.scenes[0].visual_result,
+                output_reference=WorkspaceFileReference(task.task_id, "media", "scene-1-forged.mp4"),
+            ),
+        )
+        repository_spy = _RepositorySpy(repository)
+        invalid_unaffected = ProductionOrchestrator(
+            ledger, object(), object(), clock=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            media_composer=composer, artifact_repository=repository_spy,
+        ).compose(
+            request_reference, request, replace(task, scenes=(forged_unaffected, selected)),
+            artifact_identity="media:episode-1", composition_commit_id="composition-forged-unaffected",
+            previous_result=first,
+        )
+        self.assertEqual(invalid_unaffected.code, "INVALID_COMPOSITION_CONTEXT")
+        self.assertEqual(repository_spy.commit_calls, [])
+        self.assertEqual(len(composer.calls), 1)
+
     def test_invalid_context_and_attempt_state_fail_before_commit_or_composer(self):
         request_reference, request, task, ledger, composer, repository = _composition_case()
         repository = _RepositorySpy(repository)

@@ -413,6 +413,7 @@ class ProductionOrchestrator:
         *,
         artifact_identity: str,
         composition_commit_id: str,
+        previous_result: ProductionCompositionResult | None = None,
     ) -> ProductionCompositionResult | ProductionMediaFailure:
         return compose_product_path(
             self._attempt_ledger,
@@ -423,6 +424,7 @@ class ProductionOrchestrator:
             composition_task,
             artifact_identity=artifact_identity,
             composition_commit_id=composition_commit_id,
+            previous_result=previous_result,
         )
 
 
