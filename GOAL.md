@@ -7,7 +7,7 @@
 | Status | **ACTIVE / APPROVED** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Baseline | `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc` |
+| Baseline | `main@72ef53805aa33aa847d35f70d4a36303681ecec1` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -25,6 +25,7 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 - Build the minimal application facade and local three-view web workspace.
 - Connect the already merged offline planning, approval, production, composition and packaging capabilities.
 - Implement only the Scene selection/retry behavior needed by the product flow.
+- Provide the bounded F2A Desktop ImageGen local-import bridge: an explicit operator directory, exact six-image preflight, local conversion and visual-only Scene 2 replacement. This bridge is external-source evidence, not a real Visual Provider implementation.
 - After separate Product Owner Provider/budget decisions, implement one real Visual Adapter and one real TTS Adapter.
 - Run and document one fixed-source real end-to-end acceptance Demo.
 - Update affected current truth docs inside the same feature PR when facts change.
@@ -78,6 +79,14 @@ One Issue and one main PR deliver:
 - browser evidence plus focused tests and one full regression run.
 
 Exit: a person can complete the fixed Demo offline without calling internal modules manually.
+
+### F2A — Creator-supplied Desktop ImageGen visual bridge
+
+Status: **LOCALLY IMPLEMENTED / CANDIDATE EVIDENCE PENDING**
+
+Issue #117 adds an explicit `--visual-import-dir` path for six creator-supplied PNG/JPEG stills. The application preflights every exact filename and decodes each image before any production attempt, workspace media write or Artifact commit; local FFmpeg produces the playable H.264 clips after Budget approval at zero external charge. Scene 2 replacement accepts only `scene-2-replacement.png`, reuses the predecessor voice/Scene Audio/Master Audio selections, rebuilds stale video, and preserves all unaffected Scene references. Restart replays the committed result without reconversion, and package attribution states that the images were supplied through ChatGPT Desktop ImageGen, generated outside the application, with model version unverified.
+
+F2A does not call a cloud Visual Provider, use credentials or complete the real-provider milestone. Exit requires the main controller's candidate evidence review of the browser flow, six-image conversion, safe atomic preflight failure, visual-only replacement, restart and ZIP replay.
 
 ### F2 — Real Visual and TTS
 

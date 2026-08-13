@@ -3,6 +3,11 @@
 from .fake import DeterministicFakeVisualGenerator, DeterministicFakeVoiceGenerator
 from .ffmpeg_composer import FFmpegMediaComposer
 from .ffmpeg_fixture import FFmpegFixtureVisualGenerator, FFmpegFixtureVoiceGenerator
+from .local_imported import (
+    LOCAL_IMPORTED_PROVIDER,
+    LocalImportedPreflight,
+    LocalImportedVisualGenerator,
+)
 
 __all__ = [
     "DeterministicFakeVisualGenerator",
@@ -10,4 +15,7 @@ __all__ = [
     "FFmpegMediaComposer",
     "FFmpegFixtureVisualGenerator",
     "FFmpegFixtureVoiceGenerator",
+    "LOCAL_IMPORTED_PROVIDER",
+    "LocalImportedPreflight",
+    "LocalImportedVisualGenerator",
 ]

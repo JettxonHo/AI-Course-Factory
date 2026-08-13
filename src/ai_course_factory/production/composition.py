@@ -293,7 +293,13 @@ def _load_attempts(
             attempt_ids.add(result.attempt_id)
             if (
                 previous_result is not None
-                and result.provider == _LOCAL_REPLACEMENT_PROVIDER
+                and (
+                    result.provider == _LOCAL_REPLACEMENT_PROVIDER
+                    or (
+                        result.provider == _LOCAL_IMPORTED_PROVIDER
+                        and result.attempt_id.startswith("local-replace:")
+                    )
+                )
             ):
                 # F1's bounded offline Scene action intentionally creates a
                 # local deterministic Fixture without a Provider Attempt.  It
@@ -502,6 +508,7 @@ def _previous_result_refs(
 
 
 _LOCAL_REPLACEMENT_PROVIDER = "ffmpeg-fixture-local-replacement-v1"
+_LOCAL_IMPORTED_PROVIDER = "local-import-operator-declared-external-source"
 
 
 def _validate_local_replacement(
@@ -513,7 +520,11 @@ def _validate_local_replacement(
     """Allow only one exact local replacement Scene in a predecessor compose."""
     marker_indexes: list[int] = []
     for index, scene in enumerate(context.task.scenes):
-        visual_marker = type(scene.visual_result) is MediaGenerationResult and scene.visual_result.provider == _LOCAL_REPLACEMENT_PROVIDER
+        visual_marker = (
+            type(scene.visual_result) is MediaGenerationResult
+            and scene.visual_result.provider in {_LOCAL_REPLACEMENT_PROVIDER, _LOCAL_IMPORTED_PROVIDER}
+            and scene.visual_result.attempt_id == f"local-replace:{context.scenes[index][0]}:visual"
+        )
         voice_marker = type(scene.voice_result) is MediaGenerationResult and scene.voice_result.provider == _LOCAL_REPLACEMENT_PROVIDER
         if visual_marker or voice_marker:
             marker_indexes.append(index)
@@ -529,27 +540,57 @@ def _validate_local_replacement(
     scene_id = context.scenes[index][0]
     visual = scene.visual_result
     voice = scene.voice_result
+    imported_visual = visual.provider == _LOCAL_IMPORTED_PROVIDER
     expected_visual_output = WorkspaceFileReference(context.task.task_id, "media", f"{scene_id}-replacement.mp4")
     expected_voice_output = WorkspaceFileReference(context.task.task_id, "media", f"{scene_id}-replacement.m4a")
-    if (
-        type(visual) is not MediaGenerationResult
-        or type(voice) is not MediaGenerationResult
-        or visual.attempt_id != f"local-replace:{scene_id}:visual"
+    valid_common = (
+        type(visual) is MediaGenerationResult
+        and type(voice) is MediaGenerationResult
+        and visual.attempt_id == f"local-replace:{scene_id}:visual"
+        and visual.scene_id == scene_id
+        and voice.scene_id == scene_id
+        and visual.operation == "visual"
+        and voice.operation == "voice"
+        and visual.provider in {_LOCAL_REPLACEMENT_PROVIDER, _LOCAL_IMPORTED_PROVIDER}
+        and visual.output_reference == expected_visual_output
+        and visual.media_type == "video/mp4"
+        and visual.result_code == "SUCCESS"
+        and visual.duration_seconds == (context.scenes[index][2] - context.scenes[index][1]) / 1000
+    )
+    if imported_visual:
+        # Imported replacement is visual-only.  The exact predecessor voice
+        # result and selected Audio Artifact remain untouched.
+        prior_audio_reference = previous_refs[1][index]
+        try:
+            prior_audio = repository.get(prior_audio_reference)
+        except Exception:
+            raise _ArtifactStorage from None
+        prior_payload = prior_audio.payload if type(prior_audio) is ArtifactVersion else None
+        expected_output = prior_payload.get("output_reference") if isinstance(prior_payload, Mapping) else None
+        voice_matches_predecessor = (
+            isinstance(prior_payload, Mapping)
+            and prior_payload.get("production_request_reference") == context.request_reference
+            and prior_payload.get("scene_id") == scene_id
+            and prior_payload.get("attempt_id") == voice.attempt_id
+            and prior_payload.get("provider") == voice.provider
+            and prior_payload.get("media_type") == voice.media_type
+            and prior_payload.get("duration_milliseconds") == (context.scenes[index][2] - context.scenes[index][1])
+            and expected_output == {
+                "task_id": voice.output_reference.task_id,
+                "area": voice.output_reference.area,
+                "name": voice.output_reference.name,
+            }
+        )
+        if not valid_common or not voice_matches_predecessor:
+            raise _InvalidContext
+    elif (
+        not valid_common
         or voice.attempt_id != f"local-replace:{scene_id}:voice"
-        or visual.scene_id != scene_id
-        or voice.scene_id != scene_id
-        or visual.operation != "visual"
-        or voice.operation != "voice"
-        or visual.provider != _LOCAL_REPLACEMENT_PROVIDER
         or voice.provider != _LOCAL_REPLACEMENT_PROVIDER
-        or visual.output_reference != expected_visual_output
         or voice.output_reference != expected_voice_output
-        or visual.media_type != "video/mp4"
         or voice.media_type != "audio/mp4"
-        or visual.result_code != "SUCCESS"
         or voice.result_code != "SUCCESS"
         or visual.duration_seconds != voice.duration_seconds
-        or visual.duration_seconds != (context.scenes[index][2] - context.scenes[index][1]) / 1000
     ):
         raise _InvalidContext
     # The bounded replacement input must differ from its exact predecessor in
@@ -596,7 +637,8 @@ def _validate_local_replacement(
             continue
         if (
             type(other_scene.visual_result) is MediaGenerationResult
-            and other_scene.visual_result.provider == _LOCAL_REPLACEMENT_PROVIDER
+            and other_scene.visual_result.provider in {_LOCAL_REPLACEMENT_PROVIDER, _LOCAL_IMPORTED_PROVIDER}
+            and other_scene.visual_result.attempt_id.startswith("local-replace:")
         ) or (
             type(other_scene.voice_result) is MediaGenerationResult
             and other_scene.voice_result.provider == _LOCAL_REPLACEMENT_PROVIDER

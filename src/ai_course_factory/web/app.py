@@ -138,7 +138,7 @@ def _failure_page(templates: Jinja2Templates, request: Request, view_name: str, 
     )
 
 
-def create_app(data_dir: str | Path | None = None, *, application: CourseFactoryApplication | None = None) -> FastAPI:
+def create_app(data_dir: str | Path | None = None, *, application: CourseFactoryApplication | None = None, visual_import_dir: str | Path | None = None) -> FastAPI:
     """Create the local workspace app with one durable facade instance."""
     configured_dir = data_dir or os.environ.get("AI_COURSE_FACTORY_DATA_DIR") or ".ai-course-factory"
     templates = _templates()
@@ -155,6 +155,7 @@ def create_app(data_dir: str | Path | None = None, *, application: CourseFactory
     # on a different thread from the caller that built the ASGI app.
     app.state.course_factory = application
     app.state.course_factory_data_dir = configured_dir
+    app.state.course_factory_visual_import_dir = visual_import_dir if visual_import_dir is not None else os.environ.get("AI_COURSE_FACTORY_VISUAL_IMPORT_DIR")
     app.state.templates = templates
     app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
@@ -175,7 +176,7 @@ def create_app(data_dir: str | Path | None = None, *, application: CourseFactory
 
     def facade() -> CourseFactoryApplication:
         if app.state.course_factory is None:
-            app.state.course_factory = CourseFactoryApplication(app.state.course_factory_data_dir)
+            app.state.course_factory = CourseFactoryApplication(app.state.course_factory_data_dir, visual_import_dir=app.state.course_factory_visual_import_dir)
         return app.state.course_factory
 
     @app.get("/", response_class=HTMLResponse, name="start")
@@ -303,11 +304,12 @@ def create_app(data_dir: str | Path | None = None, *, application: CourseFactory
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the AI Course Factory offline workspace")
     parser.add_argument("--data-dir", required=True, help="explicit durable local data directory")
+    parser.add_argument("--visual-import-dir", required=False, help="explicit directory containing scene-1.png through scene-6.png")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     import uvicorn
 
-    uvicorn.run(create_app(args.data_dir), host="127.0.0.1", port=args.port, log_level="info")
+    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir), host="127.0.0.1", port=args.port, log_level="info")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -29,7 +29,7 @@ The MVP is successful only when this job works through the local workspace. More
 | Audience / language | Adult AI beginners / Simplified Chinese |
 | Shape | Six ordered Scenes, about 60 seconds, 9:16 |
 | Runtime | Local, single-user, one active Demo task |
-| Media | One authorized Visual Provider + one authorized TTS Provider + local FFmpeg |
+| Media | One authorized Visual Provider + one authorized TTS Provider + local FFmpeg; F2A may use creator-supplied Desktop ImageGen stills from an explicit directory, generated outside the application at zero external charge |
 | Delivery | Playable MP4, SRT, source attribution and Artifact Manifest |
 
 ## 4. Core User Flow
@@ -39,7 +39,7 @@ The MVP is successful only when this job works through the local workspace. More
 3. Creator approves, rejects or revises the Script with visible source evidence.
 4. The system produces Character, Storyboard, Timeline and a provider-neutral Production Request.
 5. The system estimates cost; Creator explicitly approves a maximum amount and attempt count.
-6. The Production Orchestrator generates Scene visuals and narration, then FFmpeg composes a playable video and subtitles.
+6. The Production Orchestrator generates Scene visuals and narration, then FFmpeg composes a playable video and subtitles. In the bounded F2A local-import mode, the Creator supplies six exact Desktop ImageGen stills and the application only performs local conversion after Budget approval; no Visual Provider API is called.
 7. Creator can retry or replace one failed/unsatisfactory Scene without deleting other usable Scene media.
 8. Creator approves or rejects the final video and exports the delivery package.
 9. Refresh or process restart restores the task sufficiently to continue the Demo.
@@ -73,6 +73,7 @@ The MVP is successful only when this job works through the local workspace. More
 - `PR-017` Associate each Scene result with the exact Production Request and execution attempt.
 - `PR-018` Generate narration through TTS and compose visual, audio and subtitles into the video.
 - `PR-019` Final MVP evidence includes an authorized real Visual and real TTS path; Fake/local Fixtures remain development evidence only.
+- `PR-019A` The F2A local-import mode accepts only `scene-1.png` through `scene-6.png` (and exact `scene-2-replacement.png` for replacement), decodes all inputs atomically before attempts/media/Artifacts, charges zero external amount, and preserves the predecessor voice/Scene Audio/Master Audio during a visual-only replacement.
 
 ### Recovery, review and delivery
 
@@ -113,6 +114,8 @@ The MVP is accepted when one browser-driven Demo proves:
 
 Required evidence is the browser flow, the exported package, one real Provider execution record per Adapter, focused tests for changed behavior and the full regression run before merge/acceptance.
 
+Issue #117's F2A candidate evidence is intentionally separate from this real-provider acceptance: it covers six local image inputs, exact preflight failure, local H.264 conversion, visual-only replacement, restart replay and honest external-source attribution. It does not complete `PR-019` or the F3 real-provider milestone.
+
 ## 8. Non-goals
 
 - Multi-user, authentication, permissions, SaaS or production deployment.
@@ -129,4 +132,4 @@ Required evidence is the browser flow, the exported package, one real Provider e
 - `PD-002` TTS Provider, voice and credential source.
 - `PD-003` Smoke-test and full-Demo cost/attempt caps.
 
-FAST-MVP approval does not authorize credentials, Provider calls, fees or deployment. Those decisions are required before the real-provider milestone.
+FAST-MVP approval does not authorize credentials, Provider calls, fees or deployment. Those decisions are required before the real-provider milestone; F2A's external image generation remains outside the application and uses no application Provider call.

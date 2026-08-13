@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 import shutil
 import sqlite3
+import re
 from typing import Any, Mapping
 
 from ai_course_factory.agents import (
@@ -61,6 +62,8 @@ from ai_course_factory.production import (
     FFmpegFixtureVisualGenerator,
     FFmpegFixtureVoiceGenerator,
     FFmpegMediaComposer,
+    LOCAL_IMPORTED_PROVIDER,
+    LocalImportedVisualGenerator,
     MediaCompositionScene,
     MediaCompositionTask,
     MediaGenerationResult,
@@ -144,6 +147,46 @@ def _safe_failure_message(category: str | None) -> str:
     }.get(category, "That action could not be completed. The current task state was preserved.")
 
 
+def _safe_actionable_failure(code: str, category: str | None, detail: str | None) -> str:
+    if code.startswith("LOCAL_IMPORT"):
+        allowed = set(re.findall(r"scene-(?:[1-6](?:-replacement)?|2-replacement)\.png", detail or ""))
+        if allowed:
+            names = tuple(name for name in (*tuple(f"scene-{index}.png" for index in range(1, 7)), "scene-2-replacement.png") if name in allowed)
+            return f"Local visual import requires valid PNG/JPEG files: {', '.join(names)}."
+        if code == "LOCAL_IMPORT_DIRECTORY_REQUIRED":
+            return "An explicit local visual import directory is required."
+    return _safe_failure_message(category)
+
+
+def _prompt_cards(script_scenes: object, production_scenes: object = None) -> tuple[PromptCard, ...]:
+    if type(script_scenes) is not tuple or len(script_scenes) != 6:
+        return ()
+    style = "9:16 vertical educational illustration; keep the friendly 小土豆 character and blue scarf consistent across all scenes"
+    cards: list[PromptCard] = []
+    production_by_id = {
+        scene.get("scene_id"): scene
+        for scene in production_scenes
+        if isinstance(scene, Mapping) and type(scene.get("scene_id")) is str
+    } if type(production_scenes) is tuple else {}
+    for index, scene in enumerate(script_scenes, start=1):
+        if not isinstance(scene, Mapping):
+            return ()
+        scene_id = scene.get("scene_id")
+        planned = production_by_id.get(scene.get("scene_id"), {})
+        intent = planned.get("visual_intent", scene.get("teaching_intent", ""))
+        action = planned.get("character_action", "挥手。" if index % 2 else "转身。")
+        if type(scene_id) is not str or type(intent) is not str:
+            return ()
+        target = f"scene-{index}.png"
+        prompt = (
+            f"{scene_id} | target filename: {target}. {style}. "
+            f"Scene intent: {intent}. Character action: {action}. "
+            "No text, no watermark."
+        )
+        cards.append(PromptCard(scene_id, target, style, intent, action, prompt))
+    return tuple(cards)
+
+
 @dataclass(frozen=True, slots=True)
 class SceneView:
     scene_id: str
@@ -152,6 +195,18 @@ class SceneView:
     selected_clip_reference: ArtifactReference | None = None
     selected_audio_reference: ArtifactReference | None = None
     status: str = "planned"
+
+
+@dataclass(frozen=True, slots=True)
+class PromptCard:
+    """Frozen, copyable prompt guidance for one exact imported image."""
+
+    scene_id: str
+    target_filename: str
+    style_character_continuity: str
+    scene_intent: str
+    character_action: str
+    prompt: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,6 +235,8 @@ class ApplicationView:
     provider_attempt_statuses: tuple[str, ...] = ()
     provider_attempt_charged_amount_micros: int = 0
     local_replacement_label: str | None = None
+    prompt_cards: tuple[PromptCard, ...] = ()
+    visual_mode: str = "fixture"
 
 
 @dataclass(frozen=True, slots=True)
@@ -213,6 +270,7 @@ class _State:
     failure_category: str | None = None
     failure_message: str | None = None
     replacement_done: bool = False
+    visual_mode: str = "fixture"
 
 
 class _FixtureTransport:
@@ -422,7 +480,14 @@ def _subtitle_bytes(version: ArtifactVersion) -> bytes:
 class CourseFactoryApplication:
     """Durable one-task offline application facade used by the web workspace."""
 
-    def __init__(self, data_dir: str | Path, *, ffmpeg_executable: str | None = None, ffprobe_executable: str | None = None) -> None:
+    def __init__(
+        self,
+        data_dir: str | Path,
+        *,
+        ffmpeg_executable: str | None = None,
+        ffprobe_executable: str | None = None,
+        visual_import_dir: str | Path | None = None,
+    ) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.workspace_root = self.data_dir / "workspace"
@@ -443,6 +508,12 @@ class CourseFactoryApplication:
         self.checkpoints = SQLiteCheckpointAdapter(self.database_path)
         self.ffmpeg_executable = ffmpeg_executable or shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
         self.ffprobe_executable = ffprobe_executable or shutil.which("ffprobe") or "/opt/homebrew/bin/ffprobe"
+        try:
+            self.visual_import_dir = Path(visual_import_dir).expanduser().resolve() if visual_import_dir is not None else None
+        except (OSError, TypeError, ValueError):
+            # Preserve explicit-but-invalid import mode so it fails closed at
+            # preflight instead of silently falling back to Fixture visuals.
+            self.visual_import_dir = Path("\0") if visual_import_dir is not None else None
 
     def close(self) -> None:
         for value in (self.checkpoints, self.media_repository, self.attempts, self.budget_decisions, self.final_decisions, self.storyboard_decisions, self.script_decisions, self.artifacts):
@@ -561,7 +632,7 @@ class CourseFactoryApplication:
         if result.status == "failure":
             return self._failure(result.error_code or "SCRIPT_REVIEW_FAILED", state, result.error_message)
         if action == "approve":
-            updated = _State(TASK_ID, "planning", "advance_planning", state.refs, {**state.decision_ids, "script": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done)
+            updated = _State(TASK_ID, "planning", "advance_planning", state.refs, {**state.decision_ids, "script": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         try:
@@ -588,7 +659,7 @@ class CourseFactoryApplication:
             if started.status == "failure":
                 return self._failure(started.error_code or "SCRIPT_REVIEW_FAILED", state, started.error_message)
             refs = {**state.refs, "script": revised_reference}
-            updated = _State(TASK_ID, "script_review", "approve_script", refs, {**state.decision_ids, "script": decision_id, "script_revision": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done)
+            updated = _State(TASK_ID, "script_review", "approve_script", refs, {**state.decision_ids, "script": decision_id, "script_revision": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -631,7 +702,7 @@ class CourseFactoryApplication:
             if created.status != "success":
                 return self._failure(created.error_code or "MEDIA_TASK_CREATE_FAILED", state)
             refs = {**state.refs, "character": character_reference, "storyboard": storyboard_reference, "timeline": timeline_reference, "production_request": request_reference, "production_budget": budget_reference}
-            updated = _State(TASK_ID, "budget_review", "approve_budget", refs, {**state.decision_ids, "storyboard": storyboard_decision.decision_id}, None, None, None, None, None, state.replacement_done)
+            updated = _State(TASK_ID, "budget_review", "approve_budget", refs, {**state.decision_ids, "storyboard": storyboard_decision.decision_id}, None, None, None, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -655,7 +726,7 @@ class CourseFactoryApplication:
             if not isinstance(outcome, BudgetDecisionOutcome):
                 return self._failure(getattr(outcome, "code", "BUDGET_DECISION_FAILED"), state, getattr(outcome, "message", None))
             authorization_id = outcome.authorization.authorization_id if outcome.authorization else None
-            updated = _State(TASK_ID, "production" if action == "approve" else "budget_review", "produce_offline" if action == "approve" else "approve_budget", state.refs, {**state.decision_ids, "budget": outcome.decision.decision_id}, authorization_id, state.composition, state.package_output, None, None, state.replacement_done)
+            updated = _State(TASK_ID, "production" if action == "approve" else "budget_review", "produce_offline" if action == "approve" else "approve_budget", state.refs, {**state.decision_ids, "budget": outcome.decision.decision_id}, authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -670,6 +741,11 @@ class CourseFactoryApplication:
         if state.stage != "production" or state.pending_action != "produce_offline":
             return self._failure("BUDGET_APPROVAL_REQUIRED", state)
         try:
+            if state.visual_mode == "imported":
+                imported = self._local_imported_visual_generator()
+                preflight = imported.preflight()
+                if isinstance(preflight, ProductionMediaFailure):
+                    return self._failure(preflight.code, state, preflight.message)
             result, composition = self._run_production(state)
             if isinstance(result, ProductionMediaFailure):
                 return self._failure(result.code, state, result.message)
@@ -693,7 +769,7 @@ class CourseFactoryApplication:
                 if selected.status != "success":
                     return self._failure(selected.error_code or "MEDIA_SELECTION_FAILED", state)
                 snapshot = selected.snapshot
-            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, composition, state.package_output, None, None, state.replacement_done)
+            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -707,6 +783,8 @@ class CourseFactoryApplication:
             return self._failure("SCENE_REPLACEMENT_UNAVAILABLE", state)
         if scene_id not in SCENE_IDS:
             return self._failure("INVALID_SCENE_ID", state)
+        if state.visual_mode == "imported" and scene_id != "scene-2":
+            return self._failure("SCENE_REPLACEMENT_UNAVAILABLE", state)
         try:
             composition = dict(state.composition or {})
             self._validate_original_scene_attempts(state, composition, SCENE_IDS.index(scene_id))
@@ -714,13 +792,26 @@ class CourseFactoryApplication:
             index = SCENE_IDS.index(scene_id)
             request = self.artifacts.get(state.refs["production_request"])
             scene_payload = request.payload["production_request"]["scenes"][index]
-            replacement_visual = self._local_replacement_visual(task, scene_payload, scene_id)
-            replacement_voice = self._local_replacement_voice(task, scene_payload, scene_id)
+            if state.visual_mode == "imported":
+                imported = self._local_imported_visual_generator()
+                preflight = imported.preflight(replacement=True)
+                if isinstance(preflight, ProductionMediaFailure):
+                    # A missing/invalid operator file is a read-only
+                    # preflight failure: show the actionable response, but
+                    # do not turn the durable task snapshot into a new state.
+                    return self._failure(preflight.code, state, preflight.message, persist_state=False)
+                replacement_visual = self._local_imported_replacement_visual(imported, task, scene_payload, scene_id)
+                # Imported replacement is visual-only.  Keep the exact
+                # predecessor voice result and its selected Audio Artifact.
+                replacement_voice = task.scenes[index].voice_result
+            else:
+                replacement_visual = self._local_replacement_visual(task, scene_payload, scene_id)
+                replacement_voice = self._local_replacement_voice(task, scene_payload, scene_id)
             scenes = list(task.scenes)
             scenes[index] = MediaCompositionScene(scene_id, scenes[index].start_milliseconds, scenes[index].end_milliseconds, replacement_visual, replacement_voice, scenes[index].subtitle_text)
             replaced_task = MediaCompositionTask(task.task_id, task.composition_id, task.production_request_reference, task.timeline_reference, tuple(scenes), task.output_reference)
             previous_result = self._composition_result(composition)
-            orchestrator = self._orchestrator()
+            orchestrator = self._orchestrator(state.visual_mode)
             result = orchestrator.compose(state.refs["production_request"], request, replaced_task, artifact_identity="media:episode-1", composition_commit_id="composition-replaced-1", previous_result=previous_result)
             if isinstance(result, ProductionMediaFailure):
                 return self._failure(result.code, state, result.message)
@@ -728,7 +819,8 @@ class CourseFactoryApplication:
             snapshot = media.inspect(TASK_ID).snapshot
             if snapshot is None:
                 return self._failure("MEDIA_TASK_NOT_FOUND", state)
-            for role, reference in (("scene_clip", result.scene_clip_references[index]), ("scene_audio", result.scene_audio_references[index]), ("master_audio", result.master_audio_reference), ("video", result.video_reference)):
+            replacement_roles = (("scene_clip", result.scene_clip_references[index]), ("video", result.video_reference)) if state.visual_mode == "imported" else (("scene_clip", result.scene_clip_references[index]), ("scene_audio", result.scene_audio_references[index]), ("master_audio", result.master_audio_reference), ("video", result.video_reference))
+            for role, reference in replacement_roles:
                 selected = media.select_scene(TASK_ID, f"media:replace:{role}:{scene_id}", snapshot.revision, scene_id, role, reference) if role.startswith("scene_") else media.select_delivery(TASK_ID, f"media:replace:{role}", snapshot.revision, role, reference)
                 if selected.status != "success":
                     return self._failure(selected.error_code or "MEDIA_SELECTION_FAILED", state)
@@ -739,7 +831,7 @@ class CourseFactoryApplication:
             if review_started.status == "failure":
                 return self._failure(review_started.error_code or "FINAL_REVIEW_FAILED", state, review_started.error_message)
             updated_composition = self._composition_json(replaced_task, result)
-            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, updated_composition, None, None, None, True)
+            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, state.authorization_id, updated_composition, None, None, None, True, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -772,7 +864,7 @@ class CourseFactoryApplication:
                 next_stage, next_action = "rejected", None
             else:
                 next_stage, next_action = "final_review", "replace_scene"
-            updated = _State(TASK_ID, next_stage, next_action, state.refs, {**state.decision_ids, "final": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done)
+            updated = _State(TASK_ID, next_stage, next_action, state.refs, {**state.decision_ids, "final": decision_id}, state.authorization_id, state.composition, state.package_output, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
@@ -792,7 +884,7 @@ class CourseFactoryApplication:
             if isinstance(result, PackagingFailure):
                 return self._failure(result.code, state, result.message)
             refs = {**state.refs, "manifest": result.manifest_reference, "package": result.package_reference}
-            updated = _State(TASK_ID, "exported", None, refs, state.decision_ids, state.authorization_id, state.composition, output, None, None, state.replacement_done)
+            updated = _State(TASK_ID, "exported", None, refs, state.decision_ids, state.authorization_id, state.composition, output, None, None, state.replacement_done, state.visual_mode)
             self._save_state(updated)
             return ApplicationResult("success", self._view(updated), package=result)
         except Exception:
@@ -818,17 +910,32 @@ class CourseFactoryApplication:
         started = ScriptReviewApplicationService(self.artifacts, ScriptDecisionBoundary(self.script_decisions), ScriptReviewWorkflow(self.artifacts, self.checkpoints)).start(TASK_ID, _script_thread(script_reference), script_reference)
         if started.status == "failure":
             raise RuntimeError
-        state = _State(TASK_ID, "script_review", "approve_script", {"source": source_reference, "knowledge": knowledge_reference, "course_plan": course_reference, "episode_plan": episode_reference, "script": script_reference}, {}, None, None, None, None, None, False)
+        state = _State(TASK_ID, "script_review", "approve_script", {"source": source_reference, "knowledge": knowledge_reference, "course_plan": course_reference, "episode_plan": episode_reference, "script": script_reference}, {}, None, None, None, None, None, False, "imported" if self.visual_import_dir is not None else "fixture")
         self._save_state(state)
         return state
 
     def _price_snapshot(self, request_reference: ArtifactReference, request: ArtifactVersion) -> PriceSnapshot:
         return PriceSnapshot("offline-fixture-prices-v1", "local-fixture", "USD", request_reference, tuple(item for scene in request.payload["production_request"]["scenes"] for item in (PriceLineItem(scene["scene_id"], "visual", "per_scene", 1, 1_000), PriceLineItem(scene["scene_id"], "voice", "per_scene", 1, 500))))
 
-    def _orchestrator(self) -> ProductionOrchestrator:
+    def _local_imported_visual_generator(self) -> LocalImportedVisualGenerator:
+        if self.visual_import_dir is None:
+            raise RuntimeError("explicit local visual import directory is required")
+        return LocalImportedVisualGenerator(
+            self.workspace,
+            self.visual_import_dir,
+            ffmpeg_executable=self.ffmpeg_executable,
+            ffprobe_executable=self.ffprobe_executable,
+        )
+
+    def _orchestrator(self, visual_mode: str = "fixture") -> ProductionOrchestrator:
         boundary = BudgetAuthorizationBoundary(self.budget_decisions)
         ledger = ProviderAttemptLedger(boundary.get_authorization, self.attempts)
-        return ProductionOrchestrator(ledger, FFmpegFixtureVisualGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), FFmpegFixtureVoiceGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), clock=lambda: datetime.now(timezone.utc), media_composer=FFmpegMediaComposer(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), artifact_repository=self.artifacts)
+        visual = (
+            self._local_imported_visual_generator()
+            if visual_mode == "imported"
+            else FFmpegFixtureVisualGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable)
+        )
+        return ProductionOrchestrator(ledger, visual, FFmpegFixtureVoiceGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), clock=lambda: datetime.now(timezone.utc), media_composer=FFmpegMediaComposer(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable), artifact_repository=self.artifacts)
 
     def _validate_original_scene_attempts(self, state: _State, composition: Mapping[str, Any], index: int) -> None:
         """Require exact successful original Fixture attempts before replacement."""
@@ -865,15 +972,18 @@ class CourseFactoryApplication:
     def _run_production(self, state: _State) -> tuple[ProductionCompositionResult | ProductionMediaFailure, Mapping[str, Any]]:
         request_reference = state.refs["production_request"]
         request = self.artifacts.get(request_reference)
+        if state.visual_mode == "imported" and self.visual_import_dir is None:
+            return ProductionMediaFailure("validation", "LOCAL_IMPORT_DIRECTORY_REQUIRED", "an explicit local visual import directory is required"), {}
         authorization = BudgetAuthorizationBoundary(self.budget_decisions).get_authorization(state.authorization_id or "")
         if isinstance(authorization, BudgetFailure):
             return ProductionMediaFailure("validation", authorization.code, authorization.message), {}
         scenes: list[MediaCompositionScene] = []
         start_ms = 0
-        orchestrator = self._orchestrator()
+        orchestrator = self._orchestrator(state.visual_mode)
+        visual_provider = LOCAL_IMPORTED_PROVIDER if state.visual_mode == "imported" else "ffmpeg-fixture-visual-v1"
         for index, scene in enumerate(request.payload["production_request"]["scenes"], start=1):
             end_ms = start_ms + int(scene["duration_seconds"] * 1000)
-            visual_reservation = ProviderAttemptReservation(f"attempt:offline:visual:{index}", TASK_ID, authorization.authorization_id, scene["scene_id"], "visual", "ffmpeg-fixture-visual-v1", f"offline-key:visual:{index}", WorkspaceFileReference(TASK_ID, "provider-records", f"offline-visual-{index}.json"), datetime.now(timezone.utc))
+            visual_reservation = ProviderAttemptReservation(f"attempt:offline:visual:{index}", TASK_ID, authorization.authorization_id, scene["scene_id"], "visual", visual_provider, f"offline-key:visual:{index}", WorkspaceFileReference(TASK_ID, "provider-records", f"offline-visual-{index}.json"), datetime.now(timezone.utc))
             voice_reservation = ProviderAttemptReservation(f"attempt:offline:voice:{index}", TASK_ID, authorization.authorization_id, scene["scene_id"], "voice", "ffmpeg-fixture-voice-v1", f"offline-key:voice:{index}", WorkspaceFileReference(TASK_ID, "provider-records", f"offline-voice-{index}.json"), visual_reservation.reserved_at)
             visual = orchestrator.execute(request_reference, request, visual_reservation, VisualGenerationTask(TASK_ID, visual_reservation.attempt_id, request_reference, scene["scene_id"], "9:16", scene["duration_seconds"], scene["visual_intent"], scene["character_action"], WorkspaceFileReference(TASK_ID, "media", f"scene-{index}.mp4")))
             voice = orchestrator.execute(request_reference, request, voice_reservation, VoiceSynthesisTask(TASK_ID, voice_reservation.attempt_id, request_reference, scene["scene_id"], request.payload["production_request"]["language"], scene["duration_seconds"], scene["narration"], WorkspaceFileReference(TASK_ID, "media", f"scene-{index}.m4a")))
@@ -904,6 +1014,24 @@ class CourseFactoryApplication:
             raise RuntimeError
         return MediaGenerationResult(result.attempt_id, result.scene_id, result.operation, "ffmpeg-fixture-local-replacement-v1", result.output_reference, result.media_type, result.duration_seconds, result.result_code)
 
+    def _local_imported_replacement_visual(self, adapter: LocalImportedVisualGenerator, task: MediaCompositionTask, scene: Mapping[str, Any], scene_id: str) -> MediaGenerationResult:
+        result = adapter.generate(
+            VisualGenerationTask(
+                TASK_ID,
+                f"local-replace:{scene_id}:visual",
+                task.production_request_reference,
+                scene_id,
+                "9:16",
+                scene["duration_seconds"],
+                scene["visual_intent"],
+                scene["character_action"],
+                WorkspaceFileReference(TASK_ID, "media", f"{scene_id}-replacement.mp4"),
+            )
+        )
+        if not isinstance(result, MediaGenerationResult):
+            raise RuntimeError
+        return result
+
     def _local_replacement_voice(self, task: MediaCompositionTask, scene: Mapping[str, Any], scene_id: str) -> MediaGenerationResult:
         attempt_id = f"local-replace:{scene_id}:voice"
         result = FFmpegFixtureVoiceGenerator(self.workspace, ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable).synthesize(VoiceSynthesisTask(TASK_ID, attempt_id, task.production_request_reference, scene_id, "Simplified Chinese", scene["duration_seconds"], scene["narration"] + "（替换）", WorkspaceFileReference(TASK_ID, "media", f"{scene_id}-replacement.m4a")))
@@ -926,26 +1054,37 @@ class CourseFactoryApplication:
         value = json.loads(row[1])
         refs = {key: _ref_from(raw) for key, raw in value["refs"].items()}
         output = _workspace_from(value["package_output"]) if value.get("package_output") else None
-        return _State(value["task_id"], value["stage"], value.get("pending_action"), refs, dict(value.get("decision_ids", {})), value.get("authorization_id"), value.get("composition"), output, value.get("failure_category"), value.get("failure_message"), bool(value.get("replacement_done", False)))
+        return _State(value["task_id"], value["stage"], value.get("pending_action"), refs, dict(value.get("decision_ids", {})), value.get("authorization_id"), value.get("composition"), output, value.get("failure_category"), value.get("failure_message"), bool(value.get("replacement_done", False)), value.get("visual_mode", "fixture"))
 
     def _save_state(self, state: _State) -> None:
-        value = {"task_id": state.task_id, "stage": state.stage, "pending_action": state.pending_action, "refs": {key: _ref_json(ref) for key, ref in state.refs.items()}, "decision_ids": dict(state.decision_ids), "authorization_id": state.authorization_id, "composition": state.composition, "package_output": _workspace_json(state.package_output) if state.package_output else None, "failure_category": state.failure_category, "failure_message": state.failure_message, "replacement_done": state.replacement_done}
+        value = {"task_id": state.task_id, "stage": state.stage, "pending_action": state.pending_action, "refs": {key: _ref_json(ref) for key, ref in state.refs.items()}, "decision_ids": dict(state.decision_ids), "authorization_id": state.authorization_id, "composition": state.composition, "package_output": _workspace_json(state.package_output) if state.package_output else None, "failure_category": state.failure_category, "failure_message": state.failure_message, "replacement_done": state.replacement_done, "visual_mode": state.visual_mode}
         encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
         self._state_connection.execute("INSERT INTO application_state(singleton, schema_version, state_json) VALUES(1, ?, ?) ON CONFLICT(singleton) DO UPDATE SET schema_version=excluded.schema_version, state_json=excluded.state_json", (_STATE_SCHEMA, encoded))
 
     def _success(self, state: _State) -> ApplicationResult:
         return ApplicationResult("success", self._view(state))
 
-    def _failure(self, code: str, state: _State | None = None, message: str | None = None) -> ApplicationResult:
+    def _failure(
+        self,
+        code: str,
+        state: _State | None = None,
+        message: str | None = None,
+        *,
+        persist_state: bool = True,
+    ) -> ApplicationResult:
         category = _failure_category(code)
+        safe_message = _safe_actionable_failure(code, category, message)
         if state is not None:
-            failure_state = _State(state.task_id, state.stage, state.pending_action, state.refs, state.decision_ids, state.authorization_id, state.composition, state.package_output, category, _safe_failure_message(category), state.replacement_done)
-            try:
-                self._save_state(failure_state)
+            failure_state = _State(state.task_id, state.stage, state.pending_action, state.refs, state.decision_ids, state.authorization_id, state.composition, state.package_output, category, safe_message, state.replacement_done, state.visual_mode)
+            if persist_state:
+                try:
+                    self._save_state(failure_state)
+                    state = failure_state
+                except Exception:
+                    pass
+            else:
                 state = failure_state
-            except Exception:
-                pass
-        return ApplicationResult("failure", self._view(state) if state else None, code, _safe_failure_message(category))
+        return ApplicationResult("failure", self._view(state) if state else None, code, safe_message)
 
     def _view(self, state: _State | None) -> ApplicationView | None:
         if state is None:
@@ -954,6 +1093,13 @@ class CourseFactoryApplication:
         script = self.artifacts.get(state.refs["script"])
         source_units = source.payload["units"]
         script_scenes = script.payload["scenes"]
+        production_scenes = None
+        if "production_request" in state.refs:
+            try:
+                request = self.artifacts.get(state.refs["production_request"])
+                production_scenes = request.payload["production_request"]["scenes"]
+            except Exception:
+                production_scenes = None
         media = None
         try:
             media = self._media_snapshot()
@@ -988,8 +1134,15 @@ class CourseFactoryApplication:
             available = ("approve_final", "reject_final") if state.replacement_done else ("approve_final", "reject_final", "replace_scene")
         else:
             available = {"planning": ("advance_planning",), "budget_review": ("approve_budget",), "production": ("produce_offline",), "exported": (), "rejected": ()}.get(state.stage, ())
-        local_label = "Local deterministic replacement (not a Provider attempt)." if state.replacement_done else None
-        return ApplicationView(TASK_ID, state.stage, state.pending_action, source.payload["commit_sha"], source_units[0]["locator"], tuple(unit["locator"] for unit in source_units), state.refs["script"], scenes, budget_amount, budget_attempts, state.authorization_id is not None, selected_delivery.get("video"), selected_delivery.get("subtitle"), state.refs.get("package"), state.package_output, state.failure_category, state.failure_message, tuple(available), True, state.replacement_done, attempt_count, attempt_statuses, charged_amount, local_label)
+        local_label = (
+            "Imported visual replacement; source supplied via ChatGPT Desktop ImageGen, generated outside the application (zero external charge)."
+            if state.replacement_done and state.visual_mode == "imported"
+            else "Local deterministic replacement (not a Provider attempt)."
+            if state.replacement_done
+            else None
+        )
+        prompt_cards = _prompt_cards(script_scenes, production_scenes) if state.visual_mode == "imported" else ()
+        return ApplicationView(TASK_ID, state.stage, state.pending_action, source.payload["commit_sha"], source_units[0]["locator"], tuple(unit["locator"] for unit in source_units), state.refs["script"], scenes, budget_amount, budget_attempts, state.authorization_id is not None, selected_delivery.get("video"), selected_delivery.get("subtitle"), state.refs.get("package"), state.package_output, state.failure_category, state.failure_message, tuple(available), True, state.replacement_done, attempt_count, attempt_statuses, charged_amount, local_label, prompt_cards, state.visual_mode)
 
 
-__all__ = ["ApplicationDownload", "ApplicationResult", "ApplicationView", "CourseFactoryApplication", "SceneView"]
+__all__ = ["ApplicationDownload", "ApplicationResult", "ApplicationView", "CourseFactoryApplication", "PromptCard", "SceneView"]

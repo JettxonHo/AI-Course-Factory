@@ -8,11 +8,11 @@ AI Course Factory 是一个本地优先的 AI 教育短视频生产应用。它�
 Public GitHub source
   -> grounded Script + human review
   -> production plan + budget approval
-  -> Visual/TTS + FFmpeg
+  -> Visual/TTS or explicit Desktop ImageGen import + FFmpeg
   -> final review + local export
 ```
 
-本地离线 Web 工作台已接入 F1 facade；真实 Visual/TTS Adapter 和真实端到端 Demo 仍未完成。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
+本地离线 Web 工作台已接入 F1 facade。F2A 提供一个显式目录的 Desktop ImageGen 图片导入桥：图片由 Creator 在应用外生成，应用只在获批预算后用本地 FFmpeg 转换；这不是 Visual Provider API 调用，也不代表真实 Visual/TTS Demo 已完成。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
 
 ## 离线工作台（F1）
 
@@ -23,6 +23,16 @@ PYTHONPATH=src uv run python -m ai_course_factory.web --data-dir ./var/ai-course
 ```
 
 默认只绑定 `127.0.0.1:8000`。工作台使用本地确定性 FFmpeg Fixture，不调用真实 Visual/TTS Provider；视频、SRT 和最终 ZIP 只从当前 facade 状态提供。
+
+若使用 F2A 的 Creator-supplied Desktop ImageGen 图片，必须显式传入目录；应用只接受精确的 `scene-1.png` 至 `scene-6.png`，Scene 2 替换只接受 `scene-2-replacement.png`，不会猜测 Downloads、Desktop 或“最新文件”：
+
+```bash
+PYTHONPATH=src uv run python -m ai_course_factory.web \
+  --data-dir ./var/ai-course-factory \
+  --visual-import-dir ./var/desktop-imagegen-assets
+```
+
+Desktop ImageGen 生成发生在应用外；导入模式的本地处理费用为 0，仍须先通过现有 Budget approval。缺失或不可解码的文件会在任何 attempt、media 或 Artifact side effect 前一次性报告安全的文件名。
 
 ## 开始之前
 

@@ -28,6 +28,7 @@ _MAX_DURATION_MS = 24 * 60 * 60 * 1000
 _HEX = frozenset("0123456789abcdefABCDEF")
 _ALNUM = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 _TOKEN = _ALNUM | frozenset("._-:")
+_LOCAL_IMPORTED_PROVIDER = "local-import-operator-declared-external-source"
 
 
 @dataclass(frozen=True, slots=True)
@@ -230,6 +231,38 @@ def _source_version(reference: ArtifactReference, version: ArtifactVersion) -> d
         "units": facts,
     }
     return attribution
+
+
+def _visual_import_attribution(repository: object, video_payload: MappingProxyType) -> dict[str, object] | None:
+    clips = video_payload.get("scene_clip_references")
+    scene_ids = video_payload.get("scene_ids")
+    if type(clips) is not tuple or type(scene_ids) is not tuple or len(clips) != len(scene_ids):
+        return None
+    assets: list[dict[str, object]] = []
+    for scene_id, reference in zip(scene_ids, clips):
+        try:
+            clip = repository.get(reference)
+        except Exception:
+            return None
+        payload = clip.payload if type(clip) is ArtifactVersion else None
+        if not isinstance(payload, MappingProxyType) or payload.get("provider") != _LOCAL_IMPORTED_PROVIDER:
+            return None
+        output = payload.get("output_reference")
+        if not isinstance(output, MappingProxyType):
+            return None
+        output_name = output.get("name")
+        if type(output_name) is not str or not output_name.endswith(".mp4"):
+            return None
+        target = output_name.removesuffix(".mp4") + ".png"
+        assets.append({"scene_id": scene_id, "target_filename": target})
+    return {
+        "creator_supplied_via": "creator-supplied via ChatGPT Desktop ImageGen",
+        "generated_outside_application": True,
+        "model_version": "not verified by application",
+        "application_provider_api_call": False,
+        "external_charge_micros": 0,
+        "selected_assets": tuple(assets),
+    }
 
 
 def _subtitle_version(reference: ArtifactReference, version: ArtifactVersion, video_payload: MappingProxyType) -> tuple[dict[str, object], ...]:
@@ -533,6 +566,9 @@ class PublishPackageBuilder:
                 raise _Invalid("FINAL_VIDEO_APPROVAL_REQUIRED")
             video_payload, video_output = _video_version(video_reference, video, task_id, subtitle_reference)
             source_attribution = _source_version(source_record_reference, source)
+            imported_visuals = _visual_import_attribution(self._artifacts, video_payload)
+            if imported_visuals is not None:
+                source_attribution = {**source_attribution, "visual_assets": imported_visuals}
             cues = _subtitle_version(subtitle_reference, subtitle, video_payload)
             if not _reachable(self._artifacts, video, source_record_reference):
                 raise _Invalid("SOURCE_LINEAGE_MISMATCH")
