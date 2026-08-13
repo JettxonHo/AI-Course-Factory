@@ -279,7 +279,11 @@ def _media_result_valid(
         raise _AttemptStorage
 
 
-def _load_attempts(ledger: ProviderAttemptLedger, context: _Context) -> None:
+def _load_attempts(
+    ledger: ProviderAttemptLedger,
+    context: _Context,
+    previous_result: ProductionCompositionResult | None = None,
+) -> None:
     attempt_ids: set[str] = set()
     output_refs: set[object] = set()
     for scene, (scene_id, start, end, _text) in zip(context.task.scenes, context.scenes):
@@ -287,6 +291,16 @@ def _load_attempts(ledger: ProviderAttemptLedger, context: _Context) -> None:
             if type(result) is not MediaGenerationResult or result.attempt_id in attempt_ids:
                 raise _InvalidContext
             attempt_ids.add(result.attempt_id)
+            if (
+                previous_result is not None
+                and result.provider == _LOCAL_REPLACEMENT_PROVIDER
+            ):
+                # F1's bounded offline Scene action intentionally creates a
+                # local deterministic Fixture without a Provider Attempt.  It
+                # is accepted only when a predecessor result exists for the
+                # same ordered Scene; no Provider ledger record is fabricated.
+                _workspace_reference(result.output_reference, context.task.task_id)
+                continue
             try:
                 record = ledger.get(result.attempt_id)
             except Exception:
@@ -333,7 +347,7 @@ def _version_matches(version: object, reference: ArtifactReference, candidate: A
         and _deep_equal(version.dependencies, candidate.dependencies)
         and type(version.commit_id) is str
         and version.commit_id == candidate.commit_id
-        and version.prior_reference is None
+        and _deep_equal(version.prior_reference, candidate.prior_reference)
     )
 
 
@@ -381,7 +395,8 @@ def _commit(repository: object, candidate: ArtifactCandidate) -> ArtifactReferen
         or reference.identity != candidate.identity
         or type(reference.version) is not int
         or isinstance(reference.version, bool)
-        or reference.version != 1
+        or type(candidate.prior_reference) not in (ArtifactReference, type(None))
+        or reference.version != (1 if candidate.prior_reference is None else candidate.prior_reference.version + 1)
     ):
         return _COMMIT_FAILED
     try:
@@ -401,8 +416,192 @@ def _candidate(
     dependencies: tuple[ArtifactReference, ...],
     commit_id: str,
     provenance: Mapping[str, object],
+    prior_reference: ArtifactReference | None = None,
 ) -> ArtifactCandidate:
-    return ArtifactCandidate(artifact_type, identity, payload, (provenance,), dependencies, True, commit_id)
+    return ArtifactCandidate(
+        artifact_type, identity, payload, (provenance,), dependencies, True, commit_id,
+        prior_reference,
+    )
+
+
+def _candidate_matches_existing(
+    repository: object,
+    candidate: ArtifactCandidate,
+    reference: ArtifactReference | None,
+) -> bool:
+    """Reuse an exact prior Artifact when only the logical commit label changes."""
+
+    if reference is None:
+        return False
+    try:
+        if (
+            type(reference) is not ArtifactReference
+            or reference.artifact_type != candidate.artifact_type
+            or reference.identity != candidate.identity
+        ):
+            return False
+        version = repository.get(reference)
+        return (
+            type(version) is ArtifactVersion
+            and _same_reference(version.reference, reference)
+            and _deep_equal(version.payload, candidate.payload)
+            and _deep_equal(version.provenance, candidate.provenance)
+            and _deep_equal(version.dependencies, candidate.dependencies)
+        )
+    except Exception:
+        return False
+
+
+def _previous_result_refs(
+    value: object,
+    context: _Context,
+    artifact_identity: str,
+) -> tuple[tuple[ArtifactReference, ...], tuple[ArtifactReference, ...], ArtifactReference, ArtifactReference, ArtifactReference] | None:
+    """Validate the bounded predecessor result used by one Scene replacement."""
+
+    if value is None:
+        return None
+    if type(value) is not ProductionCompositionResult:
+        raise _InvalidContext
+    if (
+        value.task_id != context.task.task_id
+        or value.composition_id != context.task.composition_id
+        or not _same_reference(value.production_request_reference, context.request_reference)
+        or not _same_reference(value.timeline_reference, context.timeline_reference)
+        or type(value.scene_clip_references) is not tuple
+        or type(value.scene_audio_references) is not tuple
+        or len(value.scene_clip_references) != len(context.task.scenes)
+        or len(value.scene_audio_references) != len(context.task.scenes)
+        or type(value.output_reference) is not WorkspaceFileReference
+    ):
+        raise _InvalidContext
+    clips = tuple(value.scene_clip_references)
+    audio = tuple(value.scene_audio_references)
+    for refs, artifact_type in ((clips, "scene_clip"), (audio, "scene_audio")):
+        for scene, reference in zip(context.task.scenes, refs):
+            if (
+                type(reference) is not ArtifactReference
+                or reference.artifact_type != artifact_type
+                or reference.identity != (f"{artifact_identity}:{scene.scene_id}")
+                or reference.version < 1
+            ):
+                raise _InvalidContext
+    for reference, artifact_type in (
+        (value.subtitle_reference, "subtitle"),
+        (value.master_audio_reference, "master_audio"),
+        (value.video_reference, "video"),
+    ):
+        if (
+            type(reference) is not ArtifactReference
+            or reference.artifact_type != artifact_type
+            or reference.identity != artifact_identity
+            or reference.version < 1
+        ):
+            raise _InvalidContext
+    return clips, audio, value.subtitle_reference, value.master_audio_reference, value.video_reference
+
+
+_LOCAL_REPLACEMENT_PROVIDER = "ffmpeg-fixture-local-replacement-v1"
+
+
+def _validate_local_replacement(
+    repository: object,
+    context: _Context,
+    previous_result: ProductionCompositionResult | None,
+    artifact_identity: object,
+) -> None:
+    """Allow only one exact local replacement Scene in a predecessor compose."""
+    marker_indexes: list[int] = []
+    for index, scene in enumerate(context.task.scenes):
+        visual_marker = type(scene.visual_result) is MediaGenerationResult and scene.visual_result.provider == _LOCAL_REPLACEMENT_PROVIDER
+        voice_marker = type(scene.voice_result) is MediaGenerationResult and scene.voice_result.provider == _LOCAL_REPLACEMENT_PROVIDER
+        if visual_marker or voice_marker:
+            marker_indexes.append(index)
+    if not marker_indexes:
+        return
+    if previous_result is None or len(marker_indexes) != 1:
+        raise _InvalidContext
+    previous_refs = _previous_result_refs(previous_result, context, str(artifact_identity))
+    if previous_refs is None:
+        raise _InvalidContext
+    index = marker_indexes[0]
+    scene = context.task.scenes[index]
+    scene_id = context.scenes[index][0]
+    visual = scene.visual_result
+    voice = scene.voice_result
+    expected_visual_output = WorkspaceFileReference(context.task.task_id, "media", f"{scene_id}-replacement.mp4")
+    expected_voice_output = WorkspaceFileReference(context.task.task_id, "media", f"{scene_id}-replacement.m4a")
+    if (
+        type(visual) is not MediaGenerationResult
+        or type(voice) is not MediaGenerationResult
+        or visual.attempt_id != f"local-replace:{scene_id}:visual"
+        or voice.attempt_id != f"local-replace:{scene_id}:voice"
+        or visual.scene_id != scene_id
+        or voice.scene_id != scene_id
+        or visual.operation != "visual"
+        or voice.operation != "voice"
+        or visual.provider != _LOCAL_REPLACEMENT_PROVIDER
+        or voice.provider != _LOCAL_REPLACEMENT_PROVIDER
+        or visual.output_reference != expected_visual_output
+        or voice.output_reference != expected_voice_output
+        or visual.media_type != "video/mp4"
+        or voice.media_type != "audio/mp4"
+        or visual.result_code != "SUCCESS"
+        or voice.result_code != "SUCCESS"
+        or visual.duration_seconds != voice.duration_seconds
+        or visual.duration_seconds != (context.scenes[index][2] - context.scenes[index][1]) / 1000
+    ):
+        raise _InvalidContext
+    # The bounded replacement input must differ from its exact predecessor in
+    # one ordered Scene only.  Compare every unaffected Scene's exact media
+    # result against the predecessor Artifact payload before any commit.  This
+    # prevents a forged non-marker mutation from quietly creating a second
+    # replacement Version alongside the selected Scene.
+    for other_index, other_scene in enumerate(context.task.scenes):
+        if other_index == index:
+            continue
+        prior_clip = previous_refs[0][other_index]
+        prior_audio = previous_refs[1][other_index]
+        for reference, result, operation in (
+            (prior_clip, other_scene.visual_result, "visual"),
+            (prior_audio, other_scene.voice_result, "voice"),
+        ):
+            try:
+                version = repository.get(reference)
+            except Exception:
+                raise _ArtifactStorage from None
+            if type(version) is not ArtifactVersion or not isinstance(version.payload, Mapping):
+                raise _InvalidContext
+            expected = version.payload
+            expected_output = expected.get("output_reference")
+            if (
+                type(result) is not MediaGenerationResult
+                or expected.get("scene_id") != other_scene.scene_id
+                or not _same_reference(expected.get("production_request_reference"), context.request_reference)
+                or expected.get("attempt_id") != result.attempt_id
+                or expected.get("provider") != result.provider
+                or expected.get("media_type") != result.media_type
+                or expected.get("duration_milliseconds") != (context.scenes[other_index][2] - context.scenes[other_index][1])
+                or not isinstance(expected_output, Mapping)
+                or expected_output.get("task_id") != result.output_reference.task_id
+                or expected_output.get("area") != result.output_reference.area
+                or expected_output.get("name") != result.output_reference.name
+                or result.operation != operation
+                or result.scene_id != other_scene.scene_id
+                or result.result_code != "SUCCESS"
+            ):
+                raise _InvalidContext
+    for other_index, other_scene in enumerate(context.task.scenes):
+        if other_index == index:
+            continue
+        if (
+            type(other_scene.visual_result) is MediaGenerationResult
+            and other_scene.visual_result.provider == _LOCAL_REPLACEMENT_PROVIDER
+        ) or (
+            type(other_scene.voice_result) is MediaGenerationResult
+            and other_scene.voice_result.provider == _LOCAL_REPLACEMENT_PROVIDER
+        ):
+            raise _InvalidContext
 
 
 def _composer_failure(value: object) -> ProductionMediaFailure:
@@ -451,6 +650,7 @@ def compose_product_path(
     *,
     artifact_identity: object,
     composition_commit_id: object,
+    previous_result: ProductionCompositionResult | None = None,
 ) -> ProductionCompositionResult | ProductionMediaFailure:
     if composer is None or repository is None:
         return _UNAVAILABLE
@@ -471,7 +671,8 @@ def compose_product_path(
             composition_commit_id,
         )
         _verify_repository_inputs(repository, context, production_request_version)
-        _load_attempts(ledger, context)
+        _validate_local_replacement(repository, context, previous_result, artifact_identity)
+        _load_attempts(ledger, context, previous_result)
     except _ArtifactStorage:
         return _COMMIT_FAILED
     except _AttemptStorage:
@@ -484,14 +685,28 @@ def compose_product_path(
     task = context.task
     artifact_identity = str(artifact_identity)
     composition_commit_id = str(composition_commit_id)
+    try:
+        previous_refs = _previous_result_refs(previous_result, context, artifact_identity)
+    except _InvalidContext:
+        return _INVALID_CONTEXT
+    previous_clips = previous_refs[0] if previous_refs is not None else ()
+    previous_audio = previous_refs[1] if previous_refs is not None else ()
+    previous_subtitle = previous_refs[2] if previous_refs is not None else None
+    previous_master = previous_refs[3] if previous_refs is not None else None
+    previous_video = previous_refs[4] if previous_refs is not None else None
     scene_clip_references: list[ArtifactReference] = []
     scene_audio_references: list[ArtifactReference] = []
-    for (scene_id, start, end, _text), scene in zip(context.scenes, task.scenes):
+    for index, ((scene_id, start, end, _text), scene) in enumerate(zip(context.scenes, task.scenes)):
         visual, voice = scene.visual_result, scene.voice_result
         for artifact_type, result, purpose, output in (
             ("scene_clip", visual, "production_composition_scene_clip", scene_clip_references),
             ("scene_audio", voice, "production_composition_scene_audio", scene_audio_references),
         ):
+            prior_reference = (
+                previous_clips[index] if artifact_type == "scene_clip" and previous_refs is not None
+                else previous_audio[index] if artifact_type == "scene_audio" and previous_refs is not None
+                else None
+            )
             candidate = _candidate(
                 artifact_type,
                 f"{artifact_identity}:{scene_id}",
@@ -512,8 +727,9 @@ def compose_product_path(
                     "scene_id": scene_id,
                     "attempt_id": result.attempt_id,
                 },
+                prior_reference,
             )
-            committed = _commit(repository, candidate)
+            committed = prior_reference if _candidate_matches_existing(repository, candidate, prior_reference) else _commit(repository, candidate)
             if isinstance(committed, ProductionMediaFailure):
                 return committed
             output.append(committed)
@@ -544,8 +760,9 @@ def compose_product_path(
             "production_request_reference": context.request_reference,
             "timeline_reference": context.timeline_reference,
         },
+        previous_subtitle,
     )
-    subtitle_reference = _commit(repository, subtitle_candidate)
+    subtitle_reference = previous_subtitle if _candidate_matches_existing(repository, subtitle_candidate, previous_subtitle) else _commit(repository, subtitle_candidate)
     if isinstance(subtitle_reference, ProductionMediaFailure):
         return subtitle_reference
 
@@ -566,11 +783,25 @@ def compose_product_path(
             "timeline_reference": context.timeline_reference,
             "scene_audio_references": tuple(scene_audio_references),
         },
+        previous_master,
     )
-    master_audio_reference = _commit(repository, master_candidate)
+    master_audio_reference = previous_master if _candidate_matches_existing(repository, master_candidate, previous_master) else _commit(repository, master_candidate)
     if isinstance(master_audio_reference, ProductionMediaFailure):
         return master_audio_reference
 
+    # A replacement must recompose the selected media.  A replay with the same
+    # exact selected media and output can return the prior result without
+    # touching FFmpeg or writing another Artifact Version.
+    unchanged_media = (
+        previous_result is not None
+        and tuple(scene_clip_references) == previous_clips
+        and tuple(scene_audio_references) == previous_audio
+        and subtitle_reference == previous_subtitle
+        and master_audio_reference == previous_master
+        and task.output_reference == previous_result.output_reference
+    )
+    if unchanged_media:
+        return previous_result
     try:
         composed = compose_method(task)
     except Exception:
@@ -612,8 +843,9 @@ def compose_product_path(
             "timeline_reference": context.timeline_reference,
             "composition_id": task.composition_id,
         },
+        previous_video,
     )
-    video_reference = _commit(repository, video_candidate)
+    video_reference = previous_video if _candidate_matches_existing(repository, video_candidate, previous_video) else _commit(repository, video_candidate)
     if isinstance(video_reference, ProductionMediaFailure):
         return video_reference
     return ProductionCompositionResult(

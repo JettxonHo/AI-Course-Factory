@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set title = "Start / Current Task" %}
+{% block content %}
+<section class="intro" data-view-kind="start" aria-labelledby="start-title">
+  <p class="eyebrow">Start / Current Task</p>
+  <h1 id="start-title">Grounded work, one visible decision at a time.</h1>
+  <p class="lede">A calm local workspace for turning one exact source into an evidence-complete short video. Every transition is durable and restartable.</p>
+</section>
+{% if view %}
+<section class="task-panel" aria-labelledby="task-title">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Current task</p>
+      <h2 id="task-title">{{ view.task_id }}</h2>
+    </div>
+    <span class="stage-chip">{{ view.stage }}</span>
+  </div>
+  <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
+  <dl class="facts">
+    <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
+    <div><dt>Source evidence</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
+  </dl>
+  <div class="script-block">
+    <p class="eyebrow">Script · {{ view.script_reference.identity }} v{{ view.script_reference.version }}</p>
+    <ol class="scene-list">
+      {% for scene in view.scenes %}
+      <li><span class="scene-number">{{ loop.index }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div><span class="scene-status">{{ scene.status }}</span></li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
+  {% if view.stage == "script_review" %}
+  <form class="action-row" method="post" action="/start/script">
+    <button class="button button-primary" type="submit" name="action" value="approve_script">Approve script</button>
+    <button class="button button-secondary" type="submit" name="action" value="revise_script">Request revision</button>
+    <button class="button button-secondary" type="submit" name="action" value="reject_script">Reject and revise</button>
+    <label class="field" for="script-context">Revision / rejection context <textarea id="script-context" name="decision_context" rows="2" maxlength="128" placeholder="Required for revision or rejection; optional for approval."></textarea></label>
+  </form>
+  {% elif view.stage == "planning" %}
+  <a class="button button-primary" href="/review">Continue to planning</a>
+  {% else %}
+  <a class="button button-primary" href="/review">Open current work</a>
+  {% endif %}
+</section>
+{% else %}
+<section class="empty-state" data-view-kind="start"><h2>Workspace unavailable</h2><p>Start again with the local launch command and an explicit data directory.</p></section>
+{% endif %}
+{% endblock %}

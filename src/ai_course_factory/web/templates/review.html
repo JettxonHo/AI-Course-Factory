@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set title = "Review / Produce" %}
+{% block content %}
+<section class="intro" data-view-kind="review" aria-labelledby="review-title">
+  <p class="eyebrow">Review / Produce</p>
+  <h1 id="review-title">Make the next gate explicit.</h1>
+  <p class="lede">Planning, budget approval, and deterministic local production stay separate so the evidence trail stays legible.</p>
+</section>
+{% if view %}
+<section class="task-panel" aria-labelledby="review-task-title">
+  <div class="section-heading"><div><p class="eyebrow">{{ view.task_id }}</p><h2 id="review-task-title">{{ view.pending_action or view.stage }}</h2></div><span class="stage-chip">{{ view.stage }}</span></div>
+  <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
+  {% if view.stage == "budget_review" %}
+  <div class="callout"><h3>Budget before production</h3><p>Maximum authorization: {{ view.budget_maximum_amount_micros }} micros · {{ view.budget_maximum_attempts }} attempts. This approval is required even though the selected run is local and zero-cost.</p></div>
+  {% elif view.stage == "production" %}
+  <div class="callout"><h3>Offline Fixture run</h3><p>FFmpeg creates deterministic local media. No Visual or TTS Provider is called, and no network request is made.</p></div>
+  {% endif %}
+  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
+  {% if view.provider_attempt_count %}<div class="attempt-facts"><strong>Provider attempts:</strong> {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
+  <ol class="scene-list compact">
+    {% for scene in view.scenes %}<li><span class="scene-number">{{ loop.index }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.visual_intent }}</p></div><span class="scene-status">{{ scene.status }}</span></li>{% endfor %}
+  </ol>
+  <div class="action-row">
+    {% if view.stage == "planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
+    {% if view.stage == "budget_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="approve_budget">Approve no-cost budget</button></form>{% endif %}
+    {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">Produce offline Fixture</button></form>{% endif %}
+    {% if view.stage == "final_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="open_final">Open final review</button></form>{% endif %}
+  </div>
+</section>
+{% else %}
+<section class="empty-state" data-view-kind="review"><h2>No current task</h2><p>Return to Start / Current Task to initialize the local workspace.</p></section>
+{% endif %}
+{% endblock %}

@@ -7,7 +7,7 @@
 | Status | **ACTIVE / APPROVED** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Baseline | `main@ec36d5e818315695e5462a95f8e48af33d8a5f98` |
+| Baseline | `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -42,11 +42,12 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 
 Observed on 2026-08-13:
 
-- `origin/main` is `ec36d5e818315695e5462a95f8e48af33d8a5f98`.
+- The F1 implementation was based on `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc` and integrated through PR #114.
 - The merged baseline has 356 passing local regression tests and no claimed hosted CI evidence.
-- Source-to-package offline modules exist; the web workspace and real Visual/TTS path do not.
+- Source-to-package offline modules, a durable facade and the local three-view workspace are integrated through Issue #113 / PR #114.
 - Issue #110 was independently reviewed and merged through PR #111; the durable Scene media projection is part of this baseline.
 - No real Provider, credential, spend, deployment or production runtime is authorized by this Goal approval.
+- F1 passed independent review and local acceptance; this evidence is not real Provider or deployed-runtime evidence.
 
 `docs/STATUS.md` owns the current factual snapshot if these facts change.
 
@@ -64,7 +65,7 @@ Exit: daily truth sources point to FAST-MVP, and #110 is either merged/closed or
 
 ### F1 — Offline usable workspace
 
-Status: **READY**
+Status: **COMPLETE**
 
 One Issue and one main PR deliver:
 

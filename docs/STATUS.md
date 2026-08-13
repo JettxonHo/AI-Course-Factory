@@ -7,12 +7,12 @@ Observed: 2026-08-13 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| Merged baseline | `origin/main@ec36d5e818315695e5462a95f8e48af33d8a5f98` |
-| Active planning branch | `codex/fast-mvp-rebaseline-integration` |
-| Current implementation task | None; F1 is Ready and needs one unique Task Contract |
-| Merged regression evidence | 356 local tests passed after M3-010; no hosted CI is claimed |
+| Merged baseline | F1 integrated through Issue #113 / PR #114 |
+| Active planning branch | None after the F1 merge |
+| Current implementation task | None; F1 is complete and F2 awaits Product Owner decisions |
+| Merged regression evidence | 386 local tests passed for F1; no hosted CI is claimed |
 | Rebaseline validation | 356/356 local tests passed on the integration branch with the explicit `PYTHONPATH=src` command below |
-| Real product runtime | Not yet verified: no local web workspace and no real Visual/TTS end-to-end evidence |
+| Real product runtime | Loopback F1 candidate smoke is locally verified; no real Visual/TTS or deployed-runtime evidence |
 | Provider authorization | Not granted; `PD-001`–`PD-003` remain required |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -34,29 +34,36 @@ This file is a current snapshot, not authorization and not a historical PR trans
 - Deterministic local Publish Package and Artifact Manifest.
 - Durable current/stale Scene and delivery media projection merged through Issue #110 / PR #111.
 
-These facts prove a substantial offline backend. They do not prove a usable UI, prompt-faithful visuals, spoken TTS, live pricing, paid execution, deployment or adoption.
+These facts prove a substantial offline backend and usable local UI. They do not prove prompt-faithful visuals, spoken TTS, live pricing, paid execution, deployment or adoption.
+
+## 3a. Issue #113 / PR #114 F1 Evidence (merged)
+
+- Branch: `codex/113-offline-workspace`, based on `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc`.
+- Facade focused evidence: 16 tests passed, including durable create/open, exact source evidence, versioned Script revision/rejection, script/planning/budget gates, FFmpeg Fixture production, one local Scene replacement with unchanged Provider-attempt facts, final rejection/approval, package export and restart replay.
+- Web focused evidence: 12 tests passed, including the three server-rendered view loop, versioned Script actions, Final rejection, bounded failure category/action, same-origin mutation boundaries, browser process reconstruction, playable video/SRT responses and package ZIP response.
+- Final candidate regression: 386 local `unittest` tests passed; `compileall` and `git diff --check` are clean on this branch.
+- Loopback command smoke: `PYTHONPATH=src uv run python -m ai_course_factory.web --data-dir <explicit-dir> --port 8765` bound `127.0.0.1` and returned the Start view with local security headers.
+- These are local deterministic Fixture/code-path facts only; F2/F3 and real Provider/runtime acceptance remain incomplete.
 
 ## 3. Missing for FAST-MVP
 
-1. One application facade joining the existing modules into task-level use cases.
-2. A browser workspace for source input, evidence, approvals, status, video review, Scene action and export.
-3. One authorized real Visual Adapter.
-4. One authorized real TTS Adapter.
-5. One capped browser-driven real end-to-end Demo and exported evidence package.
+With F1 merged, remaining FAST-MVP work is:
+
+1. One authorized real Visual Adapter.
+2. One authorized real TTS Adapter.
+3. One capped browser-driven real end-to-end Demo and exported evidence package.
 
 ## 4. Current Concurrent Work
 
-F0 is complete. Issue #110 passed independent review and merged through PR #111 at `main@ec36d5e`; focused tests were 10 application + 6 SQLite integration, and the post-merge full regression was 356/356.
+F0 is complete. Issue #110 passed independent review and merged through PR #111; the current baseline is `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc`. Focused tests were 10 application + 6 SQLite integration, and the post-merge full regression was 356/356.
 
-There is no current implementation Task Contract. F1 must remain one vertical workspace Issue and one main PR.
+Issue #113 / PR #114 completed the single vertical F1 workspace contract.
 
 ## 5. Current Direction and Next Actions
 
-1. Merge the FAST-MVP rebaseline.
-2. Open one F1 vertical workspace Issue/PR and dispatch exact `luna-worker`.
-3. Demonstrate the complete offline browser path with local/Fake media and FFmpeg.
-4. Ask the Product Owner for `PD-001`, `PD-002` and `PD-003` only when F1 can consume real Adapters.
-5. Implement the real Visual and TTS Adapters, then run F3 acceptance.
+1. Ask the Product Owner for `PD-001`, `PD-002` and `PD-003` before any real Adapter work.
+2. Implement the authorized real Visual and TTS Adapters.
+3. Run F3 acceptance through the same browser flow.
 
 Do not open new horizontal hardening, status-only or future-architecture tasks before F1 unless an observed blocker requires them.
 
