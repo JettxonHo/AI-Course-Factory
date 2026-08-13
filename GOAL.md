@@ -7,7 +7,7 @@
 | Status | **ACTIVE / APPROVED** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Baseline | `main@b2642c18449e6d79b3b19fec39b7aeff564bf711` |
+| Baseline | `main@65ce873f2dd5fccdcccf1ce5c5c1970071bb6261` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -27,6 +27,7 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 - Implement only the Scene selection/retry behavior needed by the product flow.
 - Provide the bounded F2A Desktop ImageGen local-import bridge: an explicit operator directory, exact six-image preflight, local conversion and visual-only Scene 2 replacement. This bridge is external-source evidence, not a real Visual Provider implementation.
 - After the approved `PD-002`, implement the bounded local GPT-SoVITS v2 TTS Adapter; F2A creator-supplied visuals already satisfy the FAST-MVP real-visual asset boundary. Automatic cloud Visual Provider work remains deferred.
+- Deliver the separately approved F2.5 Warm Editorial Production Desk in the existing three-view web surface without changing application behavior or public view contracts.
 - Run and document one fixed-source real end-to-end acceptance Demo.
 - Update affected current truth docs inside the same feature PR when facts change.
 
@@ -41,15 +42,16 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 
 ## 5. Starting Fact Boundary
 
-Observed on 2026-08-13:
+Observed on 2026-08-14:
 
 - The F1 implementation was based on `main@1673b9c3fe350f0e7bcc3d7d22fb2a56c771bbbc` and integrated through PR #114.
-- The merged baseline has 356 passing local regression tests and no claimed hosted CI evidence.
+- The merged baseline has 411 passing local regression tests and no claimed hosted CI evidence.
 - Source-to-package offline modules, a durable facade and the local three-view workspace are integrated through Issue #113 / PR #114.
 - Issue #110 was independently reviewed and merged through PR #111; the durable Scene media projection is part of this baseline.
 - No cloud Provider credential, paid spend, deployment or public production runtime is authorized; PD-002 separately authorizes the bounded local GPT-SoVITS runtime for F2B.
 - F1 passed independent review and local acceptance; this evidence is not real Provider or deployed-runtime evidence.
 - F2A then merged through Issue #117 / PR #118 at `main@b2642c1` and was independently accepted COMPLETE after 397 local regression tests; its visuals are creator-supplied Desktop ImageGen assets generated outside the application.
+- F2B then merged through Issue #119 / PR #120 at `main@65ce873`; the bounded local GPT-SoVITS v2 adapter was independently accepted COMPLETE with the 411-test regression baseline.
 
 `docs/STATUS.md` owns the current factual snapshot if these facts change.
 
@@ -91,17 +93,25 @@ F2A does not call a cloud Visual Provider or use credentials. Independent browse
 
 ### F2B — Local real GPT-SoVITS TTS
 
-Status: **IN PROGRESS / CANDIDATE** (Issue #119)
+Status: **COMPLETE** (Issue #119 / PR #120 merged at `65ce873`)
 
-`PD-002` selects official GPT-SoVITS v2 through an explicitly configured external Python 3.11 runtime/repository/model cache and fixed synthetic Serena reference. Local inference is credential-free and zero external charge. F2B must pass independent focused/full review and the real opt-in smoke before it is marked complete. F2.5 is not implemented in this milestone.
+`PD-002` selects official GPT-SoVITS v2 through an explicitly configured external Python 3.11 runtime/repository/model cache and fixed synthetic Serena reference. Local inference is credential-free and zero external charge. Independent focused/full review and the opt-in local smoke accepted the bounded adapter; F2B does not claim cloud Provider or deployment evidence.
 
-The existing F2A visuals remain the accepted real visual asset path; no automatic cloud Visual Provider is started here. No F2.5 UI redesign or F3 acceptance is included.
+The existing F2A visuals remain the accepted real visual asset path; no automatic cloud Visual Provider is started here. F2.5 and F3 acceptance remain separate milestones.
 
 Exit: the accepted F2A local-import Visual adapter and F2B local GPT-SoVITS TTS adapter work through the existing interfaces under recorded caps.
 
+### F2.5 — Warm Editorial Production Desk
+
+Status: **APPROVED FOR MERGE** (Issue #121)
+
+Issue #121 upgrades the existing exactly-three server-rendered views into the approved Warm Editorial Production Desk. It keeps the existing routes, view model, POST actions, media endpoints, security boundaries and provenance facts while adding a semantic three-stage track, task/stage/next-action hierarchy, progressive disclosure for visual prompt cards, storyboard scanning, a 9:16 final review with a sticky desktop decision rail, local favicon and responsive CSS-only polish. No JavaScript, SPA, editor, upload manager, provider behavior or public contract is added.
+
+Independent review accepted the real Diff after focused rendered-HTML/static checks, 1440px/375px browser review and the 414-test full regression. Merge closes this milestone without claiming F3 runtime evidence.
+
 ### F3 — Real end-to-end acceptance
 
-Status: **BLOCKED ON F2B AND F2.5**
+Status: **BLOCKED ON F2.5**
 
 Run the fixed Demo from the browser with the accepted F2A visual assets and F2B local TTS adapter. Verify:
 

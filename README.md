@@ -12,9 +12,9 @@ Public GitHub source
   -> final review + local export
 ```
 
-本地 Web 工作台已接入 F1 facade。F2A 的 Desktop ImageGen 外部图片导入桥已独立验收并合并；F2B 正在接入本地 GPT-SoVITS v2 TTS（显式外部 Python 3.11/模型配置、固定合成 Serena 参考音、零外部费用），不调用云端 Provider。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
+本地 Web 工作台已接入 F1 facade。F2A 的 Desktop ImageGen 外部图片导入桥与 F2B 本地 GPT-SoVITS v2 TTS 已独立验收并合并；当前 Issue #121 正在把三页工作台升级为 Warm Editorial Production Desk（保留现有行为与公开契约，不调用云端 Provider）。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
 
-## 离线工作台（F1）
+## 离线工作台（F1 / F2.5 presentation candidate）
 
 依赖安装后，可用明确的数据目录在 loopback 启动三页 server-rendered 工作台：
 

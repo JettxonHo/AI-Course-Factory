@@ -2,59 +2,106 @@
 {% set title = "Start / Current Task" %}
 {% block content %}
 <section class="intro" data-view-kind="start" aria-labelledby="start-title">
-  <p class="eyebrow">Start / Current Task</p>
-  <h1 id="start-title">Grounded work, one visible decision at a time.</h1>
-  <p class="lede">A calm local workspace for turning one exact source into an evidence-complete short video. Every transition is durable and restartable.</p>
+  <p class="eyebrow">Start / Current task</p>
+  <h1 id="start-title">Your course, one clear next move.</h1>
+  <p class="lede">Read the grounded script first, then carry one approved decision through planning, production and delivery. The desk keeps every transition local and restartable.</p>
 </section>
 {% if view %}
-<section class="task-panel" aria-labelledby="task-title">
-  <div class="section-heading">
+<section class="workspace-card start-card" aria-labelledby="task-title">
+  <header class="task-heading">
     <div>
       <p class="eyebrow">Current task</p>
       <h2 id="task-title">{{ view.task_id }}</h2>
+      <p class="stage-context"><span class="stage-code">{{ view.stage }}</span>{% if view.stage == "script_review" %} · Script review{% elif view.stage == "planning" %} · Planning{% elif view.stage == "budget_review" %} · Budget review{% elif view.stage == "production" %} · Production{% elif view.stage == "final_review" %} · Final review{% elif view.stage == "exported" %} · Exported{% else %} · {{ view.stage }}{% endif %}</p>
     </div>
-    <span class="stage-chip">{{ view.stage }}</span>
+    <div class="next-action" aria-label="Next action">
+      <span class="next-action-label">Next action</span>
+      <strong>{% if view.pending_action == "approve_script" %}Approve the script{% elif view.pending_action == "revise_script" %}Request a script revision{% elif view.pending_action == "reject_script" %}Reject and revise{% elif view.pending_action %}{{ view.pending_action }}{% else %}No action pending{% endif %}</strong>
+    </div>
+  </header>
+
+  <div class="task-meta">
+    <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
+    {% if view.tts_engine %}<p class="provenance-line"><strong>Voice</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</p>{% endif %}
   </div>
-  <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
-  {% if view.tts_engine %}<div class="callout"><strong>TTS:</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</div>{% endif %}
-  <dl class="facts">
-    <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
-    <div><dt>Source evidence</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
-  </dl>
-  <div class="script-block">
-    <p class="eyebrow">Script · {{ view.script_reference.identity }} v{{ view.script_reference.version }}</p>
-    <ol class="scene-list">
+
+  <article class="script-reader" aria-labelledby="script-reader-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Primary reading flow</p>
+        <h3 id="script-reader-title">Script · {{ view.script_reference.identity }} v{{ view.script_reference.version }}</h3>
+      </div>
+      <span class="status-label">{{ view.scenes|length }} scenes</span>
+    </div>
+    <ol class="scene-list script-scenes">
       {% for scene in view.scenes %}
-      <li><span class="scene-number">{{ loop.index }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div><span class="scene-status">{{ scene.status }}</span></li>
+      <li>
+        <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
+        <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
+        <span class="scene-status">{{ scene.status }}</span>
+      </li>
       {% endfor %}
     </ol>
-  </div>
+  </article>
+
+  <details class="source-drawer">
+    <summary><span>Source evidence</span><span class="summary-hint">Locked commit · {{ view.source_evidence|length }} locator{% if view.source_evidence|length != 1 %}s{% endif %}</span></summary>
+    <dl class="facts facts-compact">
+      <div><dt>Repository commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
+      <div><dt>Primary locator</dt><dd class="break-anywhere">{{ view.source_locator }}</dd></div>
+      <div class="facts-wide"><dt>Source evidence</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
+    </dl>
+  </details>
+
   {% if view.prompt_cards %}
-  <div class="script-block" aria-labelledby="prompt-cards-title">
-    <p class="eyebrow" id="prompt-cards-title">Desktop ImageGen prompt cards</p>
-    <p class="lede">Copy each frozen card into ChatGPT Desktop ImageGen, then save the result with the exact target filename in your explicit import directory.</p>
-    <ol class="scene-list compact">
+  <section class="prompt-library" aria-labelledby="prompt-cards-title">
+    <div class="section-heading compact-heading">
+      <div>
+        <p class="eyebrow">Desktop ImageGen</p>
+        <h3 id="prompt-cards-title">Six visual prompt cards</h3>
+      </div>
+      <p class="section-note">Progressive disclosure keeps the script readable. Open a card to copy its frozen target.</p>
+    </div>
+    <div class="prompt-grid">
       {% for card in view.prompt_cards %}
-      <li><div><strong>{{ card.scene_id }} · {{ card.target_filename }}</strong><p>{{ card.prompt }}</p></div></li>
+      <details class="prompt-card">
+        <summary><span><strong>{{ card.scene_id }}</strong><small>{{ card.target_filename }}</small></span><span class="summary-hint">View prompt</span></summary>
+        <div class="prompt-body">
+          <p>{{ card.prompt }}</p>
+          <dl class="prompt-facts">
+            <div><dt>Intent</dt><dd>{{ card.scene_intent }}</dd></div>
+            <div><dt>Action</dt><dd>{{ card.character_action }}</dd></div>
+          </dl>
+        </div>
+      </details>
       {% endfor %}
-    </ol>
-  </div>
+    </div>
+  </section>
   {% endif %}
-  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
+
+  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure · {{ view.failure_category }}</strong><p>{{ view.failure_message }}</p></div>{% endif %}
+
   {% if view.stage == "script_review" %}
-  <form class="action-row" method="post" action="/start/script">
-    <button class="button button-primary" type="submit" name="action" value="approve_script">Approve script</button>
-    <button class="button button-secondary" type="submit" name="action" value="revise_script">Request revision</button>
-    <button class="button button-secondary" type="submit" name="action" value="reject_script">Reject and revise</button>
-    <label class="field" for="script-context">Revision / rejection context <textarea id="script-context" name="decision_context" rows="2" maxlength="128" placeholder="Required for revision or rejection; optional for approval."></textarea></label>
-  </form>
+  <section class="decision-zone" aria-labelledby="script-decision-title">
+    <div>
+      <p class="eyebrow">Script gate</p>
+      <h3 id="script-decision-title">Does this grounded draft teach the right thing?</h3>
+      <p class="decision-copy">Approve to continue to planning. Revision and rejection keep the current evidence intact and ask for context.</p>
+    </div>
+    <form class="action-row" method="post" action="/start/script">
+      <button class="button button-primary" type="submit" name="action" value="approve_script">Approve script</button>
+      <button class="button button-secondary" type="submit" name="action" value="revise_script">Request revision</button>
+      <button class="button button-secondary" type="submit" name="action" value="reject_script">Reject and revise</button>
+      <label class="field" for="script-context">Revision / rejection context <textarea id="script-context" name="decision_context" rows="2" maxlength="128" placeholder="Required for revision or rejection; optional for approval."></textarea></label>
+    </form>
+  </section>
   {% elif view.stage == "planning" %}
-  <a class="button button-primary" href="/review">Continue to planning</a>
+  <div class="action-row action-row-end"><a class="button button-primary" href="/review">Continue to planning</a></div>
   {% else %}
-  <a class="button button-primary" href="/review">Open current work</a>
+  <div class="action-row action-row-end"><a class="button button-primary" href="/review">Open current work</a></div>
   {% endif %}
 </section>
 {% else %}
-<section class="empty-state" data-view-kind="start"><h2>Workspace unavailable</h2><p>Start again with the local launch command and an explicit data directory.</p></section>
+<section class="empty-state" data-view-kind="start" aria-labelledby="empty-start-title"><p class="eyebrow">Current task</p><h2 id="empty-start-title">Workspace unavailable</h2><p>Start again with the local launch command and an explicit data directory.</p><a class="button button-primary" href="/">Try again</a></section>
 {% endif %}
 {% endblock %}

@@ -7,7 +7,7 @@
 | Status | Approved FAST-MVP System Baseline |
 | Approval | Product Owner, 2026-08-13 |
 | Product Input | `docs/product/PRD.md` |
-| Code Baseline | `main@b2642c18449e6d79b3b19fec39b7aeff564bf711` |
+| Code Baseline | `main@65ce873f2dd5fccdcccf1ce5c5c1970071bb6261` |
 | Supersedes | System Spec v1.0 for daily development |
 
 This document defines the smallest stable system that can deliver the approved product job. Physical files, libraries and task sequencing belong in the Implementation Spec and `GOAL.md`.
@@ -69,6 +69,8 @@ Offers the task-level product operations needed by the workspace:
 - export the approved package.
 
 It coordinates existing modules and returns a stable view model. It must not expose repository mechanics or Provider SDK types to the UI.
+
+The F2.5 presentation keeps the workspace at exactly three server-rendered views and consumes the existing `ApplicationView` without a route or public-view-model expansion. A semantic Ground → Produce → Deliver track derives active/completed/upcoming state from the existing `stage` and `pending_action`. Start prioritizes the script and source evidence, Review prioritizes one decision zone plus consolidated production facts/storyboard, and Final pairs the playable 9:16 video with a desktop decision rail that becomes one column on mobile. Native details disclosure, local CSS and a self-hosted text favicon are presentation concerns; JavaScript, external assets, SPA/editor behavior and upload management remain out of scope.
 
 ### Source and Planning
 

@@ -3,13 +3,38 @@
 {% block content %}
 <section class="intro" data-view-kind="review" aria-labelledby="review-title">
   <p class="eyebrow">Review / Produce</p>
-  <h1 id="review-title">Make the next gate explicit.</h1>
-  <p class="lede">Planning, budget approval, and deterministic local production stay separate so the evidence trail stays legible.</p>
+  <h1 id="review-title">Turn a good draft into a ready-to-make plan.</h1>
+  <p class="lede">The desk keeps planning, budget approval and local production in separate, legible gates. You always see the one decision that unlocks the next stage.</p>
 </section>
 {% if view %}
-<section class="task-panel" aria-labelledby="review-task-title">
-  <div class="section-heading"><div><p class="eyebrow">{{ view.task_id }}</p><h2 id="review-task-title">{{ view.pending_action or view.stage }}</h2></div><span class="stage-chip">{{ view.stage }}</span></div>
+<section class="workspace-card review-card" aria-labelledby="review-task-title">
+  <header class="task-heading">
+    <div>
+      <p class="eyebrow">Current task · <span class="stage-code">{{ view.stage }}</span></p>
+      <h2 id="review-task-title">{% if view.pending_action == "advance_planning" %}Build the production plan{% elif view.pending_action == "approve_budget" %}Approve the production budget{% elif view.pending_action == "produce_offline" %}Run local production{% elif view.pending_action == "open_final" %}Open final review{% else %}{{ view.pending_action or view.stage }}{% endif %}</h2>
+    </div>
+    <div class="next-action" aria-label="Next action">
+      <span class="next-action-label">Next action</span>
+      <strong>{% if view.pending_action == "advance_planning" %}Build plan{% elif view.pending_action == "approve_budget" %}Approve budget{% elif view.pending_action == "produce_offline" %}Produce locally{% elif view.pending_action == "open_final" %}Open final review{% else %}No action pending{% endif %}</strong>
+    </div>
+  </header>
+
   <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
+
+  <section class="decision-zone decision-zone-prominent" aria-labelledby="decision-zone-title">
+    <div>
+      <p class="eyebrow">Current gate</p>
+      <h3 id="decision-zone-title">{% if view.stage == "planning" %}Shape the six-scene production plan{% elif view.stage == "budget_review" %}Make the maximum spend explicit{% elif view.stage == "production" %}Run the authorized local production{% elif view.stage == "final_review" %}The cut is ready for a final look{% else %}Keep the evidence moving{% endif %}</h3>
+      <p class="decision-copy">{% if view.stage == "planning" %}Confirm the plan before a budget can be reviewed.{% elif view.stage == "budget_review" %}This approval is required even though the selected run is local and zero-cost.{% elif view.stage == "production" %}The current request and cap stay bound while local media is composed.{% elif view.stage == "final_review" %}Open the video when you are ready to approve the final evidence.{% else %}The current task state is preserved while you choose the next safe action.{% endif %}</p>
+    </div>
+    <div class="decision-action">
+      {% if view.stage == "planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
+      {% if view.stage == "budget_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="approve_budget">Approve no-cost budget</button></form>{% endif %}
+      {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">{% if view.visual_mode == "imported" %}Produce imported visuals{% else %}Produce offline Fixture{% endif %}</button></form>{% endif %}
+      {% if view.stage == "final_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="open_final">Open final review</button></form>{% endif %}
+    </div>
+  </section>
+
   {% if view.stage == "budget_review" %}
   <div class="callout"><h3>Budget before production</h3><p>Maximum authorization: {{ view.budget_maximum_amount_micros }} micros · {{ view.budget_maximum_attempts }} attempts. This approval is required even though the selected run is local and zero-cost.</p></div>
   {% elif view.stage == "production" and view.visual_mode == "imported" %}
@@ -18,22 +43,45 @@
   <div class="callout"><h3>Offline Fixture run</h3><p>FFmpeg creates deterministic local media. No Visual or TTS Provider is called, and no network request is made.</p></div>
   {% endif %}
   {% if view.tts_engine %}<div class="callout"><h3>Local narration: {{ view.tts_engine }}</h3><p>Reference: {{ view.tts_reference_provenance }} · application cloud/provider call: no · external charge: {{ view.tts_external_charge_micros }} micros.</p></div>{% endif %}
+
+  <section class="facts-section" aria-labelledby="production-facts-title">
+    <div class="section-heading compact-heading"><div><p class="eyebrow">Evidence at a glance</p><h3 id="production-facts-title">Production facts</h3></div><p class="section-note">Bound to this task; no provider payloads or machine paths are shown.</p></div>
+    <dl class="facts facts-grid">
+      <div><dt>Script version</dt><dd>{{ view.script_reference.identity }} v{{ view.script_reference.version }}</dd></div>
+      <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
+      <div><dt>Visual path</dt><dd>{% if view.visual_mode == "imported" %}Creator-supplied local import{% else %}Offline Fixture{% endif %}</dd></div>
+      <div><dt>Voice path</dt><dd>{% if view.tts_engine %}{{ view.tts_engine }}{% else %}Offline Fixture{% endif %}</dd></div>
+      <div><dt>Maximum amount</dt><dd>{% if view.budget_maximum_amount_micros is not none %}{{ view.budget_maximum_amount_micros }} micros{% else %}Pending budget{% endif %}</dd></div>
+      <div><dt>Maximum attempts</dt><dd>{% if view.budget_maximum_attempts is not none %}{{ view.budget_maximum_attempts }}{% else %}Pending budget{% endif %}</dd></div>
+      <div><dt>Budget approval</dt><dd>{% if view.budget_approved %}Approved{% else %}Pending{% endif %}</dd></div>
+      <div><dt>External charge</dt><dd>{{ view.provider_attempt_charged_amount_micros }} micros</dd></div>
+      {% if view.provider_attempt_count %}<div class="facts-wide"><dt>Attempts</dt><dd>{{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }}</dd></div>{% endif %}
+    </dl>
+  </section>
+
   {% if view.prompt_cards %}
-  <div class="callout"><h3>Desktop ImageGen cards</h3><ol>{% for card in view.prompt_cards %}<li><strong>{{ card.scene_id }} · {{ card.target_filename }}</strong> — {{ card.prompt }}</li>{% endfor %}</ol></div>
+  <section class="prompt-library" aria-labelledby="review-prompt-title">
+    <div class="section-heading compact-heading"><div><p class="eyebrow">Visual provenance</p><h3 id="review-prompt-title">Desktop ImageGen cards</h3></div><p class="section-note">Open only the card you need while preparing the explicit import directory.</p></div>
+    <div class="prompt-grid">
+      {% for card in view.prompt_cards %}
+      <details class="prompt-card"><summary><span><strong>{{ card.scene_id }}</strong><small>{{ card.target_filename }}</small></span><span class="summary-hint">View prompt</span></summary><div class="prompt-body"><p>{{ card.prompt }}</p></div></details>
+      {% endfor %}
+    </div>
+  </section>
   {% endif %}
-  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
-  {% if view.provider_attempt_count %}<div class="attempt-facts">{% if view.visual_mode == "imported" %}<strong>Local processing attempts:</strong>{% else %}<strong>Provider attempts:</strong>{% endif %} {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
-  <ol class="scene-list compact">
-    {% for scene in view.scenes %}<li><span class="scene-number">{{ loop.index }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.visual_intent }}</p></div><span class="scene-status">{{ scene.status }}</span></li>{% endfor %}
-  </ol>
-  <div class="action-row">
-    {% if view.stage == "planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
-    {% if view.stage == "budget_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="approve_budget">Approve no-cost budget</button></form>{% endif %}
-    {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">{% if view.visual_mode == "imported" %}Produce imported visuals{% else %}Produce offline Fixture{% endif %}</button></form>{% endif %}
-    {% if view.stage == "final_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="open_final">Open final review</button></form>{% endif %}
-  </div>
+
+  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure · {{ view.failure_category }}</strong><p>{{ view.failure_message }}</p></div>{% endif %}
+
+  <section class="storyboard" aria-labelledby="storyboard-title">
+    <div class="section-heading compact-heading"><div><p class="eyebrow">Scene plan</p><h3 id="storyboard-title">Storyboard at a glance</h3></div><p class="section-note">Six ordered scenes, ready to scan.</p></div>
+    <ol class="storyboard-grid">
+      {% for scene in view.scenes %}
+      <li class="storyboard-card"><span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.visual_intent }}</p></div><span class="scene-status">{{ scene.status }}</span></li>
+      {% endfor %}
+    </ol>
+  </section>
 </section>
 {% else %}
-<section class="empty-state" data-view-kind="review"><h2>No current task</h2><p>Return to Start / Current Task to initialize the local workspace.</p></section>
+<section class="empty-state" data-view-kind="review" aria-labelledby="empty-review-title"><p class="eyebrow">Review / Produce</p><h2 id="empty-review-title">No current task</h2><p>Return to Start / Current Task to initialize the local workspace.</p><a class="button button-primary" href="/">Open Start</a></section>
 {% endif %}
 {% endblock %}
