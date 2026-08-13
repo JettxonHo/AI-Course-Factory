@@ -102,6 +102,60 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             self.assertEqual(result.view.pending_action, "produce_offline")
             self.assertTrue(result.view.budget_approved)
 
+    def test_explicit_zero_amount_fails_closed_without_budget_or_production_side_effect(self) -> None:
+        with TemporaryDirectory() as directory:
+            app = CourseFactoryApplication(Path(directory))
+            app.create_or_open()
+            app.submit_script_decision("approve")
+            app.advance_planning()
+
+            result = app.submit_budget_decision("approve", maximum_approved_amount_micros=0)
+
+            self.assertEqual(result.status, "failure")
+            self.assertEqual(result.error_code, "INVALID_APPROVED_AMOUNT")
+            self.assertEqual(result.view.stage, "budget_review")
+            self.assertEqual(result.view.pending_action, "approve_budget")
+            self.assertFalse(result.view.budget_approved)
+            self.assertEqual(result.view.provider_attempt_count, 0)
+            self.assertEqual(result.view.provider_attempt_statuses, ())
+            self.assertEqual(result.view.provider_attempt_charged_amount_micros, 0)
+            self.assertEqual(app.budget_decisions.get_decision("decision:budget:offline").code, "DECISION_NOT_FOUND")
+            self.assertEqual(app.budget_decisions.get_authorization("authorization:offline").code, "AUTHORIZATION_NOT_FOUND")
+
+            production = app.produce_offline()
+
+            self.assertEqual(production.status, "failure")
+            self.assertEqual(production.error_code, "BUDGET_APPROVAL_REQUIRED")
+            self.assertEqual(production.view.stage, "budget_review")
+            self.assertEqual(production.view.provider_attempt_count, 0)
+
+    def test_explicit_zero_attempts_fails_closed_without_budget_or_production_side_effect(self) -> None:
+        with TemporaryDirectory() as directory:
+            app = CourseFactoryApplication(Path(directory))
+            app.create_or_open()
+            app.submit_script_decision("approve")
+            app.advance_planning()
+
+            result = app.submit_budget_decision("approve", maximum_attempts=0)
+
+            self.assertEqual(result.status, "failure")
+            self.assertEqual(result.error_code, "INVALID_MAXIMUM_ATTEMPTS")
+            self.assertEqual(result.view.stage, "budget_review")
+            self.assertEqual(result.view.pending_action, "approve_budget")
+            self.assertFalse(result.view.budget_approved)
+            self.assertEqual(result.view.provider_attempt_count, 0)
+            self.assertEqual(result.view.provider_attempt_statuses, ())
+            self.assertEqual(result.view.provider_attempt_charged_amount_micros, 0)
+            self.assertEqual(app.budget_decisions.get_decision("decision:budget:offline").code, "DECISION_NOT_FOUND")
+            self.assertEqual(app.budget_decisions.get_authorization("authorization:offline").code, "AUTHORIZATION_NOT_FOUND")
+
+            production = app.produce_offline()
+
+            self.assertEqual(production.status, "failure")
+            self.assertEqual(production.error_code, "BUDGET_APPROVAL_REQUIRED")
+            self.assertEqual(production.view.stage, "budget_review")
+            self.assertEqual(production.view.provider_attempt_count, 0)
+
     def test_offline_production_reaches_final_review_with_playable_video(self) -> None:
         with TemporaryDirectory() as directory:
             app = CourseFactoryApplication(Path(directory))

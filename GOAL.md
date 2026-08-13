@@ -95,7 +95,7 @@ Exit: both real Adapters work through the existing interface under recorded caps
 
 ### F3 — Real end-to-end acceptance
 
-Status: **BLOCKED ON F1 + F2**
+Status: **BLOCKED ON F2**
 
 Run the fixed Demo from the browser with both real Adapters. Verify:
 
