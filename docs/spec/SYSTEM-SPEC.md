@@ -8,7 +8,7 @@
 | Product Input | `docs/product/PRD.md` |
 | Current Code Baseline | `main@08085e4` |
 | Approved | 2026-08-12 by Product Owner |
-| Last Updated | 2026-08-12 |
+| Last Updated | 2026-08-13 |
 
 本文件定义稳定的系统行为、领域语言、模块接口和不变量。它不规定 Python 目录、Web 框架、数据库产品、Provider SDK 或开发任务。
 
@@ -27,6 +27,9 @@
 | Interface | 调用者必须知道的完整契约，包括输入、结果、不变量、顺序和失败。 |
 | Seam | 可以替换实现而不修改调用方的 Interface 所在位置。 |
 | Adapter | 在一个 Seam 上满足 Interface 的具体实现。 |
+| Task media projection | Application-owned task read model of selected media Artifact References and their `current\|stale` facts; it is not an Artifact Version or Workflow payload. |
+| Scene media selection | Typed selection of one Scene's exact Clip or Audio Artifact Reference and its projection state. |
+| Delivery media selection | Singleton selection for Subtitle, logical Master Audio, Video, Artifact Manifest or Publish Package. |
 
 当前代码中的 `ArtifactCommitBoundary`、`ScriptDecisionBoundary` 等类名保留；本文用 “Artifact Store interface” 和 “Decision interface” 描述其系统角色，不要求为术语统一立即重命名代码。
 
@@ -60,6 +63,7 @@ Interface 提供任务级命令和查询：创建任务、推进阶段、提交 
 - 按顺序组合 Workflow、Agent、Artifact、Budget、Production 和 Packaging；
 - 在外部副作用前检查 Gate 和 authorization；
 - 返回稳定、可展示的结果投影。
+- 维护由 Task media projection、scene media selection 和 delivery media selection 组成的任务级媒体读模型；该读模型不取代 Artifact repository 的 immutable Version ownership。
 
 不负责内容生成、Artifact Commit 规则、Provider request 转换或媒体合成。
 
@@ -196,6 +200,29 @@ Source Record
 
 Script 直接依赖 Knowledge、Course Plan 和 Episode Plan；Production planning 的每个 Artifact 必须保留回到 approved Script 的可验证 lineage。
 
+### 5.4 Task Media Projection
+
+Task media projection is the application-owned read model for selected media references and their lifecycle facts. It is additive to the existing planning `TaskSnapshot` contract: the ten singleton planning selections and their persisted representation remain backward-readable. The media projection does not change Artifact Version immutability, and it does not copy media payloads into Workflow state.
+
+The public value seam is a typed, frozen/slotted structure with explicit role and discriminator fields. A scene identity is a field in a scene media selection, never an encoded dynamic slot name such as `scene_clip:<scene_id>` or `scene_audio:<scene_id>`. The exact method signatures and physical record shape belong to a later implementation Task Contract.
+
+The projection contains:
+
+- one exact Scene Clip and one exact Scene Audio `ArtifactReference` selection per selected Scene, each marked `current` or `stale`;
+- singleton delivery media selections for Subtitle, logical Master Audio, Video, Artifact Manifest and Publish Package;
+- no selection when a media result does not yet exist; absence is not a mutable or pseudo-Artifact `missing` status.
+
+The following invariants are stable:
+
+1. Scene order is the exact ordered Scene sequence from the Timeline/Production Request, never lexical Scene ID order.
+2. A role/Scene pair is unique within one projection, and each singleton delivery role has at most one selected exact Reference. Duplicate roles, duplicate Scene identities or order drift fail closed.
+3. `current|stale` describes the selected-reference fact in the Task projection; it does not mutate the Artifact Version payload.
+4. Replacing one Scene's media selection later replaces only that exact Scene role selection. Exact downstream Master Audio, Video, Artifact Manifest and Publish Package selections become stale according to dependency impact; unaffected Scene media remains current.
+5. Artifact repository owns immutable Versions; the Task application projection owns selected/current/stale facts; the Provider Attempt Ledger owns execution history and budget enforcement; Decision and Workflow repositories own gates.
+6. Final Video decisions remain Decision Records and Workflow checkpoint state, not Artifact selections.
+
+The projection is a separate application/deep seam. A later implementation may use backward-compatible SQLite schema evolution or an additive table, but must choose the smallest verified physical form and preserve the planning snapshot compatibility boundary. This architecture record authorizes neither migration nor retry execution, Provider calls, cost, deployment or UI behavior.
+
 ## 6. Task State and Gates
 
 ### 6.1 Lifecycle
@@ -307,6 +334,8 @@ validate exact inputs
 - Creator decisions 和 Budget Authorization；
 - Provider attempts、费用和 output refs；
 - export record。
+
+The existing planning `TaskSnapshot` rows remain backward-readable when the additive Task media projection is introduced. The later implementation Task Contract must choose a backward-compatible SQLite schema evolution or additive table and persist typed scene/delivery selections, ordering, uniqueness, `current|stale` facts and dependency impact without changing the ten planning slots. This System Spec records the boundary only; it does not prescribe a migration or method signature.
 
 媒体 blob 不进入 Workflow state 或数据库大字段；只保存受控文件引用、元数据和校验所需信息。
 

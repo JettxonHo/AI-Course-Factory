@@ -10,7 +10,7 @@
 | Code Baseline | `main@08085e4` |
 | Language Runtime | Python `>=3.12,<3.13` |
 | Approved | 2026-08-12 by Product Owner |
-| Last Updated | 2026-08-12 |
+| Last Updated | 2026-08-13 |
 
 本文件把 System Spec 映射到当前仓库、运行时和测试。它不得修改产品范围或系统不变量。当前实现优先演进，不进行无证据的重写。
 
@@ -73,6 +73,12 @@ Persistence
 - Final Review、stale/impact、scene retry；
 - local web workspace 与 packaging；
 -真实 Model/Visual/TTS runtime evidence。
+
+### 3.3 Accepted Media Projection Boundary
+
+Decision D-003 (Issue #107, accepted Option A on 2026-08-13) establishes the architecture for the next M3 slice without claiming an implementation. The current planning `TaskSnapshot` remains a ten-singleton contract and must stay backward-readable. The future Task media projection is an additive, application-owned read model with typed **scene media selection** and singleton **delivery media selection** values; it is not a new media blob table by implication and it does not transfer ownership from the existing Artifact, Attempt, Decision or Workflow seams.
+
+This boundary is stable, but no method signatures, filename, schema migration or retry command is frozen here. A later implementation Task Contract must choose the smallest verified physical form behind a separate application module/deep seam and preserve backward-compatible SQLite reads. Until that Issue is separately frozen, the projection and scene retry/replace behavior are not authorized or implemented.
 
 ## 4. Package Plan
 
@@ -199,6 +205,8 @@ Interface 只使用内部 immutable values、受控文件 references 和 normali
 - inspect impact；
 - export approved package。
 
+The application boundary also owns the combined Task media projection read model. It exposes typed scene media selections (Clip and Audio) and singleton delivery media selections (Subtitle, logical Master Audio, Video, Artifact Manifest and Publish Package) as exact References plus `current|stale` facts. The projection is a separate application/deep seam from the existing planning `TaskSnapshot`; this document does not freeze its public method signatures. Scene order must come from exact Timeline/Production Request order, not lexical Scene IDs, and a missing selection is represented by absence rather than a mutable `missing` value.
+
 HTTP route 只解析/展示，不承载业务规则。错误通过稳定 code 映射为用户消息。
 
 ## 7. Persistence Design
@@ -237,6 +245,12 @@ HTTP route 只解析/展示，不承载业务规则。错误通过稳定 code �
 - Creator decision/authorization 必须持久化后才恢复 Workflow。
 - Provider attempt reservation 和 budget consumption 必须在外部调用前持久化。
 - 媒体文件先写临时文件，验证成功后原子移动到 task workspace，再提交 output record。
+
+### 7.4 Task Media Projection Storage Boundary
+
+The existing ten planning selections and their persisted rows remain backward-readable. The additive Task media projection may be represented by backward-compatible SQLite schema evolution or an additive table, chosen by the later implementation Task Contract after verification; this docs task performs no migration. Its persisted values must be frozen/slotted typed records with explicit role/discriminator fields, never dynamic `scene_clip:<scene_id>` or `scene_audio:<scene_id>` strings.
+
+The storage boundary must preserve exact Timeline/Production Request Scene ordering, role/Scene uniqueness, singleton delivery-role uniqueness, absence-as-not-selected, and `current|stale` projection facts. A later Scene retry/replace update may replace only one exact Scene Clip or Scene Audio selection and must mark only exact downstream Master Audio, Video, Artifact Manifest and Publish Package selections stale while leaving unaffected Scene media current. Artifact repository, Attempt Ledger, and Decision/Workflow repositories retain their existing ownerships. No Provider call, cost, deployment, UI, or retry execution is part of this architecture baseline.
 
 ## 8. Configuration and Secrets
 
@@ -329,6 +343,8 @@ git diff --check
 - 至少有一次 mutation-sensitive 断言：错误 lineage、未授权预算或错误 gate 必须使测试失败。
 - Provider smoke 失败必须区分代码、凭据、配额、模型可用性和外部服务故障。
 
+When the separate media projection implementation Issue is authorized, its focused contract evidence must cover backward-readable planning snapshots, typed role/discriminator validation, exact Timeline/Production Request ordering, role/Scene and singleton uniqueness, absence semantics, current/stale transitions, exact downstream impact and preservation of unaffected Scene selections. This docs-only alignment supplies no such code or test evidence.
+
 ## 13. Observability
 
 结构化日志字段最少包括：`task_id`、`command_id`、`stage`、`artifact_ref`、`provider`、`attempt_id`、`result_code` 和 safe duration/cost。
@@ -345,6 +361,7 @@ STATUS/PR 中的 “passed” 必须说明是 unit、offline、provider smoke �
 4. 先用 Fake providers + FFmpeg 闭合无费用 production，再选择真实 Provider。
 5. Web Workspace 只调用 Application layer，不复制既有 Script Review 规则。
 6. 每个里程碑以可运行纵向行为结束，不以创建文件或接口数量结束。
+7. D-003 is an accepted architecture baseline only. Before implementation, freeze one unique Task Contract for the additive Task media projection, then a separate bounded contract for offline Scene retry/replace; keep Provider, fees, deployment and UI closed.
 
 ## 15. Explicitly Deferred
 

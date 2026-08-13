@@ -35,7 +35,7 @@
 | Planning Baseline | `4c00eb2139006b250574377a337c60a4a7758af3` |
 | Remote Canonical | `origin/main`; live HEAD is authoritative for transient docs-only merges |
 | Worktrees | One main worktree |
-| Current Task Contract | None; M3-009/Issue #103 is closed through PR #104; Issue #105 is docs-only and authorizes no next implementation; any follow-up requires a separate Task Contract for Task projection media lifecycle integration or scene retry/replace |
+| Current Task Contract | Issue #108 / M3-010A is the open docs-only architecture alignment; D-003 accepts Option A from Issue #107, while Task media projection implementation and scene retry/replace remain unauthorized until a separate unique implementation Issue/Task Contract is frozen |
 | Open PR | None |
 | Current Code Gate | 340 full local tests passed and compileall passed on merged `main@682ecbd1633ff22f181cb5d5161bea6b0a05433e`; GitHub reported no hosted checks |
 | Product Goal | Approved and active as long-term Codex Goal `019ff1fc-4b0b-7e92-9fd1-c63a5679fe3b` |
@@ -351,7 +351,7 @@ GitHub reported no hosted checks
 
 M3-009 Review history: the initial `tests/packaging` namespace shadowed third-party `packaging.version` during full unittest discovery and was corrected to `tests/test_packaging_builder.py`. Main returned two bounded `CHANGES_REQUESTED` rounds for exact type/lineage/media/public evidence/private coupling; the same Luna corrected them, and `builder.py` is 647 lines below the 650 hard cap.
 
-M3-009 evidence: public `PackagingFailure`, `PublishPackageResult` and `PublishPackageBuilder` consume exact approved Video, Subtitle and reachable Source Record facts, validate the exact Final Video approval and lineage before Workspace/Artifact side effects, write one deterministic ZIP to Workspace `exports`, then commit exact Artifact Manifest and Publish Package v1 facts. ZIP order is Video, canonical SRT, source attribution without source text, Artifact Manifest; deterministic metadata and byte/hash facts are verified. Replay/conflict/no-v2 and Manifest/Package staged recovery are verified. Durable evidence uses SQLite Artifact + Final Video decision repositories, FilesystemWorkspace restart, independent ZIP parse, byte-equal playable MP4 and optional ffprobe. No real Provider, network service, fees, deployment, external publication, Task media projection, scene retry or UI evidence exists; GitHub reported no hosted checks, evidence is local only, and Issue #105 is docs-only with no open implementation Task Contract authorized.
+M3-009 evidence: public `PackagingFailure`, `PublishPackageResult` and `PublishPackageBuilder` consume exact approved Video, Subtitle and reachable Source Record facts, validate the exact Final Video approval and lineage before Workspace/Artifact side effects, write one deterministic ZIP to Workspace `exports`, then commit exact Artifact Manifest and Publish Package v1 facts. ZIP order is Video, canonical SRT, source attribution without source text, Artifact Manifest; deterministic metadata and byte/hash facts are verified. Replay/conflict/no-v2 and Manifest/Package staged recovery are verified. Durable evidence uses SQLite Artifact + Final Video decision repositories, FilesystemWorkspace restart, independent ZIP parse, byte-equal playable MP4 and optional ffprobe. No real Provider, network service, fees, deployment, external publication, Task media projection, scene retry or UI evidence exists; GitHub reported no hosted checks, evidence is local only. Issue #105 was the prior docs-only status alignment; Issue #108 now records the accepted scene-media architecture and still provides no implementation authorization.
 
 ## 3. Not Implemented
 
@@ -360,7 +360,7 @@ Playable per-operation local FFmpeg Fixture media, local FFmpeg composition, bou
 - broader Task projection/media-lifecycle integration and production orchestration beyond the bounded composition and Final Video gate slices；
 - task-level production application use cases and local Web Workspace；
 - real Visual/TTS Provider adapters and non-Fixture product media generation beyond the local composer output；
-- Task projection media lifecycle integration, scene retry/replace；
+- Task media projection implementation and scene retry/replace remain not implemented; D-003 architecture is accepted, but this docs-only baseline supplies no code, tests or runtime evidence；
 - product Model Runtime, UI and deployment evidence。
 
 ## 4. GitHub State
@@ -450,6 +450,8 @@ Playable per-operation local FFmpeg Fixture media, local FFmpeg composition, bou
 - PR #104 validates the exact Final Video decision and lineage before Workspace/Artifact side effects, and verifies replay/conflict/no-v2 plus Manifest/Package staged recovery. Durable evidence uses SQLite Artifact + Final Video decision repositories, FilesystemWorkspace restart, independent ZIP parse, byte-equal playable MP4 and optional ffprobe.
 - PR #104 merge evidence is focused public contract 10, durable integration 1, full local regression 340, compileall and diff/allowlist/protected gates passed. The initial `tests/packaging` namespace shadowed third-party `packaging.version` under full discovery and was corrected to `tests/test_packaging_builder.py`; main returned two bounded `CHANGES_REQUESTED` rounds for exact type/lineage/media/public evidence/private coupling, the same Luna corrected them, and `builder.py` is 647 lines below the 650 hard cap. GitHub reported no hosted checks; evidence is local only.
 - The #104 evidence boundary excludes real Provider, network service, fees, deployment, external publication, Task media projection, scene retry and UI evidence. Issue #105 is the docs-only alignment and authorizes no open implementation Task Contract or public API.
+- Issue #107 is closed as an architecture proposal; Product Owner accepted Option A (explicit scene-scoped Task media projection) on 2026-08-13. It is a decision source, not an implementation contract.
+- Issue #108 / M3-010A is the open docs-only architecture baseline for D-003. It preserves the ten backward-readable planning selections and establishes typed scene media and singleton delivery media selections, exact Timeline/Production Request ordering, uniqueness, `current|stale` and dependency-impact ownership. It authorizes no projection code, schema migration, retry execution, Provider call, fee, UI or deployment; implementation requires a separate unique Issue/Task Contract.
 
 ## 5. Protected Untracked Materials
 
@@ -483,6 +485,7 @@ All five exact paths are locally excluded through `.git/info/exclude`. `git chec
 | Issue #97 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #97 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Issue #101 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #101 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Issue #105 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only alignment exposes no independent Issue #105 task UUID or host `turn_context`; no runtime identity/model claim is made |
+| Issue #108 docs runtime | UNVERIFIED_RUNTIME_MODEL | This docs-only architecture alignment exposes no independent Issue #108 task UUID or host `turn_context`; no runtime identity/model claim is made |
 | Terra migration | Not applicable | No active/done Terra task found in this current run |
 
 Official Codex configuration supports trusted project-scoped `.codex/config.toml` overrides. The current task is a fresh task in this trusted project, and its host-written `turn_context` independently exposes the effective `gpt-5.6-sol / xhigh` runtime values.
@@ -726,7 +729,8 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 - the durable Final Video Review decision seam now assesses exact Video structural lineage, enforces hard-block and Creator action rules, and persists exact decisions through in-memory and SQLite repositories with replay/conflict/restart/corruption evidence；
 - the namespaced Final Video Review Workflow + Application gate now persists the exact Final Video decision before state advance; Script default and `final_video_review` checkpoint namespaces coexist for one public thread in one SQLite database, with 10 workflow, 12 application, 2 durable integration and 329 full local tests recorded；
 - the deterministic local Publish Package seam now validates exact approved Video/Subtitle/Source lineage, writes the ordered ZIP and exact Manifest/Package v1 facts through Workspace/Artifact boundaries, and preserves replay/conflict/no-v2 and staged recovery evidence；
-- M3 remains active: Task projection media lifecycle integration and scene retry/replace remain not implemented or authorized; bounded local export/package is complete, while real Provider, fees, UI and deployment remain closed；
+- D-003 / Issue #108 docs-only alignment is accepted: Option A owns selected/current/stale Scene media in an additive Task media projection, while Artifact Versions, Attempt history/budget, Decision records and Workflow checkpoints retain separate ownership. This is architecture evidence only; no projection code, tests or runtime evidence exists, and implementation is not authorized until a separate unique Issue/Task Contract is frozen；
+- M3 remains active: Task media projection implementation and scene retry/replace remain not implemented or authorized; bounded local export/package is complete, while real Provider, fees, UI and deployment remain closed；
 - no real Provider, credential, fee, SDK, network or deployment evidence exists。
 
 ### Blocks only real Provider milestone
@@ -745,5 +749,5 @@ The exact Luna implemented one explicit-injection, claim-gated offline Orchestra
 
 ## 9. Next Ordered Actions
 
-1. Issue #105 is docs-only and authorizes no next implementation Task Contract. If work resumes, establish a separate bounded Task Contract and architecture review for Task projection media lifecycle integration or scene retry/replace; do not invent a public API, select or call a real Provider, incur fees, or add UI/deployment.
+1. Issue #108 is the current docs-only architecture alignment and authorizes no projection or retry implementation. After this D-003 baseline is independently reviewed, establish a separate unique implementation Issue/Task Contract for Task media projection, then a separate bounded contract for scene retry/replace; do not invent a public API, select or call a real Provider, incur fees, or add UI/deployment.
 2. Keep all real Provider, cost and deployment gates closed.
