@@ -7,10 +7,11 @@ Observed: 2026-08-13 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| Merged baseline | F1 baseline `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 |
-| Active planning branch | None after the F1 correction merge |
-| Current implementation task | None; F1 remains complete and F2 awaits Product Owner decisions |
-| Merged regression evidence | 388 local tests passed after the F1 correction; no hosted CI is claimed |
+| Current starting main | `main@72ef53805aa33aa847d35f70d4a36303681ecec1` |
+| Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
+| Active planning branch | `codex/117-desktop-imagegen-visuals` |
+| Current implementation task | Issue #117 F2A explicit Desktop ImageGen local-import bridge; candidate evidence pending independent review |
+| Historical merged regression evidence | 388 local tests passed after the F1 correction; no hosted CI is claimed |
 | Rebaseline validation | 356/356 local tests passed on the integration branch with the explicit `PYTHONPATH=src` command below |
 | Real product runtime | Loopback F1 candidate smoke is locally verified; no real Visual/TTS or deployed-runtime evidence |
 | Provider authorization | Not granted; `PD-001`–`PD-003` remain required |
@@ -61,7 +62,7 @@ With F1 merged, remaining FAST-MVP work is:
 
 ## 4. Current Concurrent Work
 
-F0 is complete. Issue #110 passed independent review and merged through PR #111. F1 then merged through PR #114; current main is `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`. Focused tests were 10 application + 6 SQLite integration, and the post-merge full regression was 356/356.
+F0 is complete. Issue #110 passed independent review and merged through PR #111. F1 then merged through PR #114; the historical F1 correction snapshot was `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`, while the current starting main for Issue #117 is `main@72ef53805aa33aa847d35f70d4a36303681ecec1`. Issue #117 is implementing F2A on `codex/117-desktop-imagegen-visuals`; this local bridge does not call a Visual Provider or claim F2/F3 completion.
 
 Issue #113 / PR #114 completed the single vertical F1 workspace contract.
 

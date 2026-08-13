@@ -41,6 +41,9 @@ from .adapters import (
     FFmpegMediaComposer,
     FFmpegFixtureVisualGenerator,
     FFmpegFixtureVoiceGenerator,
+    LOCAL_IMPORTED_PROVIDER,
+    LocalImportedPreflight,
+    LocalImportedVisualGenerator,
 )
 from .orchestrator import ProductionOrchestrator
 
@@ -81,5 +84,8 @@ __all__ = [
     "FFmpegMediaComposer",
     "FFmpegFixtureVisualGenerator",
     "FFmpegFixtureVoiceGenerator",
+    "LOCAL_IMPORTED_PROVIDER",
+    "LocalImportedPreflight",
+    "LocalImportedVisualGenerator",
     "ProductionOrchestrator",
 ]

@@ -12,18 +12,23 @@
   <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
   {% if view.stage == "budget_review" %}
   <div class="callout"><h3>Budget before production</h3><p>Maximum authorization: {{ view.budget_maximum_amount_micros }} micros · {{ view.budget_maximum_attempts }} attempts. This approval is required even though the selected run is local and zero-cost.</p></div>
+  {% elif view.stage == "production" and view.visual_mode == "imported" %}
+  <div class="callout"><h3>Local imported visual run</h3><p>FFmpeg converts the operator-declared Desktop ImageGen stills. Desktop generation happened outside the application; no ChatGPT or other Visual Provider API call is made here, and the external charge is zero.</p></div>
   {% elif view.stage == "production" %}
   <div class="callout"><h3>Offline Fixture run</h3><p>FFmpeg creates deterministic local media. No Visual or TTS Provider is called, and no network request is made.</p></div>
   {% endif %}
+  {% if view.prompt_cards %}
+  <div class="callout"><h3>Desktop ImageGen cards</h3><ol>{% for card in view.prompt_cards %}<li><strong>{{ card.scene_id }} · {{ card.target_filename }}</strong> — {{ card.prompt }}</li>{% endfor %}</ol></div>
+  {% endif %}
   {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
-  {% if view.provider_attempt_count %}<div class="attempt-facts"><strong>Provider attempts:</strong> {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
+  {% if view.provider_attempt_count %}<div class="attempt-facts">{% if view.visual_mode == "imported" %}<strong>Local processing attempts:</strong>{% else %}<strong>Provider attempts:</strong>{% endif %} {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
   <ol class="scene-list compact">
     {% for scene in view.scenes %}<li><span class="scene-number">{{ loop.index }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.visual_intent }}</p></div><span class="scene-status">{{ scene.status }}</span></li>{% endfor %}
   </ol>
   <div class="action-row">
     {% if view.stage == "planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
     {% if view.stage == "budget_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="approve_budget">Approve no-cost budget</button></form>{% endif %}
-    {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">Produce offline Fixture</button></form>{% endif %}
+    {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">{% if view.visual_mode == "imported" %}Produce imported visuals{% else %}Produce offline Fixture{% endif %}</button></form>{% endif %}
     {% if view.stage == "final_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="open_final">Open final review</button></form>{% endif %}
   </div>
 </section>

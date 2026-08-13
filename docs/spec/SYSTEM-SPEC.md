@@ -40,6 +40,7 @@ The UI calls only the Course Factory Application. It does not coordinate reposit
 | Decision | Creator action bound to one exact Script, Storyboard, Budget or Video target. |
 | Task Snapshot | Application-owned current stage, selected exact references, pending action and recoverable failure. |
 | Provider Attempt | One external execution/cost record owned by the attempt ledger. |
+| Operator-declared visual import | Exact creator-supplied stills generated outside the application and converted locally; the import bridge records a zero-charge local-processing marker, not a cloud Provider call. |
 | Scene | Smallest media production and retry unit. |
 | Scene media selection | Current selected Clip and Audio references for one ordered Scene. |
 | Delivery media selection | Current selected Subtitle, Master Audio, Video, Manifest or Package reference. |
@@ -88,6 +89,8 @@ Accepts an exact Production Request, matching Budget Authorization, explicit Sce
 - FFmpeg Composer: ordered selected media + Timeline -> Video, SRT and media facts.
 
 Provider-specific request/response objects stay inside the corresponding Adapter. Fake Adapters support offline development; exactly one real Adapter for each paid media role is sufficient for FAST-MVP.
+
+The bounded F2A local-import Visual adapter is an explicit exception to the paid-provider path: it accepts only `scene-1.png` through `scene-6.png` from the operator-declared directory (and exact `scene-2-replacement.png` for the one visual replacement), decodes the complete set before any production side effect, then uses local FFmpeg/ffprobe to create playable clips. It does not search Downloads/Desktop, call a Visual Provider API or infer a latest file. Budget approval still gates the conversion, its charge is zero, and package attribution records the external source honestly.
 
 ### Packaging
 
@@ -146,6 +149,7 @@ For a known safe failure, the workspace may offer bounded retry. For an uncertai
 - Keep credentials outside repository and Artifact payloads.
 - Limit reads/writes to the configured source checkout and task workspace.
 - Validate user-provided URLs and workspace-relative paths at the real trust boundary.
+- Require an explicit visual import directory for F2A; accept no implicit Downloads/Desktop/latest-file inference and expose only safe input basenames in failures.
 - Require separate Product Owner approval for Provider selection, credentials, spend and deployment.
 
 ## 9. Verification by Risk
@@ -154,6 +158,7 @@ For a known safe failure, the workspace may offer bounded retry. For an uncertai
 - Money/external effects: authorization, cap, attempt reservation and uncertain-retry tests.
 - Data lineage: exact source/decision/media/export assertions.
 - Scene recovery: one retry/replace integration test proving unaffected media is retained.
+- F2A local visual import: six-image decode preflight, fixed playable conversion, visual-only replacement and restart/package replay evidence.
 - Persistence: one process-restart continuation test.
 - UI: primary-path and actionable-failure browser checks.
 

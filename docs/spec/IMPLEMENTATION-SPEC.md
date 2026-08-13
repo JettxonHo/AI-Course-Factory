@@ -8,7 +8,7 @@
 | Approval | Product Owner, 2026-08-13 |
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
-| Code Baseline | `main@5d4cae8bcb45e15cba036c45fc673f6245117a6b` |
+| Code Baseline | `main@72ef53805aa33aa847d35f70d4a36303681ecec1` |
 | Runtime | Python `>=3.12,<3.13` |
 | Supersedes | Implementation Spec v1.0 for daily development |
 
@@ -39,7 +39,7 @@ No SPA, frontend build system, container platform or cloud deployment is require
 
 ## 3. Current Reusable Implementation
 
-At `main@5d4cae8`, the repository already contains:
+At `main@72ef53805aa33aa847d35f70d4a36303681ecec1`, the repository already contains:
 
 - public GitHub acquisition, source normalization and grounded Knowledge/Script planning;
 - Character, Storyboard, Timeline, Production Request and Budget planning;
@@ -48,17 +48,18 @@ At `main@5d4cae8`, the repository already contains:
 - task filesystem workspace and Provider-attempt ledger;
 - provider-neutral Visual/TTS interfaces, deterministic Fake media and claim-gated offline production;
 - local FFmpeg Fixture generation/composition and exact media Artifact commits;
-- Final Video Review plus deterministic local Publish Package/Manifest.
+- Final Video Review plus deterministic local Publish Package/Manifest;
+- the durable F1 application facade and three-view loopback workspace, including one local Scene replacement and package export.
 
-The merged baseline has 340 passing local regression tests. This proves substantial offline modules, not a usable workspace, real Visual/TTS output or a real end-to-end product.
+The starting baseline has the reusable provider-neutral interfaces and local Fixture path only. The Issue #117 candidate implementation adds the bounded F2A local-import Visual adapter; that candidate is not a capability of `main@72ef53805aa33aa847d35f70d4a36303681ecec1`.
+
+The starting baseline has 388 passing local regression tests. This proves the merged offline workspace and bounded F1 correction, not a real Visual/TTS Provider path or a real end-to-end acceptance run.
 
 ## 4. Missing Vertical Product Capabilities
 
-1. One application facade that exposes the current pipeline as task-level commands and views.
-2. A local web workspace for input, evidence, approvals, production status, video review, Scene action and export.
-3. The smallest durable scene media selection/retry behavior required by that workspace.
-4. One real Visual Adapter and one real TTS Adapter selected and separately authorized by the Product Owner.
-5. One browser-driven real end-to-end acceptance run.
+1. One bounded F2A local-import Visual bridge (Issue #117) with independently reviewed candidate evidence; this is not real-provider acceptance.
+2. One real TTS Adapter and any later automatic cloud Visual Adapter selected and separately authorized by the Product Owner.
+3. One browser-driven real end-to-end acceptance run.
 
 These gaps define the implementation order. New general repositories, compatibility frameworks or defensive utilities do not precede them.
 
@@ -106,6 +107,10 @@ One Issue/PR connects the existing Fake/local pipeline through the application f
 
 The Scene action may initially use deterministic replacement media if needed; its state contract must remain compatible with the approved System Spec.
 
+### F2A — Explicit Desktop ImageGen local visual bridge
+
+Issue #117 keeps image generation outside the application. The operator passes `--visual-import-dir`; the adapter accepts only the six exact initial PNG/JPEG names, decodes all six before any attempt/workspace/Artifact side effect, and uses fixed shell-disabled FFmpeg/ffprobe conversion to H.264 `yuv420p` 540x960 24fps MP4. Budget approval still gates conversion, while the ledger provider token is a safe local-import marker and the charge remains zero. Scene 2 replacement requires only `scene-2-replacement.png`, reuses the predecessor voice and audio/master references, rebuilds stale video, and leaves other Scene selections unchanged. Restart and package replay must avoid reconversion and include additive honest source attribution. F2A remains incomplete until candidate evidence is independently reviewed.
+
 ### F2 — Authorized real media Adapters
 
 After `PD-001`–`PD-003` are approved, Visual and TTS Adapters may be separate parallel Issues with disjoint file ownership. Each has one Fake-free opt-in smoke test, normalized failure handling, credential preflight and a hard cost/attempt cap. These Issues do not redesign orchestration or UI.
@@ -145,11 +150,11 @@ Risk tiers:
 
 Do not require mutation audits, repeated two-instance races, arbitrary corruption injection or future-schema tests by default. Add them only when the task changes that exact risk boundary.
 
-Fake success proves offline wiring only. Final acceptance requires a real Visual result, real spoken TTS, real FFmpeg output and a browser-visible playable video.
+F2A local-import success proves only the external-source bridge and local conversion. Fake success proves offline wiring only. Final acceptance requires a real Visual result, real spoken TTS, real FFmpeg output and a browser-visible playable video.
 
 ## 10. External Authorization
 
-The approved FAST-MVP Goal authorizes F0/F1 offline development. It does not authorize:
+The approved FAST-MVP Goal authorizes F0/F1 offline development and the bounded no-cost F2A bridge. It does not authorize:
 
 - selecting or calling a real Provider;
 - using credentials or incurring fees;

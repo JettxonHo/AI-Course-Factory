@@ -230,3 +230,39 @@ The Product Owner asked for the smallest end-to-end MVP that preserves all core 
 - **Continue horizontal hardening before UI:** rejected because it delays validation of the primary user job.
 - **Discard the current backend and rewrite:** rejected because the existing planning, persistence, production, composition and packaging seams are reusable.
 - **Remove all safeguards:** rejected because claim accuracy, money, exact approvals, Scene recovery and export integrity are real MVP risks.
+
+## Decision D-005 — PD-001A Creator-supplied Desktop ImageGen visual bridge
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted for bounded F2A implementation |
+| Decision Date | 2026-08-13 |
+| Decision Owner | Product Owner |
+| Applies To | Issue #117 / F2A local visual-import mode |
+| Product Decision | `PD-001A` |
+
+### Context
+
+The real Visual Provider/model/credential decision (`PD-001`) remains open, while the Creator needs a truthful path to exercise the local production, replacement, restart and package contracts. ChatGPT Desktop ImageGen can supply still images outside the application without introducing a cloud SDK, credential or application-side Provider call.
+
+### Decision
+
+1. Add one explicit application mode selected with `--visual-import-dir` (or the equivalent `create_app`/facade argument). Never infer Downloads, Desktop, a newest file or an alternate extension.
+2. Require the exact initial names `scene-1.png` through `scene-6.png`, plus exact `scene-2-replacement.png` for the bounded replacement. Decode every required file in one preflight before any Provider-attempt record, workspace media write or Artifact commit; report only safe actionable basenames.
+3. Convert imported stills locally with the existing shell-disabled FFmpeg/ffprobe path into H.264 `yuv420p` 540x960 24fps MP4 at each Scene duration. Budget approval remains required, but the local-processing marker has zero external charge and is not a ChatGPT Provider attempt.
+4. Scene 2 replacement is visual-only: reuse the exact predecessor voice result and Scene Audio/Master Audio references, rebuild stale Video, and preserve all other Scene visual/audio selections. Missing or invalid replacement input changes no state.
+5. Restart replays committed imported production/replacement/final/package state without reconversion. Package source attribution must retain the exact GitHub repository URL, commit SHA and units while adding only honest visual facts: creator-supplied via ChatGPT Desktop ImageGen, generated outside application, model version not verified by application, no application Provider API call, zero external charge and the selected replacement basename.
+6. This decision does not select a real Visual/TTS Provider, authorize credentials or fees, or complete F2/F3 acceptance. It is candidate evidence for F2A only.
+
+### Consequences
+
+- `LocalImportedVisualGenerator` owns the exact-name/decode preflight and conversion policy behind the existing `VisualGenerator` interface.
+- The three existing server-rendered views expose six frozen/copyable prompt cards; no upload manager, fourth page or SPA is introduced.
+- The safe ledger token `local-import-operator-declared-external-source` is used for machine-readable facts; human wording appears in the UI and package attribution.
+- Candidate completion still requires independent review of focused tests, one real local FFmpeg integration path and the full regression evidence.
+
+### Rejected Alternatives
+
+- **Infer files from Downloads/Desktop/latest:** rejected because it is nondeterministic and would make provenance and restart replay unverifiable.
+- **Add a new Provider API or cloud SDK:** rejected because Desktop generation is outside the application and `PD-001` is still unresolved.
+- **Generate a replacement voice/audio result:** rejected because F2A is a visual-only replacement and must preserve exact predecessor audio references.

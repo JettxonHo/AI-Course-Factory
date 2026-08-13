@@ -20,6 +20,8 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             self.assertEqual(result.view.pending_action, "approve_script")
             self.assertTrue(result.view.source_commit)
             self.assertEqual(len(result.view.scenes), 6)
+            self.assertEqual(result.view.visual_mode, "fixture")
+            self.assertEqual(result.view.prompt_cards, ())
 
     def test_script_approval_persists_and_moves_to_planning(self) -> None:
         with TemporaryDirectory() as directory:

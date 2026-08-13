@@ -28,6 +28,17 @@
       {% endfor %}
     </ol>
   </div>
+  {% if view.prompt_cards %}
+  <div class="script-block" aria-labelledby="prompt-cards-title">
+    <p class="eyebrow" id="prompt-cards-title">Desktop ImageGen prompt cards</p>
+    <p class="lede">Copy each frozen card into ChatGPT Desktop ImageGen, then save the result with the exact target filename in your explicit import directory.</p>
+    <ol class="scene-list compact">
+      {% for card in view.prompt_cards %}
+      <li><div><strong>{{ card.scene_id }} · {{ card.target_filename }}</strong><p>{{ card.prompt }}</p></div></li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
   {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
   {% if view.stage == "script_review" %}
   <form class="action-row" method="post" action="/start/script">
