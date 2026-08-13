@@ -3,27 +3,65 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4eddf">
     <title>{{ title }} · AI Course Factory</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    {% set route_kind = "review" if request.url.path == "/review" else ("final" if request.url.path == "/final" else "start") %}
+    {% set stage_index = 0 %}
+    {% if view and view.stage in ("planning", "budget_review", "production") %}{% set stage_index = 1 %}{% endif %}
+    {% if view and (view.stage in ("final_review", "exported", "rejected") or view.pending_action == "export_package") %}{% set stage_index = 2 %}{% endif %}
     <header class="site-header">
       <div class="shell header-inner">
-        <a class="wordmark" href="/">AI Course Factory <span>offline workspace</span></a>
-        <nav aria-label="Workspace">
-          <a href="/">Start</a>
-          <a href="/review">Review / Produce</a>
-          <a href="/final">Final / Export</a>
+        <a class="wordmark" href="/" aria-label="AI Course Factory home">
+          <span class="wordmark-mark" aria-hidden="true">P</span>
+          <span class="wordmark-copy">AI Course Factory <small>offline workspace</small></span>
+        </a>
+        <nav class="workspace-nav" aria-label="Workspace">
+          <a href="/"{% if route_kind == "start" %} aria-current="page"{% endif %}>Start</a>
+          <a href="/review"{% if route_kind == "review" %} aria-current="page"{% endif %}>Review / Produce</a>
+          <a href="/final"{% if route_kind == "final" %} aria-current="page"{% endif %}>Final / Export</a>
         </nav>
       </div>
     </header>
     <main id="main" class="shell">
+      <section class="stage-track" aria-label="Production stages">
+        <p class="stage-track-label">Production desk</p>
+        <ol class="stage-track-list">
+          <li class="stage-step {% if stage_index > 0 %}is-complete{% elif stage_index == 0 %}is-current{% else %}is-upcoming{% endif %}" data-stage-state="{% if stage_index > 0 %}completed{% elif stage_index == 0 %}current{% else %}upcoming{% endif %}">
+            <a href="/"{% if stage_index == 0 %} aria-current="step"{% endif %}>
+              <span class="stage-step-number" aria-hidden="true">01</span>
+              <span><strong>Ground</strong><small>Script &amp; source</small></span>
+            </a>
+          </li>
+          <li class="stage-step {% if stage_index > 1 %}is-complete{% elif stage_index == 1 %}is-current{% else %}is-upcoming{% endif %}" data-stage-state="{% if stage_index > 1 %}completed{% elif stage_index == 1 %}current{% else %}upcoming{% endif %}">
+            <a href="/review"{% if stage_index == 1 %} aria-current="step"{% endif %}>
+              <span class="stage-step-number" aria-hidden="true">02</span>
+              <span><strong>Produce</strong><small>Plan &amp; budget</small></span>
+            </a>
+          </li>
+          <li class="stage-step {% if stage_index == 2 %}is-current{% else %}is-upcoming{% endif %}" data-stage-state="{% if stage_index == 2 %}current{% else %}upcoming{% endif %}">
+            <a href="/final"{% if stage_index == 2 %} aria-current="step"{% endif %}>
+              <span class="stage-step-number" aria-hidden="true">03</span>
+              <span><strong>Deliver</strong><small>Review &amp; export</small></span>
+            </a>
+          </li>
+        </ol>
+      </section>
       {% if message %}
       <div class="notice notice-error" role="alert">{{ message }}</div>
       {% endif %}
       {% block content %}{% endblock %}
     </main>
-    <footer class="shell site-footer">Local-only evidence workspace · no application Provider API call · no external charge</footer>
+    <footer class="shell site-footer">
+      <span>Local-only evidence workspace</span>
+      <span aria-hidden="true">·</span>
+      <span>no application Provider API call</span>
+      <span aria-hidden="true">·</span>
+      <span>no external charge</span>
+    </footer>
   </body>
 </html>

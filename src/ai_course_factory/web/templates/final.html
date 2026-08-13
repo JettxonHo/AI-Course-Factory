@@ -3,31 +3,80 @@
 {% block content %}
 <section class="intro" data-view-kind="final" aria-labelledby="final-title">
   <p class="eyebrow">Final / Export</p>
-  <h1 id="final-title">Review the playable evidence.</h1>
-  <p class="lede">{% if view and view.visual_mode == "imported" %}Replace exact scene-2 with its creator-supplied visual, then approve and export the exact package.{% else %}Replace at most one Scene with deterministic local media, then approve and export the exact package.{% endif %}</p>
+  <h1 id="final-title">Watch the evidence. Make the last call.</h1>
+  <p class="lede">The playable 9:16 cut stays beside the decision rail, so replace, approve, reject and export are distinct, visible states.</p>
 </section>
 {% if view %}
-<section class="task-panel" aria-labelledby="final-task-title">
-  <div class="section-heading"><div><p class="eyebrow">{{ view.task_id }}</p><h2 id="final-task-title">{{ view.stage }}</h2></div><span class="stage-chip">{% if view.replacement_done %}replacement complete{% else %}review pending{% endif %}</span></div>
+<section class="workspace-card final-card" aria-labelledby="final-task-title">
+  <header class="task-heading">
+    <div>
+      <p class="eyebrow">Current task · <span class="stage-code">{{ view.stage }}</span></p>
+      <h2 id="final-task-title">{% if view.pending_action == "approve_final" %}Final video review{% elif view.pending_action == "replace_scene" %}Scene replacement review{% elif view.pending_action == "export_package" %}Package ready to export{% elif view.stage == "exported" %}Delivery package exported{% else %}{{ view.stage }}{% endif %}</h2>
+    </div>
+    <div class="next-action" aria-label="Next action">
+      <span class="next-action-label">Next action</span>
+      <strong>{% if view.pending_action == "approve_final" %}Approve or replace{% elif view.pending_action == "replace_scene" %}Replace one scene{% elif view.pending_action == "export_package" %}Export package{% elif view.package_reference %}Download package{% else %}No action pending{% endif %}</strong>
+    </div>
+  </header>
+
   <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
-  {% if view.visual_mode == "imported" %}<div class="callout"><strong>Source attribution:</strong> creator-supplied via ChatGPT Desktop ImageGen; generated outside application; model version not verified by application; no application Provider API call; external charge 0.</div>{% endif %}
-  {% if view.tts_engine %}<div class="callout"><strong>Local narration:</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</div>{% endif %}
-  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure:</strong> {{ view.failure_category }}<br>{{ view.failure_message }}</div>{% endif %}
-  {% if view.provider_attempt_count %}<div class="attempt-facts">{% if view.visual_mode == "imported" %}<strong>Local processing attempts:</strong>{% else %}<strong>Provider attempts:</strong>{% endif %} {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
-  {% if view.local_replacement_label %}<div class="callout"><strong>{{ view.local_replacement_label }}</strong></div>{% endif %}
-  {% if view.video_reference %}
-  <div class="player-wrap"><video controls preload="metadata" src="/media/video"><track kind="subtitles" srclang="zh" src="/media/subtitle" label="中文"></video><p class="media-caption">Video v{{ view.video_reference.version }} · {% if view.visual_mode == "imported" %}local imported visual evidence{% else %}local Fixture evidence{% endif %}</p></div>
-  {% else %}<div class="empty-state"><h3>Video not ready</h3><p>Complete offline production before final review.</p></div>{% endif %}
-  <ol class="scene-list compact">
-    {% for scene in view.scenes %}<li><span class="scene-number">{{ loop.index }}</span><div><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div><span class="scene-status">{{ scene.status }}</span>{% if not view.replacement_done and view.stage == "final_review" and view.pending_action in ("approve_final", "replace_scene") and (view.visual_mode != "imported" or scene.scene_id == "scene-2") %}<form method="post" action="/final/action" class="inline-form"><input type="hidden" name="action" value="replace_scene"><input type="hidden" name="scene_id" value="{{ scene.scene_id }}"><button class="button button-tertiary" type="submit">{% if view.visual_mode == "imported" %}Replace scene-2 visual{% else %}Replace locally{% endif %}</button></form>{% endif %}</li>{% endfor %}
-  </ol>
-  <div class="action-row">
-    {% if view.stage == "final_review" and view.pending_action == "approve_final" %}<form method="post" action="/final/action"><button class="button button-primary" name="action" value="approve_final">Approve final video</button><button class="button button-secondary" name="action" value="reject_final">Reject final video</button><label class="field" for="final-context">Rejection context <textarea id="final-context" name="decision_context" rows="2" maxlength="128" placeholder="Required for rejection."></textarea></label></form>{% endif %}
-    {% if view.pending_action == "export_package" %}<form method="post" action="/final/action"><button class="button button-primary" name="action" value="export_package">Export package</button></form>{% endif %}
-    {% if view.package_reference %}<a class="button button-secondary" href="/media/package">Download package</a>{% endif %}
+  {% if view.visual_mode == "imported" %}<div class="callout provenance-callout"><strong>Source attribution:</strong> creator-supplied via ChatGPT Desktop ImageGen; generated outside application; model version not verified by application; no application Provider API call; external charge 0.</div>{% endif %}
+  {% if view.tts_engine %}<div class="callout provenance-callout"><strong>Local narration:</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</div>{% endif %}
+  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure · {{ view.failure_category }}</strong><p>{{ view.failure_message }}</p></div>{% endif %}
+
+  <div class="final-layout">
+    <section class="media-stage" aria-labelledby="media-title">
+      <div class="section-heading compact-heading"><div><p class="eyebrow">Playable evidence</p><h3 id="media-title">Vertical cut</h3></div>{% if view.video_reference %}<span class="status-label">Video v{{ view.video_reference.version }}</span>{% endif %}</div>
+      {% if view.video_reference %}
+      <div class="player-wrap"><video controls preload="metadata" src="/media/video"><track kind="subtitles" srclang="zh" src="/media/subtitle" label="中文"></video><p class="media-caption">Video v{{ view.video_reference.version }} · {% if view.visual_mode == "imported" %}local imported visual evidence{% else %}local Fixture evidence{% endif %}</p></div>
+      {% else %}<div class="empty-state empty-state-inline"><h3>Video not ready</h3><p>Complete offline production before final review.</p></div>{% endif %}
+
+      <section class="scene-board" aria-labelledby="scene-board-title">
+        <div class="section-heading compact-heading"><div><p class="eyebrow">Scene selections</p><h3 id="scene-board-title">Storyboard rows</h3></div><p class="section-note">One bounded replacement; unaffected media stays selected.</p></div>
+        <ol class="scene-list final-scenes">
+          {% for scene in view.scenes %}
+          <li>
+            <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
+            <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
+            <span class="scene-status">{{ scene.status }}</span>
+            {% if not view.replacement_done and view.stage == "final_review" and view.pending_action in ("approve_final", "replace_scene") and (view.visual_mode != "imported" or scene.scene_id == "scene-2") %}
+            <form method="post" action="/final/action" class="inline-form"><input type="hidden" name="action" value="replace_scene"><input type="hidden" name="scene_id" value="{{ scene.scene_id }}"><button class="button button-tertiary" type="submit">{% if view.visual_mode == "imported" %}Replace scene-2 visual{% else %}Replace locally{% endif %}</button></form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+      </section>
+    </section>
+
+    <aside class="decision-rail" aria-labelledby="decision-rail-title">
+      <p class="eyebrow">Decision rail</p>
+      <h3 id="decision-rail-title">{% if view.pending_action == "approve_final" %}Choose the delivery state{% elif view.pending_action == "replace_scene" %}Repair one scene{% elif view.pending_action == "export_package" %}Ship the approved evidence{% elif view.package_reference %}Delivery is ready{% else %}Final state{% endif %}</h3>
+      <p class="decision-copy">{% if view.pending_action == "approve_final" %}Approve the playable cut, or replace one bounded scene before approving.{% elif view.pending_action == "replace_scene" %}The previous final decision was rejected. Replace a scene, then review the refreshed cut.{% elif view.pending_action == "export_package" %}The final decision is recorded. Export writes the approved MP4, SRT and evidence package locally.{% elif view.package_reference %}The package is complete and can be downloaded again without regenerating media.{% else %}The current task state is preserved.{% endif %}</p>
+      {% if view.local_replacement_label %}<div class="callout"><strong>{{ view.local_replacement_label }}</strong></div>{% endif %}
+      <div class="rail-status">
+        <dl class="facts facts-rail">
+          <div><dt>Script</dt><dd>{{ view.script_reference.identity }} v{{ view.script_reference.version }}</dd></div>
+          <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
+          <div><dt>Video</dt><dd>{% if view.video_reference %}Ready · v{{ view.video_reference.version }}{% else %}Not ready{% endif %}</dd></div>
+          <div><dt>Replacement</dt><dd>{% if view.replacement_done %}Complete{% else %}Available once{% endif %}</dd></div>
+          <div><dt>Final decision</dt><dd>{% if view.pending_action == "export_package" or view.package_reference %}Approved{% elif view.pending_action == "replace_scene" %}Needs revision{% else %}Pending{% endif %}</dd></div>
+          <div><dt>Package</dt><dd>{% if view.package_reference %}{{ view.package_reference.identity }} v{{ view.package_reference.version }}{% else %}Pending{% endif %}</dd></div>
+        </dl>
+      </div>
+      {% if view.provider_attempt_count %}<div class="attempt-facts">{% if view.visual_mode == "imported" %}<strong>Local processing attempts:</strong>{% else %}<strong>Provider attempts:</strong>{% endif %} {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
+      {% if view.stage == "final_review" and view.pending_action == "approve_final" %}
+      <form class="rail-form" method="post" action="/final/action">
+        <button class="button button-primary" name="action" value="approve_final">Approve final video</button>
+        <button class="button button-secondary" name="action" value="reject_final">Reject final video</button>
+        <label class="field" for="final-context">Rejection context <textarea id="final-context" name="decision_context" rows="3" maxlength="128" placeholder="Required for rejection."></textarea></label>
+      </form>
+      {% endif %}
+      {% if view.pending_action == "export_package" %}<form class="rail-form" method="post" action="/final/action"><button class="button button-primary" name="action" value="export_package">Export package</button></form>{% endif %}
+      {% if view.package_reference %}<a class="button button-secondary rail-download" href="/media/package">Download package</a>{% endif %}
+    </aside>
   </div>
 </section>
 {% else %}
-<section class="empty-state" data-view-kind="final"><h2>Final review is not available</h2><p>Complete the review and production gates first.</p></section>
+<section class="empty-state" data-view-kind="final" aria-labelledby="empty-final-title"><p class="eyebrow">Final / Export</p><h2 id="empty-final-title">Final review is not available</h2><p>Complete the review and production gates first.</p><a class="button button-primary" href="/review">Open Review / Produce</a></section>
 {% endif %}
 {% endblock %}

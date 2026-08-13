@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+import re
 
 from fastapi.testclient import TestClient
 
@@ -20,6 +21,64 @@ def _post(client: TestClient, path: str, data: dict[str, str] | None = None, **k
 
 
 class OfflineWorkspaceWebTests(unittest.TestCase):
+    def test_warm_editorial_workspace_surfaces_stage_track_and_next_action(self) -> None:
+        with TemporaryDirectory() as directory:
+            client = _client(directory)
+
+            response = client.get("/")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('aria-label="Production stages"', response.text)
+            self.assertIn('aria-current="step"', response.text)
+            self.assertIn("Next action", response.text)
+            self.assertIn('aria-current="page"', response.text)
+            self.assertIn('/static/favicon.svg', response.text)
+
+    def test_review_view_surfaces_current_gate_and_production_facts(self) -> None:
+        with TemporaryDirectory() as directory:
+            client = _client(directory)
+            _post(client, "/start/script", {"action": "approve_script"})
+
+            review = client.get("/review")
+
+            self.assertEqual(review.status_code, 200)
+            self.assertIn('data-view-kind="review"', review.text)
+            self.assertIn('aria-current="page"', review.text)
+            self.assertIn('aria-current="step"', review.text)
+            self.assertIn('data-stage-state="completed"', review.text)
+            self.assertIn('data-stage-state="current"', review.text)
+            self.assertIn('data-stage-state="upcoming"', review.text)
+            self.assertEqual(review.text.count('class="button button-primary"'), 1)
+            self.assertIn("Source commit", review.text)
+            self.assertIn("External charge", review.text)
+
+    def test_final_view_preserves_decision_forms_and_technical_facts(self) -> None:
+        with TemporaryDirectory() as directory:
+            client = _client(directory)
+            _post(client, "/start/script", {"action": "approve_script"})
+            _post(client, "/review/action", {"action": "advance_planning"})
+            _post(client, "/review/action", {"action": "approve_budget"})
+            _post(client, "/review/action", {"action": "produce_offline"})
+
+            final = client.get("/final")
+
+            self.assertEqual(final.status_code, 200)
+            self.assertIn('data-view-kind="final"', final.text)
+            self.assertIn('aria-current="page"', final.text)
+            self.assertIn('aria-current="step"', final.text)
+            self.assertIn('controls preload="metadata"', final.text)
+            self.assertIn('action="/final/action"', final.text)
+            self.assertIn('name="action" value="replace_scene"', final.text)
+            self.assertIn('name="action" value="approve_final"', final.text)
+            self.assertIn('name="action" value="reject_final"', final.text)
+            self.assertIn('name="scene_id" value="scene-2"', final.text)
+            self.assertIn('name="decision_context"', final.text)
+            self.assertIn("Source commit", final.text)
+            self.assertIn("script:episode-1 v1", final.text)
+            self.assertIn("Video v1", final.text)
+            self.assertIn("Provider attempts:", final.text)
+            self.assertIn("charged 0 micros", final.text)
+
     def test_start_view_is_server_rendered_and_exposes_three_view_kinds(self) -> None:
         with TemporaryDirectory() as directory:
             client = _client(directory)
@@ -81,10 +140,22 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             client = _client(directory)
 
             css = client.get("/static/style.css")
+            favicon = client.get("/static/favicon.svg")
             missing = client.get("/media/not-a-file")
 
             self.assertEqual(css.status_code, 200)
+            self.assertEqual(favicon.status_code, 200)
+            self.assertEqual(favicon.headers["content-type"], "image/svg+xml")
+            self.assertTrue(favicon.text.lstrip().startswith("<svg"))
+            self.assertNotRegex(css.text, re.compile(r"(?i)(?:@import|https?://|url\(|<script|src=|href=)"))
             self.assertIn("prefers-reduced-motion", css.text)
+            self.assertIn("a:focus-visible", css.text)
+            self.assertIn("@media (max-width: 767px)", css.text)
+            self.assertIn("overflow-wrap: anywhere", css.text)
+            self.assertIn("position: sticky", css.text)
+            self.assertIn(".decision-rail { position: static; }", css.text)
+            self.assertIn("--accent: #8a622d;", css.text)
+            self.assertIn("--muted: #6e6b62;", css.text)
             self.assertEqual(missing.status_code, 404)
             self.assertEqual(missing.text, "Not found.")
 

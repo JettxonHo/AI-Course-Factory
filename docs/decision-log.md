@@ -296,3 +296,37 @@ F2A supplies six creator-generated Desktop ImageGen stills outside the applicati
 - `GPTSoVITSSyntheticVoiceGenerator` owns runtime preflight, CLI invocation, output validation and normalization behind `VoiceGenerator`.
 - The application accepts explicit TTS configuration and keeps the three server-rendered views; no upload manager, SPA or plugin framework is introduced.
 - Model weights, reference audio, cache paths and generated binaries remain outside the repository.
+
+## Decision D-007 — Warm Editorial Production Desk for F2.5
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted for bounded Issue #121 candidate implementation |
+| Decision Date | 2026-08-14 |
+| Decision Owner | Product Owner |
+| Applies To | Exactly-three local server-rendered workspace views and local presentation assets |
+| Source Decision | Issue #121 approved Warm Editorial Production Desk direction |
+
+### Context
+
+The F1/F2 workspace already exercises the durable facade and local production flow, but the three views make stage, provenance and the next human action compete for attention. F2.5 needs to improve the Creator's reading and decision experience without changing the accepted route, form, media, security or application view-model contracts.
+
+### Decision
+
+Keep the existing Start / Current Task, Review / Produce and Final / Export routes and server-rendered Jinja boundary. Apply a warm editorial presentation using a paper background, deep ink, one muted potato-gold accent, local serif heading and humanist sans body stacks, plus a self-hosted text SVG favicon. Derive a semantic Ground → Produce → Deliver track in Jinja from existing `stage`/`pending_action` facts, with one active `aria-current` step and completed/upcoming states. Make task, stage and one next action primary; keep source, budget, attempt, charge, Visual/TTS, version and package provenance compact but readable. Use native `<details>` prompt cards, a Review decision zone/storyboard grid, and a Final 9:16 player with a sticky desktop decision rail that collapses to one column on mobile. Use CSS-only 150–250ms polish with a reduced-motion override.
+
+### Rejected Alternatives
+
+#### Minimal reskin
+
+Rejected because changing colors, type and spacing without a stage/next-action hierarchy would leave the central five-second comprehension problem unresolved. It would also keep provenance and action controls scattered across long panels.
+
+#### SPA or frontend editor
+
+Rejected because a client-side application, build system or editor would expand the public surface, duplicate the facade state and add new keyboard/security/testing failure modes. Drag-and-drop editing and upload management are outside the FAST-MVP product job; normal form posts and server-rendered refreshes are sufficient.
+
+### Consequences
+
+- Only the frozen templates, stylesheet, optional favicon, web presentation tests and approved current-truth docs change; no application/domain/repository/production/packaging code or dependency changes are needed.
+- The existing autoescape, same-origin mutation boundary, security headers, POST action names, field names, media endpoints and provenance/fee facts remain authoritative.
+- Presentation evidence is local UI evidence only. F2.5 stays candidate/in progress until independent rendered browser review and the required regression gates pass; F3 remains blocked on F2.5.

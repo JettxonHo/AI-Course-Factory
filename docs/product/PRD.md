@@ -44,6 +44,10 @@ The MVP is successful only when this job works through the local workspace. More
 8. Creator approves or rejects the final video and exports the delivery package.
 9. Refresh or process restart restores the task sufficiently to continue the Demo.
 
+### Workspace presentation contract (F2.5)
+
+The local Creator workspace remains exactly three server-rendered views: Start / Current Task, Review / Produce and Final / Export. Each view makes the current stage and one next human action primary, with a semantic three-stage track (Ground, Produce, Deliver) whose active step is derived from the existing task stage and pending action. Start leads with script reading and compact source evidence; Review leads with one decision zone, production facts and a scan-friendly storyboard; Final presents the 9:16 playable video beside a desktop decision rail and collapses to one column on mobile. Prompt cards use native progressive disclosure. The presentation uses local warm-paper/ink/potato-gold styling, a self-hosted text favicon and CSS-only motion; it does not add JavaScript, external assets, a SPA, editor or upload manager.
+
 ## 5. P0 Requirements
 
 ### Source and teaching accuracy
