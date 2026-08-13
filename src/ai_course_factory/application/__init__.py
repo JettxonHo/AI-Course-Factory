@@ -17,6 +17,19 @@ from .task import (
     TaskRepositoryFailure,
     TaskSnapshot,
 )
+from .media_task import (
+    InMemoryTaskMediaRepository,
+    TaskDeliveryMediaSelection,
+    TaskMediaImpact,
+    TaskMediaOperationResult,
+    TaskMediaProjectionChange,
+    TaskMediaProjectionService,
+    TaskMediaRepository,
+    TaskMediaRepositoryFailure,
+    TaskMediaSnapshot,
+    TaskSceneMediaSelection,
+)
+from .sqlite_media_task import SQLiteTaskMediaRepository
 
 __all__ = [
     "InMemoryTaskRepository",
@@ -33,4 +46,15 @@ __all__ = [
     "TaskRepository",
     "TaskRepositoryFailure",
     "TaskSnapshot",
+    "InMemoryTaskMediaRepository",
+    "TaskDeliveryMediaSelection",
+    "TaskMediaImpact",
+    "TaskMediaOperationResult",
+    "TaskMediaProjectionChange",
+    "TaskMediaProjectionService",
+    "TaskMediaRepository",
+    "TaskMediaRepositoryFailure",
+    "TaskMediaSnapshot",
+    "TaskSceneMediaSelection",
+    "SQLiteTaskMediaRepository",
 ]
