@@ -7,7 +7,7 @@
 | Status | **ACTIVE / APPROVED** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Baseline | `main@72ef53805aa33aa847d35f70d4a36303681ecec1` |
+| Baseline | `main@b2642c18449e6d79b3b19fec39b7aeff564bf711` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -15,7 +15,7 @@ Completed M0–M2 and accepted M3-001–M3-009 remain reusable implementation ev
 
 ## 2. Objective
 
-Deliver one local browser flow in which a Creator can take the fixed GitHub course source through grounded Script review, planning, explicit Budget approval, real Visual/TTS production, FFmpeg composition, one Scene retry/replace, Final Video review and local export of a playable, traceable package.
+Deliver one local browser flow in which a Creator can take the fixed GitHub course source through grounded Script review, planning, explicit Budget approval, accepted creator-supplied F2A visuals plus real/local TTS production, FFmpeg composition, one Scene retry/replace, Final Video review and local export of a playable, traceable package.
 
 Goal success is a working product Demo with real media and bounded spend, not a count of modules, PRs, documents or tests.
 
@@ -26,7 +26,7 @@ Goal success is a working product Demo with real media and bounded spend, not a 
 - Connect the already merged offline planning, approval, production, composition and packaging capabilities.
 - Implement only the Scene selection/retry behavior needed by the product flow.
 - Provide the bounded F2A Desktop ImageGen local-import bridge: an explicit operator directory, exact six-image preflight, local conversion and visual-only Scene 2 replacement. This bridge is external-source evidence, not a real Visual Provider implementation.
-- After separate Product Owner Provider/budget decisions, implement one real Visual Adapter and one real TTS Adapter.
+- After the approved `PD-002`, implement the bounded local GPT-SoVITS v2 TTS Adapter; F2A creator-supplied visuals already satisfy the FAST-MVP real-visual asset boundary. Automatic cloud Visual Provider work remains deferred.
 - Run and document one fixed-source real end-to-end acceptance Demo.
 - Update affected current truth docs inside the same feature PR when facts change.
 
@@ -47,8 +47,9 @@ Observed on 2026-08-13:
 - The merged baseline has 356 passing local regression tests and no claimed hosted CI evidence.
 - Source-to-package offline modules, a durable facade and the local three-view workspace are integrated through Issue #113 / PR #114.
 - Issue #110 was independently reviewed and merged through PR #111; the durable Scene media projection is part of this baseline.
-- No real Provider, credential, spend, deployment or production runtime is authorized by this Goal approval.
+- No cloud Provider credential, paid spend, deployment or public production runtime is authorized; PD-002 separately authorizes the bounded local GPT-SoVITS runtime for F2B.
 - F1 passed independent review and local acceptance; this evidence is not real Provider or deployed-runtime evidence.
+- F2A then merged through Issue #117 / PR #118 at `main@b2642c1` and was independently accepted COMPLETE after 397 local regression tests; its visuals are creator-supplied Desktop ImageGen assets generated outside the application.
 
 `docs/STATUS.md` owns the current factual snapshot if these facts change.
 
@@ -82,36 +83,32 @@ Exit: a person can complete the fixed Demo offline without calling internal modu
 
 ### F2A — Creator-supplied Desktop ImageGen visual bridge
 
-Status: **LOCALLY IMPLEMENTED / CANDIDATE EVIDENCE PENDING**
+Status: **COMPLETE** (Issue #117 / PR #118 merged at `b2642c1`)
 
 Issue #117 adds an explicit `--visual-import-dir` path for six creator-supplied PNG/JPEG stills. The application preflights every exact filename and decodes each image before any production attempt, workspace media write or Artifact commit; local FFmpeg produces the playable H.264 clips after Budget approval at zero external charge. Scene 2 replacement accepts only `scene-2-replacement.png`, reuses the predecessor voice/Scene Audio/Master Audio selections, rebuilds stale video, and preserves all unaffected Scene references. Restart replays the committed result without reconversion, and package attribution states that the images were supplied through ChatGPT Desktop ImageGen, generated outside the application, with model version unverified.
 
-F2A does not call a cloud Visual Provider, use credentials or complete the real-provider milestone. Exit requires the main controller's candidate evidence review of the browser flow, six-image conversion, safe atomic preflight failure, visual-only replacement, restart and ZIP replay.
+F2A does not call a cloud Visual Provider or use credentials. Independent browser, media, restart and ZIP evidence accepted the external-source visual bridge; automatic cloud Visual Provider work is deferred and does not block F3.
 
-### F2 — Real Visual and TTS
+### F2B — Local real GPT-SoVITS TTS
 
-Status: **BLOCKED ON PRODUCT DECISIONS**
+Status: **IN PROGRESS / CANDIDATE** (Issue #119)
 
-Required first:
+`PD-002` selects official GPT-SoVITS v2 through an explicitly configured external Python 3.11 runtime/repository/model cache and fixed synthetic Serena reference. Local inference is credential-free and zero external charge. F2B must pass independent focused/full review and the real opt-in smoke before it is marked complete. F2.5 is not implemented in this milestone.
 
-- `PD-001`: Visual Provider/model/credential source;
-- `PD-002`: TTS Provider/voice/credential source;
-- `PD-003`: smoke and full-Demo amount/attempt caps.
+The existing F2A visuals remain the accepted real visual asset path; no automatic cloud Visual Provider is started here. No F2.5 UI redesign or F3 acceptance is included.
 
-After approval, use two bounded Issues if file ownership is independent: one Visual Adapter and one TTS Adapter. Each must fail closed on missing credentials, normalize Provider failure and prove one capped opt-in real smoke. No Provider routing framework or UI redesign.
-
-Exit: both real Adapters work through the existing interface under recorded caps.
+Exit: the accepted F2A local-import Visual adapter and F2B local GPT-SoVITS TTS adapter work through the existing interfaces under recorded caps.
 
 ### F3 — Real end-to-end acceptance
 
-Status: **BLOCKED ON F2**
+Status: **BLOCKED ON F2B AND F2.5**
 
-Run the fixed Demo from the browser with both real Adapters. Verify:
+Run the fixed Demo from the browser with the accepted F2A visual assets and F2B local TTS adapter. Verify:
 
 - exact source and visible claim evidence;
 - Script, Budget and Final approvals;
 - no paid call before approval or above the cap;
-- real Scene visuals and spoken narration;
+- creator-supplied F2A Scene visuals and real/local spoken narration;
 - playable 9:16 MP4 and SRT;
 - one bounded Scene retry/replace;
 - restart continuation and local MP4/SRT/source/Manifest export.

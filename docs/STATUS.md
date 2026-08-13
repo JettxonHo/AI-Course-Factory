@@ -7,14 +7,14 @@ Observed: 2026-08-13 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| Current starting main | `main@72ef53805aa33aa847d35f70d4a36303681ecec1` |
+| Current starting main | `main@b2642c18449e6d79b3b19fec39b7aeff564bf711` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Active planning branch | `codex/117-desktop-imagegen-visuals` |
-| Current implementation task | Issue #117 F2A explicit Desktop ImageGen local-import bridge; candidate evidence pending independent review |
+| Active planning branch | `codex/119-local-gpt-sovits-tts` |
+| Current implementation task | Issue #119 F2B local GPT-SoVITS v2 TTS; candidate implementation pending independent review |
 | Historical merged regression evidence | 388 local tests passed after the F1 correction; no hosted CI is claimed |
 | Rebaseline validation | 356/356 local tests passed on the integration branch with the explicit `PYTHONPATH=src` command below |
-| Real product runtime | Loopback F1 candidate smoke is locally verified; no real Visual/TTS or deployed-runtime evidence |
-| Provider authorization | Not granted; `PD-001`–`PD-003` remain required |
+| Real product runtime | F2A Desktop ImageGen visual assets and local conversion independently accepted; F2B GPT-SoVITS runtime smoke remains opt-in candidate evidence |
+| Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
 
@@ -35,7 +35,7 @@ This file is a current snapshot, not authorization and not a historical PR trans
 - Deterministic local Publish Package and Artifact Manifest.
 - Durable current/stale Scene and delivery media projection merged through Issue #110 / PR #111.
 
-These facts prove a substantial offline backend and usable local UI. They do not prove prompt-faithful visuals, spoken TTS, live pricing, paid execution, deployment or adoption.
+These facts prove a substantial offline backend, accepted creator-supplied visuals and a bounded local TTS candidate. They do not prove the final browser acceptance package, live pricing, paid execution, deployment or adoption.
 
 ## 3a. Issue #113 / PR #114 F1 Evidence (merged)
 
@@ -48,10 +48,10 @@ These facts prove a substantial offline backend and usable local UI. They do not
 
 ## 3. Missing for FAST-MVP
 
-With F1 merged, remaining FAST-MVP work is:
+With F1 and the F2A visual bridge accepted, remaining FAST-MVP work is:
 
-1. One authorized real Visual Adapter.
-2. One authorized real TTS Adapter.
+1. Independent acceptance of the authorized local GPT-SoVITS TTS Adapter.
+2. The separately authorized F2.5 product outcome.
 3. One capped browser-driven real end-to-end Demo and exported evidence package.
 
 ## 3b. Issue #115 / PR #116 F1 Correction Evidence
@@ -62,16 +62,20 @@ With F1 merged, remaining FAST-MVP work is:
 
 ## 4. Current Concurrent Work
 
-F0 is complete. Issue #110 passed independent review and merged through PR #111. F1 then merged through PR #114; the historical F1 correction snapshot was `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`, while the current starting main for Issue #117 is `main@72ef53805aa33aa847d35f70d4a36303681ecec1`. Issue #117 is implementing F2A on `codex/117-desktop-imagegen-visuals`; this local bridge does not call a Visual Provider or claim F2/F3 completion.
+F0 is complete. Issue #110 passed independent review and merged through PR #111. F1 then merged through PR #114; the historical F1 correction snapshot was `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`. Issue #117 / PR #118 subsequently merged and closed at `main@b2642c1` after independent 397-test regression evidence; F2A is COMPLETE, and its creator-supplied local bridge does not call a Visual Provider or claim F3 completion.
 
 Issue #113 / PR #114 completed the single vertical F1 workspace contract.
 
 Issue #115 / PR #116 corrected explicit Budget cap binding without changing the F1 flow, Budget domain, Provider interfaces or F1 completion state.
 
+Issue #117 / PR #118 is merged and closed at `main@b2642c1`; F2A is independently accepted COMPLETE. Its two historical candidate-time document phrases are corrected in this feature PR rather than a status-only PR.
+
+Issue #119 is the active F2B candidate. It adds local GPT-SoVITS v2 through explicit external Python 3.11/repository/model/reference configuration, with six zero-charge voice attempts, no Fixture fallback, and additive package attribution. F2.5 and F3 remain incomplete.
+
 ## 5. Current Direction and Next Actions
 
-1. Ask the Product Owner for `PD-001`, `PD-002` and `PD-003` before any real Adapter work.
-2. Implement the authorized real Visual and TTS Adapters.
+1. Complete independent review and opt-in local GPT-SoVITS smoke for Issue #119.
+2. Implement the separately authorized F2.5 decision/outcome.
 3. Run F3 acceptance through the same browser flow.
 
 Do not open new horizontal hardening, status-only or future-architecture tasks while F2 remains blocked unless an observed blocker requires them.
@@ -82,11 +86,12 @@ Authorized now:
 
 - FAST-MVP planning/docs;
 - bounded maintenance of the merged F1 flow;
+- bounded no-cost local GPT-SoVITS F2B implementation and validation;
 - no-cost local validation.
 
 Not authorized now:
 
-- Provider selection, credentials or real calls;
+- cloud Provider selection, credentials or real calls;
 - any fee or budget increase;
 - deployment or external publication;
 - destructive migration or broad rewrite.

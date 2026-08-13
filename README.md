@@ -12,7 +12,7 @@ Public GitHub source
   -> final review + local export
 ```
 
-本地离线 Web 工作台已接入 F1 facade。F2A 提供一个显式目录的 Desktop ImageGen 图片导入桥：图片由 Creator 在应用外生成，应用只在获批预算后用本地 FFmpeg 转换；这不是 Visual Provider API 调用，也不代表真实 Visual/TTS Demo 已完成。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
+本地 Web 工作台已接入 F1 facade。F2A 的 Desktop ImageGen 外部图片导入桥已独立验收并合并；F2B 正在接入本地 GPT-SoVITS v2 TTS（显式外部 Python 3.11/模型配置、固定合成 Serena 参考音、零外部费用），不调用云端 Provider。当前真实状态见 [docs/STATUS.md](docs/STATUS.md)，当前获批 FAST-MVP 目标见 [GOAL.md](GOAL.md)。
 
 ## 离线工作台（F1）
 
@@ -22,7 +22,7 @@ Public GitHub source
 PYTHONPATH=src uv run python -m ai_course_factory.web --data-dir ./var/ai-course-factory
 ```
 
-默认只绑定 `127.0.0.1:8000`。工作台使用本地确定性 FFmpeg Fixture，不调用真实 Visual/TTS Provider；视频、SRT 和最终 ZIP 只从当前 facade 状态提供。
+默认只绑定 `127.0.0.1:8000`。未配置 GPT-SoVITS 时工作台使用本地确定性 FFmpeg Fixture；配置 F2B 的显式 GPT-SoVITS 参数后，语音路径使用本地 GPT-SoVITS v2，不调用云端 Provider，视频、SRT 和最终 ZIP 只从当前 facade 状态提供。
 
 若使用 F2A 的 Creator-supplied Desktop ImageGen 图片，必须显式传入目录；应用只接受精确的 `scene-1.png` 至 `scene-6.png`，Scene 2 替换只接受 `scene-2-replacement.png`，不会猜测 Downloads、Desktop 或“最新文件”：
 
@@ -33,6 +33,25 @@ PYTHONPATH=src uv run python -m ai_course_factory.web \
 ```
 
 Desktop ImageGen 生成发生在应用外；导入模式的本地处理费用为 0，仍须先通过现有 Budget approval。缺失或不可解码的文件会在任何 attempt、media 或 Artifact side effect 前一次性报告安全的文件名。
+
+配置 F2B 本地 GPT-SoVITS 时，必须显式提供外部 Python 3.11、官方仓库/commit、v2 推理脚本与配置、精确模型文件、Serena 参考音频和参考文本；应用不会扫描本机目录或使用云端凭据：
+
+```bash
+PYTHONPATH=src uv run python -m ai_course_factory.web \
+  --data-dir ./var/ai-course-factory \
+  --visual-import-dir ./var/desktop-imagegen-assets \
+  --tts-external-python /path/to/gpt-sovits/venv/bin/python \
+  --tts-repository-root /path/to/gpt-sovits/repo \
+  --tts-repository-commit d523079fc05d9a8028d6085bffe4a2757c32abb6 \
+  --tts-inference-script /path/to/gpt-sovits/repo/GPT_SoVITS/inference_cli.py \
+  --tts-config /path/to/gpt-sovits/repo/GPT_SoVITS/configs/tts_infer.yaml \
+  --tts-gpt-model /path/to/gpt-sovits/repo/GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s1bert25hz-5kh-longer-epoch=12-step=369668.ckpt \
+  --tts-sovits-model /path/to/gpt-sovits/repo/GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s2G2333k.pth \
+  --tts-reference-audio /path/to/synthetic-serena-reference_000.wav \
+  --tts-reference-transcript '你好，我是小土豆。今天我们一起认识人工智能。'
+```
+
+The external runtime, model cache and reference audio remain operator-owned files outside this repository; local GPT-SoVITS inference records zero external charge.
 
 ## 开始之前
 

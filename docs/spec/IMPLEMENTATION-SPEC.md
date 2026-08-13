@@ -8,7 +8,7 @@
 | Approval | Product Owner, 2026-08-13 |
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
-| Code Baseline | `main@72ef53805aa33aa847d35f70d4a36303681ecec1` |
+| Code Baseline | `main@b2642c18449e6d79b3b19fec39b7aeff564bf711` |
 | Runtime | Python `>=3.12,<3.13` |
 | Supersedes | Implementation Spec v1.0 for daily development |
 
@@ -57,9 +57,9 @@ The starting baseline has 388 passing local regression tests. This proves the me
 
 ## 4. Missing Vertical Product Capabilities
 
-1. One bounded F2A local-import Visual bridge (Issue #117) with independently reviewed candidate evidence; this is not real-provider acceptance.
-2. One real TTS Adapter and any later automatic cloud Visual Adapter selected and separately authorized by the Product Owner.
-3. One browser-driven real end-to-end acceptance run.
+1. F2A local-import Visual bridge (Issue #117 / PR #118) is independently accepted and merged; creator-supplied visuals satisfy the visual asset boundary without an automatic cloud Visual Provider.
+2. One local real TTS Adapter (Issue #119) using external GPT-SoVITS v2 configuration and fixed reference; independent review and opt-in smoke remain required.
+3. F2.5 product outcome and one browser-driven F3 real end-to-end acceptance run.
 
 These gaps define the implementation order. New general repositories, compatibility frameworks or defensive utilities do not precede them.
 
@@ -109,15 +109,15 @@ The Scene action may initially use deterministic replacement media if needed; it
 
 ### F2A — Explicit Desktop ImageGen local visual bridge
 
-Issue #117 keeps image generation outside the application. The operator passes `--visual-import-dir`; the adapter accepts only the six exact initial PNG/JPEG names, decodes all six before any attempt/workspace/Artifact side effect, and uses fixed shell-disabled FFmpeg/ffprobe conversion to H.264 `yuv420p` 540x960 24fps MP4. Budget approval still gates conversion, while the ledger provider token is a safe local-import marker and the charge remains zero. Scene 2 replacement requires only `scene-2-replacement.png`, reuses the predecessor voice and audio/master references, rebuilds stale video, and leaves other Scene selections unchanged. Restart and package replay must avoid reconversion and include additive honest source attribution. F2A remains incomplete until candidate evidence is independently reviewed.
+Issue #117 keeps image generation outside the application. The operator passes `--visual-import-dir`; the adapter accepts only the six exact initial PNG/JPEG names, decodes all six before any attempt/workspace/Artifact side effect, and uses fixed shell-disabled FFmpeg/ffprobe conversion to H.264 `yuv420p` 540x960 24fps MP4. Budget approval still gates conversion, while the ledger provider token is a safe local-import marker and the charge remains zero. Scene 2 replacement requires only `scene-2-replacement.png`, reuses the predecessor voice and audio/master references, rebuilds stale video, and leaves other Scene selections unchanged. Restart and package replay must avoid reconversion and include additive honest source attribution. F2A was independently reviewed and merged through PR #118 at `b2642c1`; the candidate-time wording above is historical.
 
-### F2 — Authorized real media Adapters
+### F2B — Local GPT-SoVITS v2 TTS Adapter
 
-After `PD-001`–`PD-003` are approved, Visual and TTS Adapters may be separate parallel Issues with disjoint file ownership. Each has one Fake-free opt-in smoke test, normalized failure handling, credential preflight and a hard cost/attempt cap. These Issues do not redesign orchestration or UI.
+Issue #119 adds one explicit local GPT-SoVITS v2 adapter behind the existing VoiceGenerator seam. It uses an external Python 3.11/repository/model cache and fixed synthetic Serena reference, invokes the official CLI with shell disabled, normalizes AAC/m4a locally, records six zero-charge attempts and adds TTS attribution without changing Budget/Workflow/Artifact contracts. F2.5 is not implemented here.
 
 ### F3 — Real Demo acceptance
 
-Wire both real Adapters through the same composition root and run the fixed Demo from the browser. Repair only defects that block the acceptance contract. Record the exported package, Provider attempt/cost evidence and known limitations.
+Wire the accepted F2A local-import Visual adapter and F2B local GPT-SoVITS adapter through the same composition root and run the fixed Demo from the browser. Repair only defects that block the acceptance contract. Record the exported package, local attempt/cost evidence and known limitations.
 
 ## 8. Task Contract Minimum
 
@@ -150,15 +150,15 @@ Risk tiers:
 
 Do not require mutation audits, repeated two-instance races, arbitrary corruption injection or future-schema tests by default. Add them only when the task changes that exact risk boundary.
 
-F2A local-import success proves only the external-source bridge and local conversion. Fake success proves offline wiring only. Final acceptance requires a real Visual result, real spoken TTS, real FFmpeg output and a browser-visible playable video.
+F2A local-import success proves the accepted creator-supplied visual bridge and local conversion. Fake success proves offline wiring only. Final acceptance requires the F2A visual result, real/local spoken TTS, real FFmpeg output and a browser-visible playable video.
 
 ## 10. External Authorization
 
-The approved FAST-MVP Goal authorizes F0/F1 offline development and the bounded no-cost F2A bridge. It does not authorize:
+The approved FAST-MVP Goal plus PD-002 authorize bounded no-cost local F2B development. They do not authorize:
 
-- selecting or calling a real Provider;
+- cloud Provider credentials or calls;
 - using credentials or incurring fees;
 - increasing a cost/attempt cap;
 - deployment, publication or sensitive data use.
 
-Stop before F2 execution until the Product Owner records `PD-001`, `PD-002` and `PD-003`.
+Stop before F2.5/F3 until their separate product decision and acceptance gates are recorded.

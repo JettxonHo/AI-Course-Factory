@@ -16,6 +16,7 @@
     <span class="stage-chip">{{ view.stage }}</span>
   </div>
   <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
+  {% if view.tts_engine %}<div class="callout"><strong>TTS:</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</div>{% endif %}
   <dl class="facts">
     <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
     <div><dt>Source evidence</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
