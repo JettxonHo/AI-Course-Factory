@@ -7,8 +7,8 @@
 | Status | **APPROVED / ACTIVE** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-14 |
-| H0 planning baseline | `main@bb676a236a32eb9cc03ddca0e5bd71584791097c` |
-| Current H0 task | Issue #129 docs-first truth rebaseline; approved candidate, merge pending |
+| H0 merged baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (Issue #129 / PR #130) |
+| Current task | Issue #131 H1 Scene Generation Contract; implementation in progress on `codex/131-scene-generation-contract` |
 | Goal type | Local single-user Creator Handoff MVP |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
@@ -55,21 +55,21 @@ Manual Jimeng/Kling subscription work occurs outside the application. It creates
 
 ### H0 — Truth rebaseline
 
-Status: **APPROVED FOR MERGE** (Issue #129)
+Status: **COMPLETE** (Issue #129 closed; PR #130 merged)
 
 Outcome: integrate D-008, this active Goal, canonical terms, approved defaults, stable ownership and verification boundaries without product code.
 
-Exit: Issue #129 merges its exact eight-file docs Diff. Only then record H0 `COMPLETE` and H1 `READY` from the real merged baseline.
+Exit: Issue #129's exact docs Diff merged through PR #130 at `main@d96b091`; H0 is complete and H1 was ready from that real baseline.
 
 ### H1 — Grounded Storyboard and Scene Generation Contract
 
-Status: **BLOCKED ON H0 MERGE**
+Status: **IN PROGRESS** (Issue #131)
 
 Outcome: from exact approved Source/Script/Storyboard/Timeline/Production Request references, commit one human-reviewable ordered Scene Generation Contract and expose it through the existing three-view workspace.
 
 Exit: explicit Storyboard approval and exact lineage are durable; every Scene exposes its narration identity, visual intent/action, generation prompt, continuity, camera/motion, duration and fixed MP4 filename; restart reads the same contract without regeneration.
 
-H1 implementation requires one bounded Issue/Task Contract, exact ownership, migration/restart evidence, focused/full verification and exact `luna-worker`. Goal approval alone does not authorize coding before those gates.
+H1 implementation is bounded by the approved Issue #131 Task Contract, exact ownership, migration/restart evidence, focused/full verification and exact `luna-worker`. H1 remains in progress until the feature is independently reviewed and merged.
 
 ### H2 — Creator Handoff Package
 
@@ -97,8 +97,8 @@ Exit: technical and product-quality gates pass; no Preview Video is accepted as 
 
 ## 7. Authorized Scope
 
-- Complete H0 through the exact Issue #129 docs PR.
-- After H0 actually merges, create and independently review one bounded H1 Task Contract before dispatch.
+- H0 is complete at `main@d96b091` through Issue #129 / PR #130.
+- Implement and independently review the bounded H1 Issue #131 Task Contract before any merge.
 - Reuse the current live Source, Artifact repository, Script/Storyboard/Final decisions, Task media projection, local GPT-SoVITS narration, FFmpeg composition and Publish Package.
 - Change frontend only where a milestone needs contract review, handoff download, import readiness/action or final quality evidence; retain exactly three server-rendered views.
 - Update related Goal/Status facts inside the corresponding feature PR using actual, not anticipated, merge/runtime evidence.

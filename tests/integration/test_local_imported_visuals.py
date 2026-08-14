@@ -10,6 +10,7 @@ import unittest
 import zipfile
 
 from ai_course_factory.application import CourseFactoryApplication
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 from tests.source_fixture import FixtureSourceConnector, ensure_source
 
 
@@ -50,8 +51,7 @@ class LocalImportedVisualIntegrationTests(unittest.TestCase):
                 _write_png(imports / f"scene-{index}.png", colour)
             app = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports)
             ensure_source(app)
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            seed_legacy_budget_review(app)
             app.submit_budget_decision("approve")
             produced = app.produce_offline()
             self.assertEqual(produced.status, "success")

@@ -4,18 +4,18 @@
 <section class="intro" data-view-kind="review" aria-labelledby="review-title">
   <p class="eyebrow">Review / Produce</p>
   <h1 id="review-title">Turn a good draft into a ready-to-make plan.</h1>
-  <p class="lede">The desk keeps planning, budget approval and local production in separate, legible gates. You always see the one decision that unlocks the next stage.</p>
+  <p class="lede">The desk keeps planning, Storyboard approval, budget approval and local production in separate, legible gates. You always see the one decision that unlocks the next stage.</p>
 </section>
 {% if view %}
 <section class="workspace-card review-card" aria-labelledby="review-task-title">
   <header class="task-heading">
     <div>
       <p class="eyebrow">Current task · <span class="stage-code">{{ view.stage }}</span></p>
-      <h2 id="review-task-title">{% if view.pending_action == "advance_planning" %}Build the production plan{% elif view.pending_action == "approve_budget" %}Approve the production budget{% elif view.pending_action == "produce_offline" %}Run local production{% elif view.pending_action == "open_final" %}Open final review{% else %}{{ view.pending_action or view.stage }}{% endif %}</h2>
+      <h2 id="review-task-title">{% if view.pending_action == "advance_planning" %}Build the production plan{% elif view.pending_action == "approve_storyboard" %}Approve the storyboard{% elif view.pending_action == "approve_budget" %}Approve the production budget{% elif view.pending_action == "produce_offline" %}Run local production{% elif view.pending_action == "open_final" %}Open final review{% else %}{{ view.pending_action or view.stage }}{% endif %}</h2>
     </div>
     <div class="next-action" aria-label="Next action">
       <span class="next-action-label">Next action</span>
-      <strong>{% if view.pending_action == "advance_planning" %}Build plan{% elif view.pending_action == "approve_budget" %}Approve budget{% elif view.pending_action == "produce_offline" %}Produce locally{% elif view.pending_action == "open_final" %}Open final review{% else %}No action pending{% endif %}</strong>
+      <strong>{% if view.pending_action == "advance_planning" %}Build plan{% elif view.pending_action == "approve_storyboard" %}Approve storyboard{% elif view.pending_action == "approve_budget" %}Approve budget{% elif view.pending_action == "produce_offline" %}Produce locally{% elif view.pending_action == "open_final" %}Open final review{% else %}No action pending{% endif %}</strong>
     </div>
   </header>
 
@@ -24,23 +24,48 @@
   <section class="decision-zone decision-zone-prominent" aria-labelledby="decision-zone-title">
     <div>
       <p class="eyebrow">Current gate</p>
-      <h3 id="decision-zone-title">{% if view.stage == "planning" %}Shape the six-scene production plan{% elif view.stage == "budget_review" %}Make the maximum spend explicit{% elif view.stage == "production" %}Run the authorized local production{% elif view.stage == "final_review" %}The cut is ready for a final look{% else %}Keep the evidence moving{% endif %}</h3>
-      <p class="decision-copy">{% if view.stage == "planning" %}Confirm the plan before a budget can be reviewed.{% elif view.stage == "budget_review" %}This approval is required even though the selected run is local and zero-cost.{% elif view.stage == "production" %}The current request and cap stay bound while local media is composed.{% elif view.stage == "final_review" %}Open the video when you are ready to approve the final evidence.{% else %}The current task state is preserved while you choose the next safe action.{% endif %}</p>
+      <h3 id="decision-zone-title">{% if view.pending_action == "approve_storyboard" %}Approve the six-scene storyboard{% elif view.stage == "planning" %}Shape the six-scene production plan{% elif view.stage == "budget_review" %}Make the maximum spend explicit{% elif view.stage == "production" %}Run the authorized local production{% elif view.stage == "final_review" %}The cut is ready for a final look{% else %}Keep the evidence moving{% endif %}</h3>
+      <p class="decision-copy">{% if view.pending_action == "approve_storyboard" %}Approve this exact Storyboard to create the Timeline, Production Request and provider-neutral Scene Generation Contract. Rejecting records context while keeping the same Storyboard available for another approval.{% elif view.stage == "planning" %}Confirm the plan before Storyboard approval.{% elif view.stage == "budget_review" %}This approval is required even though the selected run is local and zero-cost.{% elif view.stage == "production" %}The current request and cap stay bound while local media is composed.{% elif view.stage == "final_review" %}Open the video when you are ready to approve the final evidence.{% else %}The current task state is preserved while you choose the next safe action.{% endif %}</p>
     </div>
     <div class="decision-action">
-      {% if view.stage == "planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
+      {% if view.pending_action == "advance_planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
+      {% if view.pending_action == "approve_storyboard" %}
+      <form method="post" action="/review/action">
+        <label for="storyboard-decision-context">Decision context <span class="field-hint">required for reject</span></label>
+        <textarea id="storyboard-decision-context" name="decision_context" rows="3" maxlength="128" placeholder="Why this storyboard is ready, or what should be reconsidered."></textarea>
+        <div class="button-row"><button class="button button-primary" name="action" value="approve_storyboard">Approve storyboard</button><button class="button button-secondary" name="action" value="reject_storyboard">Reject with context</button></div>
+      </form>
+      {% endif %}
       {% if view.stage == "budget_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="approve_budget">Approve no-cost budget</button></form>{% endif %}
       {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">{% if view.visual_mode == "imported" %}Produce imported visuals{% else %}Produce offline Fixture{% endif %}</button></form>{% endif %}
       {% if view.stage == "final_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="open_final">Open final review</button></form>{% endif %}
     </div>
   </section>
 
-  {% if view.stage == "budget_review" %}
+  {% if view.pending_action == "approve_storyboard" and view.storyboard_decision_context %}
+  <div class="callout"><h3>Storyboard remains available</h3><p>Last decision context: {{ view.storyboard_decision_context }}. This exact Storyboard has not been revised or regenerated; approve it when ready.</p></div>
+  {% elif view.stage == "budget_review" %}
   <div class="callout"><h3>Budget before production</h3><p>Maximum authorization: {{ view.budget_maximum_amount_micros }} micros · {{ view.budget_maximum_attempts }} attempts. This approval is required even though the selected run is local and zero-cost.</p></div>
   {% elif view.stage == "production" and view.visual_mode == "imported" %}
   <div class="callout"><h3>Local imported visual run</h3><p>FFmpeg converts the operator-declared Desktop ImageGen stills. Desktop generation happened outside the application; no ChatGPT or other Visual Provider API call is made here, and the external charge is zero.</p></div>
   {% elif view.stage == "production" %}
   <div class="callout"><h3>Offline Fixture run</h3><p>FFmpeg creates deterministic local media. No Visual or TTS Provider is called, and no network request is made.</p></div>
+  {% endif %}
+  {% if view.scene_generation_contract_reference %}
+  <section class="facts-section" aria-labelledby="contract-title">
+    <div class="section-heading compact-heading"><div><p class="eyebrow">Handoff readiness</p><h3 id="contract-title">Scene Generation Contract</h3></div><p class="section-note">One immutable, provider-neutral contract bound to exact approved planning references.</p></div>
+    <dl class="facts facts-grid">
+      <div><dt>Storyboard</dt><dd>{{ view.storyboard_reference.identity }} v{{ view.storyboard_reference.version }}</dd></div>
+      <div><dt>Timeline</dt><dd>{{ view.timeline_reference.identity }} v{{ view.timeline_reference.version }}</dd></div>
+      <div><dt>Production Request</dt><dd>{{ view.production_request_reference.identity }} v{{ view.production_request_reference.version }}</dd></div>
+      <div><dt>Contract</dt><dd>{{ view.scene_generation_contract_reference.identity }} v{{ view.scene_generation_contract_reference.version }}</dd></div>
+    </dl>
+    <ol class="storyboard-grid">
+      {% for entry in view.generation_entries %}
+      <li class="storyboard-card"><span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span><div><strong>{{ entry.scene_id }} · {{ entry.expected_filename }}</strong><p>{{ entry.generation_prompt }}</p><small>{{ entry.duration_milliseconds }} ms · {{ entry.narration_identity }}</small></div><span class="scene-status">ready</span></li>
+      {% endfor %}
+    </ol>
+  </section>
   {% endif %}
   {% if view.tts_engine %}<div class="callout"><h3>Local narration: {{ view.tts_engine }}</h3><p>Reference: {{ view.tts_reference_provenance }} · application cloud/provider call: no · external charge: {{ view.tts_external_charge_micros }} micros.</p></div>{% endif %}
 

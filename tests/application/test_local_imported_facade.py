@@ -10,6 +10,7 @@ import unittest
 import zipfile
 
 from ai_course_factory.application import CourseFactoryApplication
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 from tests.source_fixture import REAL_SHAPED_COMMIT, FixtureSourceConnector, ensure_source
 
 
@@ -48,9 +49,7 @@ def _write_png(path: Path, colour: str) -> None:
 
 class LocalImportedFacadeTests(unittest.TestCase):
     def _advance_to_production(self, app: CourseFactoryApplication) -> None:
-        self.assertEqual(app.create_or_open().status, "success")
-        self.assertEqual(app.submit_script_decision("approve").status, "success")
-        self.assertEqual(app.advance_planning().status, "success")
+        seed_legacy_budget_review(app)
         self.assertEqual(app.submit_budget_decision("approve").status, "success")
 
     def test_imported_mode_preflights_atomically_and_exposes_six_prompt_cards(self) -> None:

@@ -7,7 +7,9 @@ import re
 
 from fastapi.testclient import TestClient
 
+from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.web import create_app
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 from tests.source_fixture import SUPPORTED_REPOSITORY_URL, FixtureSourceConnector
 
 
@@ -32,6 +34,21 @@ def _post(client: TestClient, path: str, data: dict[str, str] | None = None, **k
     headers = {"Origin": "http://127.0.0.1"}
     headers.update(kwargs.pop("headers", {}) or {})
     return client.post(path, data=data, headers=headers, **kwargs)
+
+
+def _legacy_client(directory: str, **kwargs: object) -> TestClient:
+    app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector(), **kwargs)
+    if app.start_source(SUPPORTED_REPOSITORY_URL).status != "success":
+        raise AssertionError("source initialization failed")
+    seed_legacy_budget_review(app)
+    app.close()
+    execution = {key: kwargs[key] for key in ("ffmpeg_executable", "ffprobe_executable") if key in kwargs}
+    client = TestClient(create_app(Path(directory), source_connector=FixtureSourceConnector()), base_url="http://127.0.0.1")
+    if execution:
+        client.get("/review")
+        for key, value in execution.items():
+            setattr(client.app.state.course_factory, key, value)
+    return client
 
 
 class OfflineWorkspaceWebTests(unittest.TestCase):
@@ -118,9 +135,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_final_view_preserves_decision_forms_and_technical_facts(self) -> None:
         with TemporaryDirectory() as directory:
-            client = _client(directory)
-            _post(client, "/start/script", {"action": "approve_script"})
-            _post(client, "/review/action", {"action": "advance_planning"})
+            client = _legacy_client(directory)
             _post(client, "/review/action", {"action": "approve_budget"})
             _post(client, "/review/action", {"action": "produce_offline"})
 
@@ -225,10 +240,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_three_view_loop_reaches_video_and_package_downloads(self) -> None:
         with TemporaryDirectory() as directory:
-            client = _client(directory)
-            client.get("/")
-            self.assertEqual(_post(client, "/start/script", {"action": "approve_script"}, follow_redirects=False).status_code, 303)
-            self.assertEqual(_post(client, "/review/action", {"action": "advance_planning"}, follow_redirects=False).status_code, 303)
+            client = _legacy_client(directory)
             self.assertEqual(_post(client, "/review/action", {"action": "approve_budget"}, follow_redirects=False).status_code, 303)
             produced = _post(client, "/review/action", {"action": "produce_offline"}, follow_redirects=False)
 
@@ -273,10 +285,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_final_reject_requires_context_and_blocks_export(self) -> None:
         with TemporaryDirectory() as directory:
-            client = _client(directory)
-            client.get("/")
-            _post(client, "/start/script", {"action": "approve_script"})
-            _post(client, "/review/action", {"action": "advance_planning"})
+            client = _legacy_client(directory)
             _post(client, "/review/action", {"action": "approve_budget"})
             _post(client, "/review/action", {"action": "produce_offline"})
 
@@ -291,13 +300,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_web_failure_exposes_safe_category_and_recovery_action(self) -> None:
         with TemporaryDirectory() as directory:
-            app = create_app(Path(directory), source_connector=FixtureSourceConnector())
-            client = TestClient(app, base_url="http://127.0.0.1")
-            _post(client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL})
-            app.state.course_factory.ffmpeg_executable = "/missing/ffmpeg"
-            app.state.course_factory.ffprobe_executable = "/missing/ffprobe"
-            _post(client, "/start/script", {"action": "approve_script"})
-            _post(client, "/review/action", {"action": "advance_planning"})
+            client = _legacy_client(directory, ffmpeg_executable="/missing/ffmpeg", ffprobe_executable="/missing/ffprobe")
             _post(client, "/review/action", {"action": "approve_budget"})
             failed = _post(client, "/review/action", {"action": "produce_offline"})
 

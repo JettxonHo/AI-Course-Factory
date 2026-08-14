@@ -30,7 +30,7 @@ from .media_task import (
     TaskSceneMediaSelection,
 )
 from .sqlite_media_task import SQLiteTaskMediaRepository
-from .facade import ApplicationDownload, ApplicationResult, ApplicationView, CourseFactoryApplication, PromptCard, SceneView
+from .facade import ApplicationDownload, ApplicationResult, ApplicationView, CourseFactoryApplication, GenerationEntryView, PromptCard, SceneView
 
 __all__ = [
     "InMemoryTaskRepository",
@@ -62,6 +62,7 @@ __all__ = [
     "ApplicationDownload",
     "ApplicationView",
     "CourseFactoryApplication",
+    "GenerationEntryView",
     "PromptCard",
     "SceneView",
 ]

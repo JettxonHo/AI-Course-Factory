@@ -7,15 +7,16 @@ Observed: 2026-08-14 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | FAST-MVP v1.1 remains accepted history; Product Owner approved the exact Creator Handoff MVP v1.2 Goal and eight defaults on 2026-08-14 |
-| Current repository planning baseline | `main@bb676a236a32eb9cc03ddca0e5bd71584791097c` |
+| Current repository planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 complete via Issue #129 / PR #130) |
 | Accepted FAST-MVP v1.1 baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Active milestone | H0 truth rebaseline, approved candidate awaiting Issue #129 merge |
-| Current task | Issue #129 owns the exact eight-file docs-only H0 closure; no implementation Task Contract is active |
+| Active milestone | H1 Grounded Storyboard and Scene Generation Contract, IN PROGRESS |
+| Current task | Issue #131 on `codex/131-scene-generation-contract`; exact Luna implementation route configured, runtime identity not independently verified |
+| H1 local candidate evidence | 85 focused tests and 432 full regression tests passed; compileall and Diff/ownership checks passed; a loopback browser completed reject-context review, exact Storyboard approval, six-entry Contract rendering and process-restart replay with one Version of each downstream planning Artifact; no hosted checks are claimed |
 | Historical merged regression evidence | 414 local tests passed after Issue #121 / PR #122; no hosted CI is claimed |
 | F3 repository gates | Issue #125: 52 focused tests and 422 full tests passed; compileall and Diff/ownership checks passed; no hosted CI is claimed |
 | F3 runtime evidence | Fresh browser task acquired live GitHub commit `33e781bf...` and then completed Script v2, real local media, two restarts, Scene 2 replacement, Final approval and byte-identical four-file export replay |
-| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; implementation has not started |
+| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; H0 is complete and H1 implementation is in progress (not complete) |
 | Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -105,7 +106,7 @@ Issue #119 / PR #120 is merged and independently accepted COMPLETE. It adds loca
 
 Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 / PR #124 then supplied partial F3 media evidence without proving live source acquisition; Issue #125 / PR #126 supplied and merged the accepted bounded correction at `main@f388e4a`.
 
-Issue #129 on `codex/129-creator-handoff-v1-2-rebaseline` is the current H0 docs-only closure candidate at `main@bb676a2`. Product Owner approved the exact Goal and eight defaults after the seven-file proposal review; ownership is now exactly those seven docs plus `GOAL.md`. The branch records v1.2 as active but does not claim H0 merged, H1 ready or implementation started.
+Issue #129 closed and its exact docs Diff merged through PR #130 at `main@d96b091`; H0 is COMPLETE and H1 was READY from that real baseline. Issue #131 on `codex/131-scene-generation-contract` is the active bounded H1 implementation; it does not claim H1 complete before independent review and merge.
 
 ## 5. Current Direction
 
@@ -119,15 +120,15 @@ The approved first import interaction is fixed: one operator-declared generated-
 
 Authorized now:
 
-- Issue #129 H0 truth-doc integration;
-- H1 planning/Task Contract only after H0 actually merges;
+- H1 Issue #131 implementation and independent review;
+- H2-H4 planning/Task Contract only after the preceding milestone actually merges;
 - bounded maintenance of the merged F1 flow;
 - maintenance of the accepted fixed local Demo;
 - no-cost local validation and evidence replay.
 
 Not authorized now:
 
-- H1-H4 implementation or a Luna dispatch before the exact milestone Task Contract passes review;
+- H2-H4 implementation or a Luna dispatch before each exact milestone Task Contract passes review;
 - cloud Provider selection, credentials or real calls;
 - any fee or budget increase;
 - deployment or external publication;

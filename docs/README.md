@@ -14,7 +14,7 @@ Read in this order:
 | How do Agents, Issues, tests and reviews operate? | `DEVELOPMENT-WORKFLOW.md` and `../AGENTS.md` |
 | Why was a hard-to-reverse choice made? | `decision-log.md` |
 
-FAST-MVP v1.1 is the completed historical family. Creator Handoff MVP v1.2 is the current `APPROVED / ACTIVE` family; H0 docs closure is in Issue #129, and H1-H4 implementation still requires a bounded Task Contract per milestone.
+FAST-MVP v1.1 is the completed historical family. Creator Handoff MVP v1.2 is the current `APPROVED / ACTIVE` family; H0 is complete through Issue #129 / PR #130 at `main@d96b091`, and H1 is in progress under approved Issue #131. H2-H4 implementation still requires a bounded Task Contract per milestone.
 
 ## 2. Conflict Rule
 

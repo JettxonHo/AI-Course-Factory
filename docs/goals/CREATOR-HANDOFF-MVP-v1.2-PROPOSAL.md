@@ -7,11 +7,11 @@
 | Status | **APPROVED / ACTIVE** |
 | Product direction | Accepted by Product Owner on 2026-08-14 |
 | Exact Goal approval | Product Owner, 2026-08-14 |
-| Planning baseline | `main@bb676a236a32eb9cc03ddca0e5bd71584791097c` |
-| Planning Issue | #129 |
+| Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130) |
+| Planning Issue | #129 (closed); H1 implementation Issue #131 |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
-This file records the approved contract behind the active `GOAL.md`. It does not by itself authorize a Luna dispatch or an H1-H4 implementation Task Contract, and it does not reopen FAST-MVP v1.1.
+This file records the approved contract behind the active `GOAL.md`. It does not by itself authorize H2-H4 implementation Task Contracts, and it does not reopen FAST-MVP v1.1.
 
 ## 2. Approved Exact Goal
 
@@ -116,7 +116,7 @@ The composition path consumes the ordered selected Imported Generated Scene Clip
 
 **Outcome:** integrate the approved D-008, v1.2 Goal and contract/acceptance boundaries while preserving v1.1 history.
 
-**Exit:** Issue #129 merges its exact docs Diff. H0 becomes `COMPLETE` and H1 becomes `READY` only from that real merged baseline.
+**Exit:** Issue #129's exact docs Diff merged through PR #130 at `main@d96b091`; H0 is `COMPLETE` and H1 was `READY` from that real merged baseline.
 
 ### H1 — Grounded Script, Storyboard and Scene Generation Contract
 
@@ -171,6 +171,6 @@ The Product Owner approved these defaults on 2026-08-14:
 
 ## 9. Authorization and Stop Conditions
 
-The Goal is approved and active. H0 is the only active closure task until Issue #129 actually merges. H1-H4 still require one bounded Issue/Task Contract each; no implementation dispatch, API call, credential, charge or deployment is authorized by this contract alone.
+The Goal is approved and active. H0 is `COMPLETE` at `main@d96b091`; H1 is in progress under the approved Issue #131 Task Contract. H2-H4 still require one bounded Issue/Task Contract each; no API call, credential, charge or deployment is authorized by this contract alone.
 
 Stop and return to Product Owner review before selecting a Jimeng/Kling API/model, using credentials, changing Budget/caps, replacing the canonical narration/SRT contract, adding a new Decision type, expanding beyond the fixed one-task Demo or weakening exact Artifact/Final approval invariants.
