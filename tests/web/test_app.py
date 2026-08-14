@@ -61,7 +61,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             response = client.get("/")
 
             self.assertEqual(response.status_code, 200)
-            self.assertIn("Source intake", response.text)
+            self.assertIn("输入公开课程仓库", response.text)
             self.assertIn('name="repository_url"', response.text)
             self.assertEqual(response.text.count('name="repository_url"'), 1)
             self.assertEqual(connector.calls, [])
@@ -109,11 +109,25 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             response = client.get("/")
 
             self.assertEqual(response.status_code, 200)
-            self.assertIn('aria-label="Production stages"', response.text)
+            self.assertIn('aria-label="制作阶段"', response.text)
             self.assertIn('aria-current="step"', response.text)
-            self.assertIn("Next action", response.text)
+            self.assertIn("下一步", response.text)
             self.assertIn('aria-current="page"', response.text)
             self.assertIn('/static/favicon.svg', response.text)
+
+    def test_guided_workbench_uses_fixed_simplified_chinese_rendered_shell(self) -> None:
+        with TemporaryDirectory() as directory:
+            client = _client(directory)
+
+            response = client.get("/")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('<html lang="zh-CN">', response.text)
+            self.assertIn("AI 课程工厂", response.text)
+            self.assertIn("内容定稿", response.text)
+            self.assertIn("待确认脚本", response.text)
+            self.assertIn("通过脚本", response.text)
+            self.assertNotIn("<h1>Your course, one clear next move.</h1>", response.text)
 
     def test_review_view_surfaces_current_gate_and_production_facts(self) -> None:
         with TemporaryDirectory() as directory:
@@ -130,8 +144,61 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             self.assertIn('data-stage-state="current"', review.text)
             self.assertIn('data-stage-state="upcoming"', review.text)
             self.assertEqual(review.text.count('class="button button-primary"'), 1)
-            self.assertIn("Source commit", review.text)
-            self.assertIn("External charge", review.text)
+            self.assertIn("来源提交", review.text)
+            self.assertIn("应用费用", review.text)
+
+    def test_review_uses_chinese_workbench_hierarchy_for_planning(self) -> None:
+        with TemporaryDirectory() as directory:
+            client = _client(directory)
+            _post(client, "/start/script", {"action": "approve_script"})
+
+            review = client.get("/review")
+
+            self.assertEqual(review.status_code, 200)
+            self.assertIn('data-view-kind="review"', review.text)
+            self.assertIn("制作与回导", review.text)
+            self.assertIn("生成分镜方案", review.text)
+            self.assertIn("当前状态", review.text)
+            self.assertNotIn("Available actions:", review.text)
+            self.assertNotIn("Build production plan", review.text)
+            self.assertEqual(review.text.count('class="button button-primary"'), 1)
+
+    def test_workbench_slots_keep_mobile_primary_before_secondary_evidence(self) -> None:
+        def assert_slots(markup: str) -> None:
+            positions = []
+            for slot in ("status", "work", "action", "evidence"):
+                marker = f'data-workbench-slot="{slot}"'
+                self.assertIn(marker, markup)
+                positions.append(markup.index(marker))
+            self.assertEqual(positions, sorted(positions))
+            self.assertEqual(markup.count('class="button button-primary"'), 1)
+
+        with TemporaryDirectory() as directory:
+            client = _client(directory)
+            start = client.get("/")
+            self.assertEqual(start.status_code, 200)
+            assert_slots(start.text)
+
+            _post(client, "/start/script", {"action": "approve_script"})
+            _post(client, "/review/action", {"action": "advance_planning"})
+            _post(client, "/review/action", {"action": "approve_storyboard"})
+            _post(client, "/review/action", {"action": "prepare_handoff_package"})
+            review = client.get("/review")
+            self.assertEqual(review.status_code, 200)
+            assert_slots(review.text)
+
+            css = client.get("/static/style.css")
+            self.assertEqual(css.status_code, 200)
+            self.assertIn("grid-template-areas", css.text)
+            self.assertIn('.workbench-layout > .work-column { grid-area: work; }', css.text)
+
+        with TemporaryDirectory() as directory:
+            client = _legacy_client(directory)
+            _post(client, "/review/action", {"action": "approve_budget"})
+            _post(client, "/review/action", {"action": "produce_offline"})
+            final = client.get("/final")
+            self.assertEqual(final.status_code, 200)
+            assert_slots(final.text)
 
     def test_final_view_preserves_decision_forms_and_technical_facts(self) -> None:
         with TemporaryDirectory() as directory:
@@ -152,11 +219,27 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             self.assertIn('name="action" value="reject_final"', final.text)
             self.assertIn('name="scene_id" value="scene-2"', final.text)
             self.assertIn('name="decision_context"', final.text)
-            self.assertIn("Source commit", final.text)
+            self.assertIn("来源提交", final.text)
             self.assertIn("script:episode-1 v1", final.text)
-            self.assertIn("Video v1", final.text)
-            self.assertIn("Provider attempts:", final.text)
-            self.assertIn("charged 0 micros", final.text)
+            self.assertIn("视频 v1", final.text)
+            self.assertIn("执行次数", final.text)
+            self.assertIn("累计费用", final.text)
+
+    def test_final_uses_chinese_review_and_delivery_hierarchy(self) -> None:
+        with TemporaryDirectory() as directory:
+            client = _legacy_client(directory)
+            _post(client, "/review/action", {"action": "approve_budget"})
+            _post(client, "/review/action", {"action": "produce_offline"})
+
+            final = client.get("/final")
+
+            self.assertEqual(final.status_code, 200)
+            self.assertIn("终审与交付", final.text)
+            self.assertIn("通过终审", final.text)
+            self.assertIn("生成交付包", final.text)
+            self.assertNotIn("Available actions:", final.text)
+            self.assertNotIn("Approve or replace", final.text)
+            self.assertEqual(final.text.count('class="button button-primary"'), 1)
 
     def test_start_view_is_server_rendered_and_exposes_three_view_kinds(self) -> None:
         with TemporaryDirectory() as directory:
@@ -165,10 +248,10 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             response = client.get("/")
 
             self.assertEqual(response.status_code, 200)
-            self.assertIn("Start / Current Task", response.text)
+            self.assertIn("内容与脚本", response.text)
             self.assertIn('data-view-kind="start"', response.text)
             self.assertNotIn("Desktop ImageGen", response.text)
-            self.assertIn("no application Provider API call", response.text)
+            self.assertIn("应用不调用 Provider API", response.text)
             self.assertNotIn("deterministic Fixture media", response.text)
             self.assertNotIn("{{", response.text)
             self.assertEqual(response.headers["x-content-type-options"], "nosniff")
@@ -198,7 +281,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             self.assertEqual(revised.headers["location"], "/")
             start = client.get("/")
             self.assertIn("script:episode-1 v2", start.text)
-            self.assertIn("Reject and revise", start.text)
+            self.assertIn("退回脚本", start.text)
 
             rejected = _post(client, "/start/script", {"action": "reject_script", "decision_context": "remove unsupported wording"}, follow_redirects=False)
             self.assertEqual(rejected.status_code, 303)
@@ -248,8 +331,8 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             self.assertEqual(produced.headers["location"], "/final")
             final = client.get("/final")
             self.assertEqual(final.status_code, 200)
-            self.assertIn("local Fixture evidence", final.text)
-            self.assertNotIn("Produce imported visuals", final.text)
+            self.assertIn("本地 Fixture 证据", final.text)
+            self.assertNotIn("生成导入画面", final.text)
             self.assertIn("/media/video", final.text)
             video = client.get("/media/video")
             subtitle = client.get("/media/subtitle")
@@ -274,7 +357,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             self.assertTrue(replaced_subtitle.content.strip())
             self.assertEqual(_post(client, "/final/action", {"action": "approve_final"}, follow_redirects=False).status_code, 303)
             approved_final = client.get("/final")
-            self.assertIn("Available actions:</strong> export_package", approved_final.text)
+            self.assertIn("<code>export_package</code>", approved_final.text)
             exported = _post(client, "/final/action", {"action": "export_package"}, follow_redirects=False)
             self.assertEqual(exported.status_code, 303)
             self.assertEqual(client.get("/media/video").status_code, 200)
@@ -306,7 +389,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
             self.assertEqual(failed.status_code, 400)
             self.assertIn("generation_failure", failed.text)
-            self.assertIn("Produce offline Fixture", failed.text)
+            self.assertIn("生成本地成片", failed.text)
             self.assertNotIn("/missing/ffmpeg", failed.text)
             self.assertNotIn("Traceback", failed.text)
 
@@ -323,7 +406,7 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
             self.assertEqual(review.status_code, 200)
             self.assertIn("planning", review.text)
-            self.assertIn("Build production plan", review.text)
+            self.assertIn("生成分镜方案", review.text)
 
     def test_mutation_requires_loopback_same_origin_before_facade(self) -> None:
         with TemporaryDirectory() as directory:

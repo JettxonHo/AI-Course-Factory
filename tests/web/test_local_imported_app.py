@@ -84,7 +84,7 @@ class LocalImportedWebTests(unittest.TestCase):
             self.assertEqual(started.status_code, 303)
             start = client.get("/")
             self.assertEqual(start.status_code, 200)
-            self.assertIn("no application Provider API call", start.text)
+            self.assertIn("应用不调用 Provider API", start.text)
             self.assertNotIn("deterministic Fixture media", start.text)
             for index in range(1, 7):
                 self.assertIn(f"scene-{index}.png", start.text)
@@ -94,22 +94,22 @@ class LocalImportedWebTests(unittest.TestCase):
 
             self.assertEqual(_post(client, "/review/action", {"action": "approve_budget"}).status_code, 303)
             review = client.get("/review")
-            self.assertIn("Local imported visual run", review.text)
-            self.assertIn("Produce imported visuals", review.text)
-            self.assertNotIn("Produce offline Fixture", review.text)
-            self.assertIn("outside the application", review.text)
-            self.assertIn("no ChatGPT or other Visual Provider API call", review.text)
+            self.assertIn("本地参考画面处理", review.text)
+            self.assertIn("生成本地成片", review.text)
+            self.assertNotIn("生成导入画面", review.text)
+            self.assertIn("应用之外", review.text)
+            self.assertIn("应用不调用 Visual Provider API", review.text)
 
             self.assertEqual(_post(client, "/review/action", {"action": "produce_offline"}).status_code, 303)
             final = client.get("/final")
             self.assertEqual(final.status_code, 200)
-            self.assertIn("Local processing attempts:", final.text)
-            self.assertNotIn("<strong>Provider attempts:</strong>", final.text)
-            self.assertIn("creator-supplied via ChatGPT Desktop ImageGen", final.text)
-            self.assertEqual(final.text.count("Replace scene-2 visual"), 1)
+            self.assertIn("执行次数", final.text)
+            self.assertNotIn("Provider attempts", final.text)
+            self.assertIn("创作者在应用外生成", final.text)
+            self.assertEqual(final.text.count("重新导入场景 2 视频"), 1)
             self.assertNotIn("Replace locally", final.text)
-            self.assertIn("local imported visual evidence", final.text)
-            self.assertNotIn("local Fixture evidence", final.text)
+            self.assertIn("本地导入场景证据", final.text)
+            self.assertNotIn("本地 Fixture 证据", final.text)
 
     def test_imported_preflight_failure_renders_safe_exact_filenames_without_path(self) -> None:
         with TemporaryDirectory() as directory:

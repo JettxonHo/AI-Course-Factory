@@ -9,10 +9,10 @@
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130); FAST-MVP v1.1 remains complete history |
-| Current H3 baseline | `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629`, branch `codex/137-generated-scene-import` (Issue #137 candidate in progress) |
+| Current H3 baseline | `main@cbdd150c31c6bab289c634c40ffa2078d5081e53` (Issue #137 / PR #138 merged; accepted 458-test regression) |
 | Goal contract | `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` |
 | Runtime | Python `>=3.12,<3.13` |
-| Authorization | H0/H1 complete; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` with 444-test evidence; H3 Issue #137 is the current bounded candidate, while H3.5/H4 require their own Task Contracts |
+| Authorization | H0-H3 complete; H3 Issue #137 / PR #138 is merged at `main@cbdd150c` with accepted 458-test evidence; H3.5 Issue #139 is the current bounded candidate, while H4 remains separately gated |
 
 Prefer connecting the existing implementation into a usable product over refactoring it. A task may change architecture only after it proves the vertical path cannot be completed inside the approved boundaries.
 
@@ -36,7 +36,7 @@ Creator Handoff Package -> manual Jimeng/Kling subscription UI -> generated Scen
 Implementation choices:
 
 - keep Python 3.12, LangGraph, SQLite, filesystem workspace and FFmpeg;
-- use server-rendered HTML plus minimal JavaScript;
+- use server-rendered HTML plus one local CSS stylesheet; H3.5 adds no JavaScript;
 - prefer FastAPI/Uvicorn/Jinja2 if a small spike confirms clean integration; otherwise choose the smallest equivalent Python HTTP stack and record the decision in the feature PR;
 - add only dependencies required by the current vertical Issue;
 - keep one composition root; manual external generation is not wired as a Provider;
@@ -101,7 +101,7 @@ The first slice uses one operator-declared generated-clips directory supplied at
 
 ## 7. Approved Delivery Sequence
 
-The Goal is active. H0 and H1 are complete; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` with accepted 444-test regression evidence. H3 is bounded by Issue #137; H3.5 and H4 start only after the preceding milestone and their own bounded Task Contract.
+The Goal is active. H0-H2 are complete; H3 Issue #137 / PR #138 is merged at `main@cbdd150c` with accepted 458-test regression evidence. H3.5 is bounded by Issue #139 and its approved D-009 Direction A; H4 remains separately gated until H3.5 is independently reviewed and merged.
 
 ### H0 — Truth rebaseline
 
@@ -125,7 +125,7 @@ H3 is a minimal public-contract expansion, not unchanged reuse: keep `artifact_t
 
 ### H3.5 — Simplified-Chinese Creator workspace
 
-Keep the three-view server-rendered boundary while separately redesigning the Creator workspace for the approved Simplified-Chinese product experience. H3.5 does not change H3 Artifact lineage, Final gate or media contract.
+Issue #139 implements approved D-009 Direction A inside the existing templates and stylesheet only. Keep exactly three server-rendered routes; use fixed Simplified-Chinese phase/status/action copy, a desktop compact phase rail + current-work canvas + contextual evidence/action rail, and mobile status → work → primary action → evidence ordering. Map presentation phases from existing `stage`/`pending_action` without adding a public stage or view-model seam. Preserve H3 Artifact lineage, Final gate, media contract, route/form/action/media/security behavior and all provenance/failure facts through semantic details/aside disclosures. H3.5 status: **IN PROGRESS** on `codex/139-chinese-creator-workspace`; independent review, full regression and merge remain pending.
 
 ### H4 — Browser/product-quality acceptance
 
@@ -233,4 +233,4 @@ The accepted FAST-MVP Goal and PD-002 authorize the completed no-cost local Demo
 
 F3 acceptance does not authorize Provider credentials, fees, deployment, publication or a broader product scope.
 
-The approved v1.2 Goal does not authorize unbounded implementation. H2 Issue #135 / PR #136 is complete at `main@c4f2f5e`; Issue #137 is the active H3 coding Task Contract and remains in progress pending independent review and merge. H3.5 and H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
+The approved v1.2 Goal does not authorize unbounded implementation. H3 Issue #137 / PR #138 is complete at `main@cbdd150c` with accepted 458-test evidence. Issue #139 is the active H3.5 coding Task Contract and remains in progress pending independent review and merge. H4 remains separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.

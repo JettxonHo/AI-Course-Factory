@@ -14,7 +14,7 @@ Public GitHub source
   -> final review + local export
 ```
 
-本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS、F2.5 Warm Editorial 三页体验、H1 Scene Generation Contract 和 H2 Creator Handoff Package（Issue #135 / PR #136，444-test regression）。当前 H3 Issue #137 正在把六个 Creator MP4 导入、固定可播放归一化、精确 H2 narration 合成和 Final gate 接入 Review；Jimeng/Kling 手工订阅生成不产生应用 Attempt 或 charge。H3.5 简体中文工作台重设计与 H4 人工 watch/listen 验收仍待后续里程碑。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
+本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS、F2.5 Warm Editorial 三页体验、H1 Scene Generation Contract、H2 Creator Handoff Package（Issue #135 / PR #136，444-test regression）和 H3 Creator MP4 导入/精确合成（Issue #137 / PR #138，`main@cbdd150c`，458-test regression）。当前 Issue #139 在 `codex/139-chinese-creator-workspace` 实现 H3.5 Guided Creator Workbench：三个 SSR 页面固定使用简体中文、保留现有路由/动作/媒体与证据事实；Jimeng/Kling 手工订阅生成不产生应用 Attempt 或 charge。H3.5 仍在进行，H4 人工 watch/listen 验收仍待后续里程碑。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
 
 ## 已验收的本地工作台
 

@@ -41,7 +41,7 @@ class GPTSoVITSWebTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn("local-gpt-sovits-v2", response.text)
             self.assertIn("locally generated Qwen3-TTS Serena synthetic reference", response.text)
-            self.assertIn("external charge 0 micros", response.text)
+            self.assertIn("外部费用 0 micros", response.text)
             self.assertNotIn("/missing/", response.text)
 
     def test_configured_runtime_facts_are_visible_on_each_of_the_three_views(self):
@@ -88,7 +88,7 @@ class GPTSoVITSWebTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn("local-gpt-sovits-v2", response.text)
                 self.assertIn("locally generated Qwen3-TTS Serena synthetic reference", response.text)
-                self.assertIn("external charge", response.text)
+                self.assertIn("外部费用", response.text)
                 self.assertIn("0 micros", response.text)
             self.assertEqual(client.get("/").text.count("data-view-kind="), 1)
 

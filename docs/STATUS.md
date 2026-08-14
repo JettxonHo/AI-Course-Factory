@@ -7,17 +7,17 @@ Observed: 2026-08-15 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | FAST-MVP v1.1 remains accepted history; Product Owner approved the exact Creator Handoff MVP v1.2 Goal and eight defaults on 2026-08-14 |
-| Current repository baseline | `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629` (Issue #135 / PR #136 merged; H2 complete) |
+| Current repository baseline | `main@cbdd150c31c6bab289c634c40ffa2078d5081e53` (Issue #137 / PR #138 merged; H3 complete) |
 | Accepted FAST-MVP v1.1 baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Active milestone | H3 Generated Scene Clip import and exact composition, IN PROGRESS |
-| Current task | Issue #137 on `codex/137-generated-scene-import`; candidate implementation pending independent review and merge |
+| Active milestone | H3.5 Simplified-Chinese Creator workspace, IN PROGRESS |
+| Current task | Issue #139 on `codex/139-chinese-creator-workspace`; Direction A candidate implementation pending independent review and merge |
 | H1 merged implementation and correction evidence | Issue #131 / PR #132 plus Issue #133 / PR #134 are merged at `main@91b4512`; 433-test regression, compileall and Diff checks are recorded as merged H1 evidence |
 | H2 accepted implementation evidence | Issue #135 / PR #136 is merged at `main@c4f2f5e`; H2 package/narration replay and 444-test regression evidence are accepted |
 | Historical merged regression evidence | 414 local tests passed after Issue #121 / PR #122; no hosted CI is claimed |
 | F3 repository gates | Issue #125: 52 focused tests and 422 full tests passed; compileall and Diff/ownership checks passed; no hosted CI is claimed |
 | F3 runtime evidence | Fresh browser task acquired live GitHub commit `33e781bf...` and then completed Script v2, real local media, two restarts, Scene 2 replacement, Final approval and byte-identical four-file export replay |
-| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; H0-H2 are complete, H3 Issue #137 is in progress, and H3.5/H4 remain pending |
+| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; H0-H3 are complete, H3.5 Issue #139 is in progress, and H4 remains pending |
 | Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -93,6 +93,12 @@ F1, F2A, F2B and F2.5 remain complete for the fixed local Demo. Issue #123 / PR 
 - Independent FFprobe reported H.264 540x960 `yuv420p` 24fps, AAC 48kHz mono, `mov_text` and 60 seconds. Local CPU transcription confirmed six non-silent, intelligible Chinese narrations.
 - Main-controller verification passed 52 focused tests and the final 422-test regression; compileall, `git diff --check` and exact ownership review passed. No hosted checks are claimed.
 
+## 3g. Issue #137 / PR #138 H3 Evidence (merged)
+
+- Issue #137 is closed and PR #138 is merged at `main@cbdd150c31c6bab289c634c40ffa2078d5081e53`.
+- The accepted merged regression is 458 local tests; this is the H3 baseline for the current H3.5 candidate.
+- H3 proves exact creator-import Scene Clip lineage, atomic full-set import/re-import and Final-gate compatibility. It does not prove human product-quality acceptance.
+
 ## 4. Current Concurrent Work
 
 F0 is complete. Issue #110 passed independent review and merged through PR #111. F1 then merged through PR #114; the historical F1 correction snapshot was `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`. Issue #117 / PR #118 subsequently merged and closed at `main@b2642c1` after independent 397-test regression evidence; F2A is COMPLETE, and its creator-supplied local bridge does not call a Visual Provider or claim F3 completion.
@@ -107,13 +113,13 @@ Issue #119 / PR #120 is merged and independently accepted COMPLETE. It adds loca
 
 Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 / PR #124 then supplied partial F3 media evidence without proving live source acquisition; Issue #125 / PR #126 supplied and merged the accepted bounded correction at `main@f388e4a`.
 
-Issue #129 closed and its exact docs Diff merged through PR #130; H0 is COMPLETE. Issue #131 / PR #132 implemented the bounded H1 contract and Issue #133 / PR #134 corrected repeated HTTP approval replay; both are merged at `main@91b4512`, so H1 is COMPLETE. Issue #135 / PR #136 is merged at `main@c4f2f5e` with accepted 444-test regression evidence, so H2 is COMPLETE. Issue #137 is the active H3 candidate and remains in progress pending independent review.
+Issue #129 closed and its exact docs Diff merged through PR #130; H0 is COMPLETE. Issue #131 / PR #132 implemented the bounded H1 contract and Issue #133 / PR #134 corrected repeated HTTP approval replay; both are merged at `main@91b4512`, so H1 is COMPLETE. Issue #135 / PR #136 is merged at `main@c4f2f5e` with accepted 444-test regression evidence, so H2 is COMPLETE. Issue #137 is closed and PR #138 is merged at `main@cbdd150c` with accepted 458-test evidence, so H3 is COMPLETE. Issue #139 is the active H3.5 candidate and remains in progress pending independent review and merge.
 
 ## 5. Current Direction
 
 FAST-MVP v1.1 remains complete for the fixed local single-user product. The active Creator Handoff v1.2 Goal sends exact generation instructions and narration/SRT to the Creator, who generates Scene videos manually in a subscription UI; exact clips then return for local composition and Final Review. `GOAL.md` is the execution truth and `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` records the approved underlying contract.
 
-The selected vertical design adds a Scene Generation Contract, an adjacent pre-generation Creator Handoff Package and an explicit Imported Generated Scene Clip boundary. It preserves the generic Artifact repository, `scene_clip` identity/version chain, Task selection/stale impact, GPT-SoVITS narration, FFmpeg composition behavior, Final Video decision and post-approval Publish Package. H3 Issue #137 is implementing the bounded public-contract expansion: an honest no-attempt creator-import Clip payload, matching Task/composition input support and a Final gate that proves all six selected Clips bind the same exact contract. F2A still-image output remains readable Preview/technical evidence and cannot satisfy that gate. H3.5 Simplified-Chinese workspace redesign and H4 human watch/listen acceptance remain pending.
+The selected vertical design adds a Scene Generation Contract, an adjacent pre-generation Creator Handoff Package and an explicit Imported Generated Scene Clip boundary. It preserves the generic Artifact repository, `scene_clip` identity/version chain, Task selection/stale impact, GPT-SoVITS narration, FFmpeg composition behavior, Final Video decision and post-approval Publish Package. H3 is complete at `main@cbdd150c` with the accepted 458-test baseline. Issue #139 is implementing the bounded H3.5 presentation-only expansion: a fixed Simplified-Chinese Guided Creator Workbench across the same three SSR routes, with Chinese phase/status/action hierarchy, semantic evidence disclosure and no new backend seam. F2A still-image output remains readable Preview/technical evidence and cannot satisfy the H4 quality gate. H4 human watch/listen acceptance remains pending.
 
 The approved first import interaction is fixed: one operator-declared generated-clips directory at startup/configuration, exact `scene-1.mp4` through `scene-6.mp4`, a Review-page POST that preflights the whole set before import, and exact `scene-2-replacement.mp4` for re-import. The manual path bypasses Budget Authorization and instead uses non-monetary local readiness; external subscription cost is explicitly outside application control.
 
@@ -122,15 +128,16 @@ The approved first import interaction is fixed: one operator-declared generated-
 Authorized now:
 
 - H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` with accepted 444-test evidence;
-- H3 Issue #137 implementation and independent review under the exact approved Task Contract;
-- H3.5 and H4 planning only until their own bounded Task Contracts are approved;
+- H3 is complete through Issue #137 / PR #138 at `main@cbdd150c` with accepted 458-test evidence;
+- H3.5 Issue #139 implementation and independent review under the exact approved Task Contract;
+- H4 planning only until its own bounded Task Contract is approved;
 - bounded maintenance of the merged F1 flow;
 - maintenance of the accepted fixed local Demo;
 - no-cost local validation and evidence replay.
 
 Not authorized now:
 
-- H3.5/H4 implementation or a Luna dispatch before each exact milestone Task Contract passes review;
+- H4 implementation or a Luna dispatch before its exact milestone Task Contract passes review;
 - cloud Provider selection, credentials or real calls;
 - any fee or budget increase;
 - deployment or external publication;

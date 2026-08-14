@@ -398,3 +398,35 @@ Rejected because the existing generated payload requires `attempt_id` and `provi
 ### Authorization Boundary
 
 D-008 and the exact Creator Handoff MVP v1.2 Goal are approved. Issue #129 owns H0 documentation integration only; H1-H4 code still requires a bounded Task Contract and exact Luna dispatch per milestone. No Jimeng/Kling API/model/credential/price/cap, external fee, deployment or publication is authorized.
+
+## Decision D-009 — Guided Creator Workbench in Simplified Chinese
+
+| Field | Value |
+| --- | --- |
+| Status | Product Owner approved Direction A; H3.5 Issue #139 implementation in progress |
+| Decision Date | 2026-08-15 |
+| Decision Owner | Product Owner |
+| Applies To | Exactly three local server-rendered Creator workspace views and their local presentation assets |
+| Recording Task | Issue #139 |
+
+### Context
+
+H3 is complete at `main@cbdd150c` through Issue #137 / PR #138 with accepted 458-test regression evidence. The existing three-view workspace already exposes the H3 Scene Generation Contract, Handoff Package, explicit creator-import action and Final Review facts, but its English stage/action vocabulary and page-specific card stacks make the Creator workbench harder to orient. H3.5 needs a presentation-only information-architecture change while preserving H3 lineage, route and security behavior.
+
+### Decision
+
+1. Keep exactly the existing `/`, `/review` and `/final` server-rendered Jinja routes. Use fixed Simplified Chinese copy; do not add a language switch or i18n framework.
+2. Use Direction A — a stable three-zone desktop workbench with compact phase navigation, a current-work canvas and a contextual status/action/evidence rail. On mobile, render status → current work → primary action → evidence in one column.
+3. Derive presentation phases only from existing `stage`, `pending_action`, route and available facts. Map `source_required`/`script_review` to 内容定稿; `planning`/`handoff_readiness`/`external_generation_pending`/legacy `budget_review`/`production` to 制作与回导; and `final_review`/`exported`/`rejected`/final export to 终审交付. No public stage or backend/view-model seam is added.
+4. Render one visual primary action for each actionable state. Reject, re-import and secondary downloads remain lower hierarchy. At `external_generation_pending`, make 导入 6 段场景视频 primary only when `available_actions` contains `import_generated_scene_clips`; otherwise make 下载创作交接包 primary. Never infer that a package was already downloaded.
+5. Keep exact POST action values/fields, routes, media URLs, Jinja autoescape, same-origin mutation checks, security headers and every source, Artifact, narration, attempt, charge, provenance and failure fact. Use readable Chinese summaries plus semantic `details`/`aside` disclosures; raw internal tokens may appear only in the secondary 运行事实 disclosure when needed.
+6. Keep the Warm Editorial paper/ink/potato-gold identity, local font stacks, local favicon and one local CSS stylesheet with visible focus, 44px targets, reduced-motion handling, long-content wrapping and a mobile breakpoint. No JavaScript, external resources, SPA, upload manager, fourth view, Provider/API/model/credential/fee/cap or H4 quality claim is authorized.
+
+### Consequences
+
+- H3.5 changes only the frozen templates, stylesheet, focused web compatibility tests and current-truth docs in the Issue #139 allowlist; application/domain/repository/production/package code remains untouched.
+- The H3 contract remains the source of truth for imported Scene media and Final Review. This candidate's focused 30-test web evidence is local presentation/compatibility evidence only; independent browser review, full regression and merge remain with the main controller.
+
+### Authorization Boundary
+
+D-009 records the approved presentation direction for Issue #139. It does not mark H3.5 complete, authorize H4 human-quality acceptance, or authorize Provider/API calls, credentials, fees, deployment or publication.

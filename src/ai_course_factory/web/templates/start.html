@@ -1,125 +1,188 @@
 {% extends "base.html" %}
-{% set title = "Start / Current Task" %}
+{% set title = "内容与脚本" %}
 {% block content %}
 <section class="intro" data-view-kind="start" aria-labelledby="start-title">
-  <p class="eyebrow">Start / Current task</p>
-  <h1 id="start-title">Your course, one clear next move.</h1>
-  <p class="lede">Read the grounded script first, then carry one approved decision through planning, production and delivery. The desk keeps every transition local and restartable.</p>
+  <p class="eyebrow">内容与脚本</p>
+  <h1 id="start-title">先把课程讲清楚，再开始制作。</h1>
+  <p class="lede">从锁定来源开始，逐段阅读经过依据核对的脚本。每一步都保留原始事实，刷新或重启后仍可继续。</p>
 </section>
+
 {% if source_required %}
-<section class="workspace-card source-intake-card" aria-labelledby="source-intake-title">
-  <header class="task-heading">
-    <div>
-      <p class="eyebrow">Ground · Source intake</p>
-      <h2 id="source-intake-title">Start with the supported public course source.</h2>
-      <p class="stage-context">The source is acquired at one immutable upstream commit before the script is initialized.</p>
+<section class="workspace-card source-intake-card workbench-card" aria-labelledby="source-intake-title">
+  <div class="workbench-layout workbench-layout-intake">
+    <aside class="phase-rail" data-workbench-slot="status" aria-label="内容定稿说明">
+      <p class="eyebrow">内容定稿</p>
+      <h2>锁定课程来源</h2>
+      <p>先固定一个支持的公开 GitHub 课程地址，系统才会建立可追溯的脚本。</p>
+      <p class="rail-kicker">当前状态</p>
+      <strong class="status-chip">等待来源</strong>
+    </aside>
+    <div class="work-column">
+      <article class="current-work" data-workbench-slot="work">
+        <header class="task-heading">
+          <div>
+            <p class="eyebrow">第一步</p>
+            <h2 id="source-intake-title">输入公开课程仓库</h2>
+            <p class="stage-context">系统会在初始化脚本前记录一个不可变的上游提交。</p>
+          </div>
+        </header>
+      </article>
     </div>
-  </header>
-  <form class="decision-zone" method="post" action="/start/source">
-    <label class="field" for="repository-url">Public GitHub repository URL
-      <input id="repository-url" name="repository_url" type="url" value="{{ repository_url }}" maxlength="128" autocomplete="url" required>
-    </label>
-    <p class="decision-copy">Only the fixed AI-For-Beginners Lesson 1 source is supported in this local Demo.</p>
-    <div class="action-row action-row-end"><button class="button button-primary" type="submit">Acquire source and continue</button></div>
-  </form>
+    <aside class="context-rail" data-workbench-slot="action" aria-label="来源操作">
+      <p class="eyebrow">下一步</p>
+      <h3>锁定课程来源</h3>
+      <form class="decision-zone" method="post" action="/start/source">
+        <label class="field" for="repository-url">公开 GitHub 仓库地址
+          <input id="repository-url" name="repository_url" type="url" value="{{ repository_url }}" maxlength="128" autocomplete="url" required>
+        </label>
+        <p class="decision-copy">本地 Demo 目前只支持 AI-For-Beginners Lesson 1。不会扫描其他目录或猜测来源。</p>
+        <div class="action-row action-row-end"><button class="button button-primary" type="submit">锁定课程来源</button></div>
+      </form>
+    </aside>
+    <aside class="evidence-rail" data-workbench-slot="evidence" aria-label="来源说明">
+      <p class="eyebrow">范围与证据</p>
+      <dl class="facts facts-rail">
+        <div><dt>支持来源</dt><dd>Microsoft AI-For-Beginners</dd></div>
+        <div><dt>记录方式</dt><dd>固定上游提交与定位</dd></div>
+        <div><dt>下一步</dt><dd>读取脚本并确认</dd></div>
+      </dl>
+    </aside>
+  </div>
 </section>
 {% elif view %}
-<section class="workspace-card start-card" aria-labelledby="task-title">
-  <header class="task-heading">
-    <div>
-      <p class="eyebrow">Current task</p>
-      <h2 id="task-title">{{ view.task_id }}</h2>
-      <p class="stage-context"><span class="stage-code">{{ view.stage }}</span>{% if view.stage == "script_review" %} · Script review{% elif view.stage == "planning" %} · Planning{% elif view.stage == "budget_review" %} · Budget review{% elif view.stage == "production" %} · Production{% elif view.stage == "final_review" %} · Final review{% elif view.stage == "exported" %} · Exported{% else %} · {{ view.stage }}{% endif %}</p>
-    </div>
-    <div class="next-action" aria-label="Next action">
-      <span class="next-action-label">Next action</span>
-      <strong>{% if view.pending_action == "approve_script" %}Approve the script{% elif view.pending_action == "revise_script" %}Request a script revision{% elif view.pending_action == "reject_script" %}Reject and revise{% elif view.pending_action %}{{ view.pending_action }}{% else %}No action pending{% endif %}</strong>
-    </div>
-  </header>
+<section class="workspace-card start-card workbench-card" aria-labelledby="task-title">
+  <div class="workbench-layout">
+    <aside class="phase-rail" data-workbench-slot="status" aria-label="当前内容阶段">
+      <p class="eyebrow">内容定稿</p>
+      <h2>脚本阅读</h2>
+      <p>先核对每个场景的讲述，再决定是否进入制作与回导。</p>
+      <p class="rail-kicker">当前状态</p>
+      <strong class="status-chip">{% if view.stage == "script_review" %}待确认脚本{% elif view.stage == "planning" %}脚本已通过{% else %}内容已完成{% endif %}</strong>
+      <a class="rail-link" href="/review">查看制作与回导</a>
+    </aside>
 
-  <div class="task-meta">
-    <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
-    {% if view.tts_engine %}<p class="provenance-line"><strong>Voice</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</p>{% endif %}
-  </div>
-
-  <article class="script-reader" aria-labelledby="script-reader-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Primary reading flow</p>
-        <h3 id="script-reader-title">Script · {{ view.script_reference.identity }} v{{ view.script_reference.version }}</h3>
-      </div>
-      <span class="status-label">{{ view.scenes|length }} scenes</span>
-    </div>
-    <ol class="scene-list script-scenes">
-      {% for scene in view.scenes %}
-      <li>
-        <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
-        <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
-        <span class="scene-status">{{ scene.status }}</span>
-      </li>
-      {% endfor %}
-    </ol>
-  </article>
-
-  <details class="source-drawer">
-    <summary><span>Source evidence</span><span class="summary-hint">Locked commit · {{ view.source_evidence|length }} locator{% if view.source_evidence|length != 1 %}s{% endif %}</span></summary>
-    <dl class="facts facts-compact">
-      <div><dt>Repository URL</dt><dd class="break-anywhere">{{ repository_url }}</dd></div>
-      <div><dt>Repository commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
-      <div><dt>Primary locator</dt><dd class="break-anywhere">{{ view.source_locator }}</dd></div>
-      <div class="facts-wide"><dt>Source evidence</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
-    </dl>
-  </details>
-
-  {% if view.prompt_cards %}
-  <section class="prompt-library" aria-labelledby="prompt-cards-title">
-    <div class="section-heading compact-heading">
-      <div>
-        <p class="eyebrow">Desktop ImageGen</p>
-        <h3 id="prompt-cards-title">Six visual prompt cards</h3>
-      </div>
-      <p class="section-note">Progressive disclosure keeps the script readable. Open a card to copy its frozen target.</p>
-    </div>
-    <div class="prompt-grid">
-      {% for card in view.prompt_cards %}
-      <details class="prompt-card">
-        <summary><span><strong>{{ card.scene_id }}</strong><small>{{ card.target_filename }}</small></span><span class="summary-hint">View prompt</span></summary>
-        <div class="prompt-body">
-          <p>{{ card.prompt }}</p>
-          <dl class="prompt-facts">
-            <div><dt>Intent</dt><dd>{{ card.scene_intent }}</dd></div>
-            <div><dt>Action</dt><dd>{{ card.character_action }}</dd></div>
-          </dl>
+    <div class="work-column">
+    <article class="current-work" data-workbench-slot="work">
+      <header class="task-heading">
+        <div>
+          <p class="eyebrow">当前任务</p>
+          <h2 id="task-title">小土豆学 AI · 第 01 集</h2>
+          <p class="stage-context">脚本版本：{{ view.script_reference.identity }} v{{ view.script_reference.version }}</p>
         </div>
+      </header>
+
+      <article class="script-reader" aria-labelledby="script-reader-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">主要阅读区</p>
+            <h3 id="script-reader-title">六段脚本</h3>
+          </div>
+          <span class="status-label">{{ view.scenes|length }} 段场景</span>
+        </div>
+        <ol class="scene-list script-scenes">
+          {% for scene in view.scenes %}
+          <li>
+            <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
+            <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
+            <span class="scene-status">{% if scene.status == "ready" %}已就绪{% else %}待制作{% endif %}</span>
+          </li>
+          {% endfor %}
+        </ol>
+      </article>
+
+    </article>
+
+    </div>
+
+    <aside class="context-rail" data-workbench-slot="action" aria-label="脚本状态与下一步">
+      <p class="eyebrow">当前状态</p>
+      <h3>{% if view.stage == "script_review" %}待确认脚本{% elif view.stage == "planning" %}脚本已通过{% else %}内容已完成{% endif %}</h3>
+      <p class="decision-copy">{% if view.stage == "script_review" %}确认这份有来源依据的脚本后，才能生成分镜方案。{% elif view.stage == "planning" %}脚本事实已保留，下一步进入制作与回导。{% else %}当前任务的脚本和来源依据仍可查阅。{% endif %}</p>
+
+      {% if view.stage == "script_review" %}
+      <form class="rail-form" method="post" action="/start/script">
+        <button class="button button-primary" type="submit" name="action" value="approve_script">通过脚本</button>
+        <div class="secondary-actions">
+          <button class="button button-secondary" type="submit" name="action" value="revise_script">修改脚本</button>
+          <button class="button button-tertiary" type="submit" name="action" value="reject_script">退回脚本</button>
+        </div>
+        <label class="field" for="script-context">修改或退回说明
+          <textarea id="script-context" name="decision_context" rows="3" maxlength="128" placeholder="修改或退回时填写；通过时可留空。"></textarea>
+        </label>
+      </form>
+      {% elif view.stage == "planning" %}
+      <a class="button button-primary" href="/review">前往制作</a>
+      {% else %}
+      <a class="button button-primary" href="/review">前往制作</a>
+      {% endif %}
+
+    </aside>
+
+    <aside class="evidence-rail" data-workbench-slot="evidence" aria-label="脚本来源与运行证据">
+      <details class="source-drawer">
+        <summary><span>查看来源依据</span><span class="summary-hint">已锁定提交 · {{ view.source_evidence|length }} 个定位</span></summary>
+        <dl class="facts facts-compact">
+          <div><dt>仓库地址</dt><dd class="break-anywhere">{{ repository_url }}</dd></div>
+          <div><dt>仓库提交</dt><dd><code>{{ view.source_commit }}</code></dd></div>
+          <div><dt>主要定位</dt><dd class="break-anywhere">{{ view.source_locator }}</dd></div>
+          <div class="facts-wide"><dt>来源证据</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
+        </dl>
       </details>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
 
-  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure · {{ view.failure_category }}</strong><p>{{ view.failure_message }}</p></div>{% endif %}
+      {% if view.prompt_cards %}
+      <section class="prompt-library" aria-labelledby="prompt-cards-title">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">参考画面</p>
+            <h3 id="prompt-cards-title">六张视觉提示卡</h3>
+          </div>
+          <p class="section-note">提示卡是辅助证据，不会替代脚本或创作交接包。</p>
+        </div>
+        <div class="prompt-grid">
+          {% for card in view.prompt_cards %}
+          <details class="prompt-card">
+            <summary><span><strong>{{ card.scene_id }}</strong><small>{{ card.target_filename }}</small></span><span class="summary-hint">查看提示</span></summary>
+            <div class="prompt-body">
+              <p>{{ card.prompt }}</p>
+              <dl class="prompt-facts">
+                <div><dt>画面意图</dt><dd>{{ card.scene_intent }}</dd></div>
+                <div><dt>角色动作</dt><dd>{{ card.character_action }}</dd></div>
+              </dl>
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
 
-  {% if view.stage == "script_review" %}
-  <section class="decision-zone" aria-labelledby="script-decision-title">
-    <div>
-      <p class="eyebrow">Script gate</p>
-      <h3 id="script-decision-title">Does this grounded draft teach the right thing?</h3>
-      <p class="decision-copy">Approve to continue to planning. Revision and rejection keep the current evidence intact and ask for context.</p>
-    </div>
-    <form class="action-row" method="post" action="/start/script">
-      <button class="button button-primary" type="submit" name="action" value="approve_script">Approve script</button>
-      <button class="button button-secondary" type="submit" name="action" value="revise_script">Request revision</button>
-      <button class="button button-secondary" type="submit" name="action" value="reject_script">Reject and revise</button>
-      <label class="field" for="script-context">Revision / rejection context <textarea id="script-context" name="decision_context" rows="2" maxlength="128" placeholder="Required for revision or rejection; optional for approval."></textarea></label>
-    </form>
-  </section>
-  {% elif view.stage == "planning" %}
-  <div class="action-row action-row-end"><a class="button button-primary" href="/review">Continue to planning</a></div>
-  {% else %}
-  <div class="action-row action-row-end"><a class="button button-primary" href="/review">Open current work</a></div>
-  {% endif %}
+      {% if view.failure_category %}
+      <div class="notice notice-error" role="alert"><strong>上一步未完成</strong><p>{{ view.failure_message }}</p></div>
+      {% endif %}
+
+      {% if view.tts_engine %}
+      <section class="rail-callout" aria-labelledby="voice-facts-title">
+        <h4 id="voice-facts-title">本地旁白</h4>
+        <p>{{ view.tts_engine }} · {{ view.tts_reference_provenance }} · 应用不调用云 Provider · 外部费用 {{ view.tts_external_charge_micros }} micros。</p>
+      </section>
+      {% endif %}
+
+      <details class="runtime-facts">
+        <summary>运行事实</summary>
+        <dl class="facts facts-rail">
+          <div><dt>当前阶段</dt><dd><code>{{ view.stage }}</code></dd></div>
+          <div><dt>下一动作</dt><dd><code>{{ view.pending_action or "none" }}</code></dd></div>
+          <div><dt>可用动作</dt><dd>{% if view.available_actions %}{% for action in view.available_actions %}<code>{{ action }}</code>{% if not loop.last %}、{% endif %}{% endfor %}{% else %}无{% endif %}</dd></div>
+        </dl>
+      </details>
+    </aside>
+  </div>
 </section>
 {% else %}
-<section class="empty-state" data-view-kind="start" aria-labelledby="empty-start-title"><p class="eyebrow">Current task</p><h2 id="empty-start-title">Workspace unavailable</h2><p>Start again with the local launch command and an explicit data directory.</p><a class="button button-primary" href="/">Try again</a></section>
+<section class="empty-state" data-view-kind="start" aria-labelledby="empty-start-title">
+  <p class="eyebrow">内容与脚本</p>
+  <h2 id="empty-start-title">工作台暂时不可用</h2>
+  <p>请使用本地启动命令和明确的数据目录重新打开。</p>
+  <a class="button button-primary" href="/">重新打开</a>
+</section>
 {% endif %}
 {% endblock %}
