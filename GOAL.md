@@ -4,10 +4,10 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **COMPLETE / GOAL_APPROVED** |
+| Status | **ACTIVE / F3 CORRECTION APPROVED FOR MERGE / FINAL GOAL VERDICT PENDING** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-13 |
-| Acceptance baseline | `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6` |
+| Acceptance baseline | Issue #125 candidate based on `main@af61d31e949e20947517ba4d8ab6db867b6a5017` |
 | Goal type | Local end-to-end FAST-MVP |
 | Supersedes | Remaining sequencing and scope of Core MVP Goal v1.0 |
 
@@ -53,7 +53,7 @@ Observed on 2026-08-14:
 - F2A then merged through Issue #117 / PR #118 at `main@b2642c1` and was independently accepted COMPLETE after 397 local regression tests; its visuals are creator-supplied Desktop ImageGen assets generated outside the application.
 - F2B then merged through Issue #119 / PR #120 at `main@65ce873`; the bounded local GPT-SoVITS v2 adapter was independently accepted COMPLETE with the 411-test regression baseline.
 - F2.5 merged through Issue #121 / PR #122 at `main@e155d193`; its Warm Editorial three-view presentation passed independent 1440px/375px browser review and the 414-test regression.
-- F3 Issue #123 then completed a fresh real browser acceptance from a new data directory; the durable acceptance record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
+- F3 Issue #123 / PR #124 supplied partial media, approval, restart, Scene replacement and export evidence from a fresh browser run, but did not prove live GitHub acquisition. Issue #125 corrected that boundary and passed a new same-task live-source-to-package acceptance; the final planning Goal verdict follows merge.
 
 `docs/STATUS.md` owns the current factual snapshot if these facts change.
 
@@ -113,11 +113,11 @@ Independent review accepted the real Diff after focused rendered-HTML/static che
 
 ### F3 — Real end-to-end acceptance
 
-Status: **COMPLETE / GOAL_APPROVED** (Issue #123)
+Status: **CANDIDATE COMPLETE / APPROVED FOR MERGE** (Issue #125; final planning Goal verdict pending)
 
-The fixed Demo ran from a previously nonexistent data directory through the merged Warm Editorial browser with the accepted F2A visual assets and F2B local TTS adapter. It verified:
+Issue #125 repeated the full browser flow from a previously nonexistent data directory. The Creator submitted the one supported public URL, the default connector locked real upstream commit `33e781bf7bfb9b39fd27c4e4a3e592669b52cb4b` and acquired `lessons/1-Intro/README.md` with blob `6b29b141e0f0f81477e16bee4e4d1e6222d0579c`; the same task then completed:
 
-- exact source and visible claim evidence;
+- live GitHub source acquisition and exact Source/Script decision facts;
 - Script, Budget and Final approvals;
 - no paid call before approval or above the cap;
 - creator-supplied F2A Scene visuals and real/local spoken narration;
@@ -125,7 +125,7 @@ The fixed Demo ran from a previously nonexistent data directory through the merg
 - one bounded Scene retry/replace;
 - restart continuation and local MP4/SRT/source/Manifest export.
 
-Exit: the evidence package was independently inspected and the main controller returned `GOAL_APPROVED`. This approves the fixed local MVP only; it is not deployment, adoption, paid Provider or cloud-runtime evidence.
+Exit: the Issue #125 correction, fresh same-run acceptance and independent main-controller review passed, including 52 focused tests, the 422-test full regression, compileall and Diff/ownership review. The candidate is approved for merge; no final `GOAL_APPROVED` claim is made until the planning controller reviews the merged result. The local MVP remains bounded to the fixed Demo and is not deployment, adoption, paid Provider or cloud-runtime evidence.
 
 ## 7. Agent Operating Model
 
@@ -160,6 +160,6 @@ Do not stop merely because a hypothetical future edge case lacks a generalized d
 
 ## 10. Completion Definition
 
-The Goal completed when the fixed real browser Demo and export package satisfied PRD acceptance, focused and full tests passed, local processing/cost evidence was recorded, known limitations were stated, and the main controller independently approved the actual result through Issue #123.
+The completion candidate now satisfies the corrected fixed real browser Demo: it starts from the submitted supported URL, acquires and displays a non-placeholder upstream commit/locator, and completes the media/recovery/export acceptance with focused and full tests, local processing/cost evidence, known limitations and independent main-controller approval.
 
-The accepted result is supported by the fresh F3 run, not by Offline Fake success, code presence or a green regression suite alone.
+The prior #123/#124 media result remains partial historical evidence; Issue #125 supplies the corrected fresh live-source F3 run. Final Goal approval remains a post-merge planning verdict and is not inferred from Offline Fake success, code presence or a green regression suite alone.

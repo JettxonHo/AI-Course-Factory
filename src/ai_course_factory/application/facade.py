@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import base64
 import json
 from pathlib import Path
 import shutil
@@ -49,6 +48,9 @@ from ai_course_factory.artifacts import (
 )
 from ai_course_factory.knowledge import (
     GitHubSourceConnector,
+    NormalizationFailure,
+    SourceAcquisitionResult,
+    SourceConnectorFailure,
     SourceNormalizer,
     SourceRecordBuilder,
 )
@@ -105,8 +107,7 @@ THREAD_ID = "demo-episode-01-script"
 FINAL_THREAD_ID = "demo-episode-01-final"
 CREATOR_ID = "creator-local"
 REPOSITORY_URL = "https://github.com/microsoft/AI-For-Beginners"
-SOURCE_COMMIT = "a" * 40
-BLOB_SHA = "b" * 40
+SOURCE_PATH = "lessons/1-Intro/README.md"
 SCENE_IDS = tuple(f"scene-{index}" for index in range(1, 7))
 _SUBTITLE_OUTPUT = WorkspaceFileReference(TASK_ID, "media", "subtitles.srt")
 _STATE_SCHEMA = 1
@@ -280,33 +281,13 @@ class _State:
     tts_mode: str = "fixture"
 
 
-class _FixtureTransport:
-    def __call__(self, path: str) -> object:
-        if path == "/repos/microsoft/AI-For-Beginners":
-            return {"default_branch": "main"}
-        if path == "/repos/microsoft/AI-For-Beginners/commits?sha=main&per_page=1":
-            return [{"sha": SOURCE_COMMIT}]
-        prefix = f"/repos/microsoft/AI-For-Beginners/contents/lessons/intro.md?ref={SOURCE_COMMIT}"
-        if path == prefix:
-            text = "# Lesson 1\nAI is not magic.\n"
-            return {
-                "type": "file",
-                "path": "lessons/intro.md",
-                "sha": BLOB_SHA,
-                "size": len(text.encode("utf-8")),
-                "encoding": "base64",
-                "content": base64.b64encode(text.encode("utf-8")).decode("ascii"),
-            }
-        raise KeyError(path)
-
-
 class _OfflineRuntime:
     def invoke(self, request: ModelRuntimeRequest) -> object:
         if request.purpose == "knowledge_generation":
             units = request.source_record_payload["units"]
             locator = units[0]["locator"]
             return ModelRuntimeResult(
-                repository_summary="The fixture lesson explains that AI is not magic.",
+                repository_summary="The source lesson explains that AI is not magic.",
                 lesson_focus="Lesson 1 introduces AI as a practical tool.",
                 claims=(
                     {
@@ -495,14 +476,12 @@ class CourseFactoryApplication:
         ffprobe_executable: str | None = None,
         visual_import_dir: str | Path | None = None,
         tts_configuration: GPTSoVITSConfiguration | None = None,
+        source_connector: object | None = None,
     ) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.workspace_root = self.data_dir / "workspace"
         self.workspace = FilesystemWorkspace(self.workspace_root)
-        prepared_workspace = self.workspace.prepare(TASK_ID)
-        if not hasattr(prepared_workspace, "task_id"):
-            raise RuntimeError("offline workspace could not be prepared")
         self.database_path = self.data_dir / "factory.sqlite3"
         self._state_connection = sqlite3.connect(self.database_path, isolation_level=None, check_same_thread=False)
         self._state_connection.execute("CREATE TABLE IF NOT EXISTS application_state (singleton INTEGER PRIMARY KEY CHECK(singleton=1), schema_version INTEGER NOT NULL, state_json TEXT NOT NULL)")
@@ -517,6 +496,9 @@ class CourseFactoryApplication:
         self.ffmpeg_executable = ffmpeg_executable or shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
         self.ffprobe_executable = ffprobe_executable or shutil.which("ffprobe") or "/opt/homebrew/bin/ffprobe"
         self.tts_configuration = tts_configuration
+        # Production uses the real, read-only GitHub connector. Tests and
+        # deterministic local acceptance inject an explicit source boundary.
+        self.source_connector = source_connector if source_connector is not None else GitHubSourceConnector()
         try:
             self.visual_import_dir = Path(visual_import_dir).expanduser().resolve() if visual_import_dir is not None else None
         except (OSError, TypeError, ValueError):
@@ -547,13 +529,49 @@ class CourseFactoryApplication:
         try:
             state = self._load_state()
             if state is None:
-                state = self._initialize_demo()
+                return ApplicationResult("source_required")
             return self._success(state)
         except Exception:
             return self._failure("APPLICATION_OPEN_FAILED")
 
     def inspect(self) -> ApplicationResult:
         return self.create_or_open()
+
+    def start_source(self, repository_url: str) -> ApplicationResult:
+        """Acquire and initialize the one supported public source exactly once."""
+        try:
+            existing = self._load_state()
+        except Exception:
+            return self._failure("APPLICATION_OPEN_FAILED")
+        if existing is not None:
+            return self._success(existing)
+        if not isinstance(repository_url, str):
+            return ApplicationResult(
+                "failure", None, "INVALID_REPOSITORY_URL", "Enter the supported public GitHub repository URL and retry."
+            )
+        if repository_url != REPOSITORY_URL:
+            return ApplicationResult(
+                "failure", None, "UNSUPPORTED_REPOSITORY", f"Only {REPOSITORY_URL} is supported in this local Demo."
+            )
+        try:
+            acquire = getattr(self.source_connector, "acquire", None)
+            if not callable(acquire):
+                return ApplicationResult("failure", None, "SOURCE_CONNECTOR_UNAVAILABLE", "The GitHub source connector is unavailable; retry the source start.")
+            acquisition = acquire(repository_url, [SOURCE_PATH])
+        except Exception:
+            return ApplicationResult("failure", None, "SOURCE_ACQUISITION_FAILED", "GitHub source acquisition failed; check connectivity and retry.")
+        if isinstance(acquisition, SourceConnectorFailure):
+            return ApplicationResult("failure", None, acquisition.code, "GitHub source acquisition failed; check connectivity and retry.")
+        if not isinstance(acquisition, SourceAcquisitionResult):
+            return ApplicationResult("failure", None, "SOURCE_ACQUISITION_FAILED", "GitHub source acquisition failed; check connectivity and retry.")
+        try:
+            material = SourceNormalizer().normalize(acquisition)
+            if isinstance(material, NormalizationFailure):
+                return ApplicationResult("failure", None, material.code, "The acquired source could not be validated; retry the source start.")
+            state = self._initialize_demo(material)
+            return self._success(state)
+        except Exception:
+            return ApplicationResult("failure", None, "SOURCE_INITIALIZATION_FAILED", "The source could not be initialized safely; retry the source start.")
 
     def read_output(self, kind: str) -> ApplicationDownload | None:
         """Read one current video, subtitle, or exported package by role."""
@@ -923,10 +941,15 @@ class CourseFactoryApplication:
         except Exception:
             return self._failure("PACKAGE_EXPORT_FAILED", state)
 
-    def _initialize_demo(self) -> _State:
-        acquisition = GitHubSourceConnector(transport=_FixtureTransport()).acquire(REPOSITORY_URL, ["lessons/intro.md"])
-        material = SourceNormalizer().normalize(acquisition)
+    def _initialize_demo(self, material: object) -> _State:
+        if not hasattr(material, "commit_sha") or not hasattr(material, "units"):
+            raise RuntimeError("normalized source material is required")
         source_candidate = SourceRecordBuilder().build(material, identity="source:microsoft-ai-for-beginners", commit_id="source:episode-1")
+        if not hasattr(source_candidate, "artifact_type"):
+            raise RuntimeError("source record could not be built")
+        prepared_workspace = self.workspace.prepare(TASK_ID)
+        if not hasattr(prepared_workspace, "task_id"):
+            raise RuntimeError("offline workspace could not be prepared")
         source_reference = self.artifacts.commit(source_candidate)
         source = self.artifacts.get(source_reference)
         runtime = _OfflineRuntime()

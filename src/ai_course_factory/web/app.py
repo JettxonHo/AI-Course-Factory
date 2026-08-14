@@ -14,6 +14,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 from ai_course_factory.application import ApplicationResult, CourseFactoryApplication
+from ai_course_factory.application.facade import REPOSITORY_URL
 from ai_course_factory.production import GPTSoVITSConfiguration, GPT_SOVITS_REFERENCE_TRANSCRIPT
 
 
@@ -52,7 +53,7 @@ def _templates() -> Jinja2Templates:
 def _safe_result_message(result: ApplicationResult | None) -> str | None:
     if result is None or result.status == "success":
         return None
-    return "That action could not be completed. The current task state was preserved."
+    return result.error_message or "That action could not be completed. The current task state was preserved."
 
 
 def _form_values(raw: bytes, allowed: set[str]) -> dict[str, str]:
@@ -130,11 +131,24 @@ def _same_loopback_origin(request: Request) -> bool:
     )
 
 
-def _failure_page(templates: Jinja2Templates, request: Request, view_name: str, result: ApplicationResult | None) -> HTMLResponse:
+def _failure_page(
+    templates: Jinja2Templates,
+    request: Request,
+    view_name: str,
+    result: ApplicationResult | None,
+    *,
+    source_required: bool = False,
+) -> HTMLResponse:
     return templates.TemplateResponse(
         request,
         view_name,
-        {"request": request, "view": result.view if result else None, "message": _safe_result_message(result)},
+        {
+            "request": request,
+            "view": result.view if result else None,
+            "message": _safe_result_message(result),
+            "source_required": source_required,
+            "repository_url": REPOSITORY_URL,
+        },
         status_code=400,
     )
 
@@ -143,6 +157,7 @@ def create_app(
     data_dir: str | Path | None = None,
     *,
     application: CourseFactoryApplication | None = None,
+    source_connector: object | None = None,
     visual_import_dir: str | Path | None = None,
     tts_configuration: GPTSoVITSConfiguration | None = None,
 ) -> FastAPI:
@@ -162,6 +177,7 @@ def create_app(
     # on a different thread from the caller that built the ASGI app.
     app.state.course_factory = application
     app.state.course_factory_data_dir = configured_dir
+    app.state.course_factory_source_connector = source_connector
     app.state.course_factory_visual_import_dir = visual_import_dir if visual_import_dir is not None else os.environ.get("AI_COURSE_FACTORY_VISUAL_IMPORT_DIR")
     app.state.course_factory_tts_configuration = tts_configuration
     app.state.templates = templates
@@ -186,6 +202,7 @@ def create_app(
         if app.state.course_factory is None:
             app.state.course_factory = CourseFactoryApplication(
                 app.state.course_factory_data_dir,
+                source_connector=app.state.course_factory_source_connector,
                 visual_import_dir=app.state.course_factory_visual_import_dir,
                 tts_configuration=app.state.course_factory_tts_configuration,
             )
@@ -198,8 +215,35 @@ def create_app(
         except Exception:
             result = None
         if result is None or result.status != "success":
+            if result is not None and result.status == "source_required":
+                return templates.TemplateResponse(
+                    request,
+                    "start.html",
+                    {"request": request, "view": None, "message": None, "source_required": True, "repository_url": REPOSITORY_URL},
+                )
             return _failure_page(templates, request, "start.html", result)
-        return templates.TemplateResponse(request, "start.html", {"request": request, "view": result.view, "message": None})
+        return templates.TemplateResponse(request, "start.html", {"request": request, "view": result.view, "message": None, "source_required": False, "repository_url": REPOSITORY_URL})
+
+    @app.post("/start/source", response_class=HTMLResponse, name="source_start")
+    async def source_start(request: Request) -> Response:
+        try:
+            values = _form_values(await request.body(), {"repository_url"})
+            repository_url = values.get("repository_url", "")
+        except _FormError:
+            invalid = ApplicationResult(
+                "failure", None, "INVALID_REPOSITORY_URL", "Enter the supported public GitHub repository URL and retry."
+            )
+            return _failure_page(templates, request, "start.html", invalid, source_required=True)
+        try:
+            result = facade().start_source(repository_url)
+        except Exception:
+            failed = ApplicationResult(
+                "failure", None, "SOURCE_ACQUISITION_FAILED", "GitHub source acquisition failed; check connectivity and retry."
+            )
+            return _failure_page(templates, request, "start.html", failed, source_required=True)
+        if result.status != "success":
+            return _failure_page(templates, request, "start.html", result, source_required=True)
+        return RedirectResponse("/", status_code=303)
 
     @app.post("/start/script", response_class=HTMLResponse, name="script_decision")
     async def script_decision(request: Request) -> Response:

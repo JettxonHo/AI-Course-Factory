@@ -25,6 +25,7 @@ from ai_course_factory.production import (
     GPTSoVITSConfiguration,
     ProviderAttemptRecord,
 )
+from tests.source_fixture import FixtureSourceConnector, ensure_source
 
 
 COMMIT = "d523079fc05d9a8028d6085bffe4a2757c32abb6"
@@ -134,7 +135,7 @@ def _fixture_runtime(root: Path) -> tuple[GPTSoVITSConfiguration, Path, Path]:
 
 class GPTSoVITSLocalIntegrationTests(unittest.TestCase):
     def _advance_to_production(self, app: CourseFactoryApplication) -> None:
-        self.assertEqual(app.create_or_open().status, "success")
+        self.assertEqual(ensure_source(app).status, "success")
         self.assertEqual(app.submit_script_decision("approve").status, "success")
         self.assertEqual(app.advance_planning().status, "success")
         self.assertEqual(app.submit_budget_decision("approve").status, "success")
@@ -151,14 +152,14 @@ class GPTSoVITSLocalIntegrationTests(unittest.TestCase):
             reference_audio="/missing/reference.wav",
         )
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory), tts_configuration=config)
+            app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector(), tts_configuration=config)
             self._advance_to_production(app)
             failed = app.produce_offline()
             self.assertEqual(failed.error_code, "GPT_SOVITS_CONFIG_INVALID")
             self.assertEqual(failed.view.provider_attempt_count, 0)
             app.close()
 
-            resumed = CourseFactoryApplication(Path(directory))
+            resumed = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector())
             replay = resumed.create_or_open()
             self.assertEqual(replay.view.stage, "production")
             self.assertEqual(replay.view.provider_attempt_count, 0)
@@ -175,7 +176,7 @@ class GPTSoVITSLocalIntegrationTests(unittest.TestCase):
             config, inference_log, fake_bin = _fixture_runtime(root)
             original_path = os.environ.get("PATH", "")
             with patch.dict(os.environ, {"PATH": f"{fake_bin}{os.pathsep}{original_path}"}):
-                app = CourseFactoryApplication(root / "data", visual_import_dir=imports, tts_configuration=config)
+                app = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports, tts_configuration=config)
                 self._advance_to_production(app)
 
                 produced = app.produce_offline()
@@ -224,7 +225,7 @@ class GPTSoVITSLocalIntegrationTests(unittest.TestCase):
 
                 replacement_video = replaced.view.video_reference
                 app.close()
-                resumed = CourseFactoryApplication(root / "data", visual_import_dir=imports, tts_configuration=config)
+                resumed = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports, tts_configuration=config)
                 self.assertEqual(resumed.create_or_open().view.video_reference, replacement_video)
                 self.assertEqual(resumed.produce_offline().status, "success")
                 self.assertEqual(inference_log.read_text(encoding="utf-8").splitlines(), ["inference"] * 6)
@@ -244,7 +245,7 @@ class GPTSoVITSLocalIntegrationTests(unittest.TestCase):
                 self.assertEqual(attribution["tts"]["external_charge_micros"], 0)
                 resumed.close()
 
-                replayed = CourseFactoryApplication(root / "data", visual_import_dir=imports, tts_configuration=config)
+                replayed = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports, tts_configuration=config)
                 self.assertEqual(replayed.create_or_open().view.stage, "exported")
                 self.assertEqual(replayed.workspace.read(exported.view.package_output), package_bytes)
                 self.assertEqual(inference_log.read_text(encoding="utf-8").splitlines(), ["inference"] * 6)

@@ -14,6 +14,7 @@ from ai_course_factory.production import (
     GPTSoVITSConfiguration,
 )
 from ai_course_factory.web import create_app
+from tests.source_fixture import SUPPORTED_REPOSITORY_URL, FixtureSourceConnector
 
 
 def _config() -> GPTSoVITSConfiguration:
@@ -32,7 +33,9 @@ def _config() -> GPTSoVITSConfiguration:
 class GPTSoVITSWebTests(unittest.TestCase):
     def test_start_view_shows_engine_reference_and_zero_charge_without_raw_config(self):
         with TemporaryDirectory() as directory:
-            client = TestClient(create_app(Path(directory), tts_configuration=_config()), base_url="http://127.0.0.1")
+            client = TestClient(create_app(Path(directory), source_connector=FixtureSourceConnector(), tts_configuration=_config()), base_url="http://127.0.0.1")
+            started = client.post("/start/source", data={"repository_url": SUPPORTED_REPOSITORY_URL}, headers={"Origin": "http://127.0.0.1"}, follow_redirects=False)
+            self.assertEqual(started.status_code, 303)
             response = client.get("/")
 
             self.assertEqual(response.status_code, 200)
@@ -77,7 +80,9 @@ class GPTSoVITSWebTests(unittest.TestCase):
                 sovits_model=str(sovits_model),
                 reference_audio=str(reference),
             )
-            client = TestClient(create_app(root / "data", tts_configuration=config), base_url="http://127.0.0.1")
+            client = TestClient(create_app(root / "data", source_connector=FixtureSourceConnector(), tts_configuration=config), base_url="http://127.0.0.1")
+            started = client.post("/start/source", data={"repository_url": SUPPORTED_REPOSITORY_URL}, headers={"Origin": "http://127.0.0.1"}, follow_redirects=False)
+            self.assertEqual(started.status_code, 303)
             for route in ("/", "/review", "/final"):
                 response = client.get(route)
                 self.assertEqual(response.status_code, 200)

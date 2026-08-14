@@ -12,7 +12,7 @@ Public GitHub source
   -> final review + local export
 ```
 
-本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS 和 F2.5 Warm Editorial 三页体验。F3 从全新数据目录完成了真实本地媒体、两次重启、Scene 2 视觉替换和四文件 ZIP 的浏览器验收；主控结论为 `GOAL_APPROVED`。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收证据见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
+本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS 和 F2.5 Warm Editorial 三页体验。Issue #123 / PR #124 的媒体证据因 Fixture Source 仅保留为部分历史；Issue #125 已从全新数据目录通过浏览器提交支持的公开 URL，以默认连接器获取 live GitHub source，并在同一任务完成真实本地媒体、两次重启、Scene 2 视觉替换和四文件 ZIP。该纠正候选已获主控批准合并，最终 `GOAL_APPROVED` 仍待合并后的策划复核。当前事实见 [docs/STATUS.md](docs/STATUS.md)，候选验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
 
 ## 已验收的本地工作台
 

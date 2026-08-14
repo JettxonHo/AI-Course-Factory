@@ -10,6 +10,7 @@ import unittest
 import zipfile
 
 from ai_course_factory.application import CourseFactoryApplication
+from tests.source_fixture import FixtureSourceConnector, ensure_source
 
 
 def _tool(name: str, fallback: str) -> str:
@@ -47,8 +48,8 @@ class LocalImportedVisualIntegrationTests(unittest.TestCase):
             imports.mkdir()
             for index, colour in enumerate(("red", "blue", "green", "yellow", "purple", "orange"), start=1):
                 _write_png(imports / f"scene-{index}.png", colour)
-            app = CourseFactoryApplication(root / "data", visual_import_dir=imports)
-            app.create_or_open()
+            app = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports)
+            ensure_source(app)
             app.submit_script_decision("approve")
             app.advance_planning()
             app.submit_budget_decision("approve")
@@ -62,7 +63,7 @@ class LocalImportedVisualIntegrationTests(unittest.TestCase):
             self.assertNotEqual(replaced.view.video_reference, before)
             app.close()
 
-            resumed = CourseFactoryApplication(root / "data", visual_import_dir=imports)
+            resumed = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports)
             self.assertEqual(resumed.create_or_open().view.video_reference, replaced.view.video_reference)
             self.assertEqual(resumed.submit_final_decision("approve").status, "success")
             exported = resumed.export_package()

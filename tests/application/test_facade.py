@@ -5,12 +5,103 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from ai_course_factory.application import CourseFactoryApplication
+from ai_course_factory.knowledge import SourceConnectorFailure
+
+from tests.source_fixture import (
+    LESSON_PATH,
+    REAL_SHAPED_COMMIT,
+    SUPPORTED_REPOSITORY_URL,
+    FixtureSourceConnector,
+)
+
+
+def _app(directory: str | Path, **kwargs: object) -> CourseFactoryApplication:
+    app = CourseFactoryApplication(Path(directory), source_connector=kwargs.pop("source_connector", FixtureSourceConnector()), **kwargs)
+    if app.create_or_open().status == "source_required":
+        started = app.start_source(SUPPORTED_REPOSITORY_URL)
+        if started.status != "success":
+            raise AssertionError(started.error_message)
+    return app
 
 
 class CourseFactoryApplicationTests(unittest.TestCase):
+    def test_fresh_create_or_open_requires_source_before_initializing_demo(self) -> None:
+        with TemporaryDirectory() as directory:
+            app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector())
+
+            result = app.create_or_open()
+
+            self.assertEqual(result.status, "source_required")
+            self.assertIsNone(result.view)
+            self.assertFalse((Path(directory) / "workspace").exists())
+
+    def test_source_start_uses_injected_connector_and_persists_real_source_identity(self) -> None:
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = CourseFactoryApplication(Path(directory), source_connector=connector)
+
+            result = app.start_source(SUPPORTED_REPOSITORY_URL)
+
+            self.assertEqual(result.status, "success")
+            self.assertEqual(connector.calls, [(SUPPORTED_REPOSITORY_URL, (LESSON_PATH,))])
+            self.assertEqual(result.view.source_commit, REAL_SHAPED_COMMIT)
+            self.assertIn(f"@{REAL_SHAPED_COMMIT}:{LESSON_PATH}", result.view.source_locator)
+            self.assertFalse(result.view.source_commit in {"a" * 40, "b" * 40})
+
+    def test_invalid_source_url_is_rejected_without_connector_or_state_write(self) -> None:
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = CourseFactoryApplication(Path(directory), source_connector=connector)
+
+            result = app.start_source("https://github.com/example/other-course")
+
+            self.assertEqual(result.status, "failure")
+            self.assertEqual(result.error_code, "UNSUPPORTED_REPOSITORY")
+            self.assertEqual(connector.calls, [])
+            self.assertEqual(app.create_or_open().status, "source_required")
+            self.assertFalse((Path(directory) / "workspace").exists())
+
+    def test_source_connector_failure_is_atomic_and_retryable(self) -> None:
+        failure = SourceConnectorFailure("source_access", "TRANSPORT_ERROR", "network unavailable")
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector([failure])
+            app = CourseFactoryApplication(Path(directory), source_connector=connector)
+
+            failed = app.start_source(SUPPORTED_REPOSITORY_URL)
+
+            self.assertEqual(failed.status, "failure")
+            self.assertEqual(failed.error_code, "TRANSPORT_ERROR")
+            self.assertEqual(app.create_or_open().status, "source_required")
+            self.assertFalse((Path(directory) / "workspace").exists())
+
+            retried = app.start_source(SUPPORTED_REPOSITORY_URL)
+
+            self.assertEqual(retried.status, "success")
+            self.assertEqual(len(connector.calls), 2)
+
+    def test_source_success_refresh_and_restart_do_not_repeat_connector_call(self) -> None:
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = CourseFactoryApplication(Path(directory), source_connector=connector)
+            first = app.start_source(SUPPORTED_REPOSITORY_URL)
+            self.assertEqual(first.status, "success")
+
+            refreshed = app.create_or_open()
+            self.assertEqual(refreshed.status, "success")
+            self.assertEqual(len(connector.calls), 1)
+            app.close()
+
+            restarted_connector = FixtureSourceConnector()
+            resumed = CourseFactoryApplication(Path(directory), source_connector=restarted_connector)
+            replay = resumed.create_or_open()
+
+            self.assertEqual(replay.status, "success")
+            self.assertEqual(restarted_connector.calls, [])
+            self.assertEqual(replay.view.source_commit, REAL_SHAPED_COMMIT)
+
     def test_create_or_open_starts_the_fixed_demo_at_script_review(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
 
             result = app.create_or_open()
 
@@ -25,7 +116,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_script_approval_persists_and_moves_to_planning(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
 
             result = app.submit_script_decision("approve")
@@ -35,7 +126,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             self.assertEqual(result.view.pending_action, "advance_planning")
 
             app.close()
-            resumed = CourseFactoryApplication(Path(directory))
+            resumed = _app(directory)
             replay = resumed.create_or_open()
             self.assertEqual(replay.status, "success")
             self.assertEqual(replay.view.stage, "planning")
@@ -43,7 +134,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_script_revision_commits_v2_and_v2_can_be_approved(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             first = app.create_or_open()
             first_reference = first.view.script_reference
 
@@ -62,7 +153,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_script_rejection_requires_context_and_also_creates_revision_v2(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
 
             missing = app.submit_script_decision("reject")
@@ -77,7 +168,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_planning_persists_budget_review_and_exact_script_source(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
 
@@ -86,13 +177,13 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             self.assertEqual(result.status, "success")
             self.assertEqual(result.view.stage, "budget_review")
             self.assertEqual(result.view.pending_action, "approve_budget")
-            self.assertEqual(result.view.source_commit, "a" * 40)
+            self.assertEqual(result.view.source_commit, REAL_SHAPED_COMMIT)
             self.assertIsNotNone(result.view.budget_maximum_amount_micros)
             self.assertIsNotNone(result.view.budget_maximum_attempts)
 
     def test_budget_approval_is_explicit_before_offline_production(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -106,7 +197,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_explicit_zero_amount_fails_closed_without_budget_or_production_side_effect(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -133,7 +224,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_explicit_zero_attempts_fails_closed_without_budget_or_production_side_effect(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -160,7 +251,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_offline_production_reaches_final_review_with_playable_video(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -176,7 +267,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_production_replay_and_restart_preserve_exact_delivery_references(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -192,7 +283,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             self.assertEqual(replay.view.subtitle_reference, subtitle_reference)
 
             app.close()
-            resumed = CourseFactoryApplication(Path(directory))
+            resumed = _app(directory)
             continued = resumed.create_or_open()
             self.assertEqual(continued.status, "success")
             self.assertEqual(continued.view.stage, "final_review")
@@ -200,7 +291,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_final_approval_moves_to_export_without_changing_video(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -217,7 +308,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_local_scene_replacement_revises_only_selected_scene_and_is_one_shot(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -240,7 +331,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_replacement_keeps_original_provider_attempt_facts_unchanged(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -261,7 +352,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_final_rejection_is_context_bound_and_blocks_export_after_replacement(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -282,7 +373,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_failed_local_media_uses_safe_category_and_preserves_production_action(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory), ffmpeg_executable="/missing/ffmpeg", ffprobe_executable="/missing/ffprobe")
+            app = _app(directory, ffmpeg_executable="/missing/ffmpeg", ffprobe_executable="/missing/ffprobe")
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -298,7 +389,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_replacement_survives_restart_with_rebuilt_video(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -308,7 +399,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             replacement_video = replaced.view.video_reference
 
             app.close()
-            resumed = CourseFactoryApplication(Path(directory))
+            resumed = _app(directory)
             replay = resumed.create_or_open()
 
             self.assertEqual(replay.status, "success")
@@ -319,7 +410,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_final_approved_video_exports_a_durable_package(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -337,7 +428,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_export_package_replays_after_restart_without_rebuilding(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory))
+            app = _app(directory)
             app.create_or_open()
             app.submit_script_decision("approve")
             app.advance_planning()
@@ -348,7 +439,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             package_reference = exported.view.package_reference
 
             app.close()
-            resumed = CourseFactoryApplication(Path(directory))
+            resumed = _app(directory)
             replay = resumed.create_or_open()
 
             self.assertEqual(replay.status, "success")

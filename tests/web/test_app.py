@@ -8,10 +8,24 @@ import re
 from fastapi.testclient import TestClient
 
 from ai_course_factory.web import create_app
+from tests.source_fixture import SUPPORTED_REPOSITORY_URL, FixtureSourceConnector
 
 
-def _client(directory: str) -> TestClient:
-    return TestClient(create_app(Path(directory)), base_url="http://127.0.0.1")
+def _client(directory: str, *, source_started: bool = True) -> TestClient:
+    client = TestClient(
+        create_app(Path(directory), source_connector=FixtureSourceConnector()),
+        base_url="http://127.0.0.1",
+    )
+    if source_started:
+        started = client.post(
+            "/start/source",
+            data={"repository_url": SUPPORTED_REPOSITORY_URL},
+            headers={"Origin": "http://127.0.0.1"},
+            follow_redirects=False,
+        )
+        if started.status_code != 303:
+            raise AssertionError(started.text)
+    return client
 
 
 def _post(client: TestClient, path: str, data: dict[str, str] | None = None, **kwargs: object):
@@ -21,6 +35,56 @@ def _post(client: TestClient, path: str, data: dict[str, str] | None = None, **k
 
 
 class OfflineWorkspaceWebTests(unittest.TestCase):
+    def test_fresh_get_renders_source_intake_without_connector_or_task_write(self) -> None:
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = create_app(Path(directory), source_connector=connector)
+            client = TestClient(app, base_url="http://127.0.0.1")
+
+            response = client.get("/")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("Source intake", response.text)
+            self.assertIn('name="repository_url"', response.text)
+            self.assertEqual(response.text.count('name="repository_url"'), 1)
+            self.assertEqual(connector.calls, [])
+            self.assertFalse((Path(directory) / "workspace").exists())
+
+    def test_source_post_rejects_unsupported_url_without_connector_or_task_write(self) -> None:
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = create_app(Path(directory), source_connector=connector)
+            client = TestClient(app, base_url="http://127.0.0.1")
+
+            response = _post(client, "/start/source", {"repository_url": "https://github.com/example/course"})
+
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("Only https://github.com/microsoft/AI-For-Beginners is supported", response.text)
+            self.assertEqual(connector.calls, [])
+            self.assertFalse((Path(directory) / "workspace").exists())
+
+    def test_source_post_redirects_and_renders_real_commit_and_locator(self) -> None:
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = create_app(Path(directory), source_connector=connector)
+            client = TestClient(app, base_url="http://127.0.0.1")
+
+            response = _post(
+                client,
+                "/start/source",
+                {"repository_url": SUPPORTED_REPOSITORY_URL},
+                follow_redirects=False,
+            )
+
+            self.assertEqual(response.status_code, 303)
+            self.assertEqual(response.headers["location"], "/")
+            start = client.get("/")
+            self.assertIn(SUPPORTED_REPOSITORY_URL, start.text)
+            self.assertIn("0123456789abcdef0123456789abcdef01234567", start.text)
+            self.assertIn("lessons/1-Intro/README.md", start.text)
+            self.assertIn("script:episode-1 v1", start.text)
+            self.assertEqual(len(connector.calls), 1)
+
     def test_warm_editorial_workspace_surfaces_stage_track_and_next_action(self) -> None:
         with TemporaryDirectory() as directory:
             client = _client(directory)
@@ -227,9 +291,9 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_web_failure_exposes_safe_category_and_recovery_action(self) -> None:
         with TemporaryDirectory() as directory:
-            app = create_app(Path(directory))
+            app = create_app(Path(directory), source_connector=FixtureSourceConnector())
             client = TestClient(app, base_url="http://127.0.0.1")
-            client.get("/")
+            _post(client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL})
             app.state.course_factory.ffmpeg_executable = "/missing/ffmpeg"
             app.state.course_factory.ffprobe_executable = "/missing/ffprobe"
             _post(client, "/start/script", {"action": "approve_script"})
@@ -245,9 +309,9 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_browser_process_reconstruction_keeps_the_current_gate(self) -> None:
         with TemporaryDirectory() as directory:
-            first_app = create_app(Path(directory))
+            first_app = create_app(Path(directory), source_connector=FixtureSourceConnector())
             first_client = TestClient(first_app, base_url="http://127.0.0.1")
-            first_client.get("/")
+            _post(first_client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL})
             _post(first_client, "/start/script", {"action": "approve_script"})
             first_app.state.course_factory.close()
 

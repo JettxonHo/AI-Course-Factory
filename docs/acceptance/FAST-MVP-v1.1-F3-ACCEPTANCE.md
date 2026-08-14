@@ -2,17 +2,17 @@
 
 ## Verdict
 
-**GOAL_APPROVED**
+**CORRECTED F3 CANDIDATE / APPROVED FOR MERGE**
 
-The main controller accepted the fixed local FAST-MVP browser Demo on 2026-08-14. The run started from a previously nonexistent data directory on `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6` and used the merged Warm Editorial three-view workspace. No product-code correction or Luna implementation task was required.
+Issue #123 / PR #124 recorded partial media/recovery evidence on 2026-08-14 but used a Fixture source and did not establish the PRD Source boundary. Issue #125 supersedes that verdict with a new browser run from a previously nonexistent data directory on a candidate based on `main@af61d31e949e20947517ba4d8ab6db867b6a5017`. The Creator submitted the supported public URL, the default connector acquired a live immutable source, and the same task completed Script review, Budget, real local media, recovery, Final approval and export. Independent main review approves the correction for merge; final Goal approval remains a post-merge planning verdict.
 
 This verdict accepts a local, single-user MVP. It is not evidence of cloud Provider use, paid execution, deployment, publication, adoption, or production operations.
 
 ## Fixed acceptance inputs
 
 - Public source: `https://github.com/microsoft/AI-For-Beginners`
-- Locked source commit: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
-- Source unit: `lessons/intro.md#L1-L2`
+- Locked source commit: `33e781bf7bfb9b39fd27c4e4a3e592669b52cb4b`
+- Source unit: `lessons/1-Intro/README.md`, blob `6b29b141e0f0f81477e16bee4e4d1e6222d0579c`, with 12 exact line locators
 - Visuals: the seven approved operator-owned files `scene-1.png` through `scene-6.png` plus `scene-2-replacement.png`
 - TTS engine: local GPT-SoVITS v2, official repository commit `d523079fc05d9a8028d6085bffe4a2757c32abb6`
 - TTS model identifier: `gsv-v2final-pretrained`
@@ -24,9 +24,9 @@ The repository contains none of the input images, model weights, reference audio
 
 ## Browser flow evidence
 
-The controller completed this sequence through the three server-rendered views:
+The controller completed this corrected sequence through the three server-rendered views:
 
-1. opened a fresh task and inspected the exact repository commit and source locator;
+1. opened a fresh Start page with zero task/Artifact/Budget/media rows; rejected an unsupported URL without a connector call or durable state; submitted the supported URL and displayed the acquired commit, path and locator;
 2. revised Script v1 with explicit context, producing the same Script identity at v2;
 3. approved exact Script v2, then built the six-Scene plan;
 4. inspected and approved the unchanged maximum of 18,000 micros and two attempts;
@@ -37,7 +37,7 @@ The controller completed this sequence through the three server-rendered views:
 9. approved exact Video v2 and exported the delivery package;
 10. restarted a second time and replayed the video, subtitle and package endpoints byte-for-byte.
 
-Script decisions bind `script:episode-1` v1 for revision and v2 for approval. The Final decision binds `media:episode-1` Video v2. Export was absent before Final approval and available only after the approval was persisted.
+An independent same-run connector read matched the persisted commit, path and blob. Refresh and process restart performed no repeated source acquisition. Script decisions bind `script:episode-1` v1 for revision and v2 for approval. The Final decision binds `media:episode-1` Video v2. Export was absent before Final approval and available only after the approval was persisted.
 
 ## Budget and local-processing evidence
 
@@ -103,17 +103,17 @@ After the second restart, video, subtitle and package endpoints all returned HTT
 - Source, Budget, local attempt, zero-charge, visual and TTS provenance remained visible while raw configuration paths and internal errors did not appear.
 - Screenshots and generated inspection assets remain outside the repository.
 
-## Repository verification
+## Repository verification (Issue #125 candidate)
 
-The final feature branch passed:
+The correction branch passed:
 
-- 37 focused web, local-import, GPT-SoVITS, facade and durable integration tests;
-- the complete 414-test local regression;
+- 52 focused source, web, local-import, GPT-SoVITS, facade and durable integration tests;
+- the complete 422-test local regression;
 - `compileall` for `src` and `tests`;
-- `git diff --check` and an exact documentation-only ownership review.
+- `git diff --check` and an exact 19-file correction ownership review.
 
-The final regression was rerun quietly because the first verbose tool response was truncated before its summary could be retained. Neither repository run invokes the opt-in heavy GPT-SoVITS acceptance path. GitHub hosted checks are not claimed.
+The normal repository suite does not invoke the opt-in heavy GPT-SoVITS acceptance path; the real local inference evidence above is reported separately. GitHub hosted checks are not claimed.
 
 ## Remaining boundary
 
-FAST-MVP v1.1 is accepted for its fixed local Demo. Automatic cloud Visual/TTS Providers, credentials, paid usage, multiple tasks/users, authentication, deployment, publication and product adoption remain outside this Goal and are not inferred from this acceptance.
+Issue #123/#124 remains partial historical media/recovery evidence; Issue #125 supplies the corrected same-run live-source acceptance and is approved for merge. FAST-MVP v1.1 is not finally accepted until the planning controller reviews the merged correction. Automatic cloud Visual/TTS Providers, credentials, paid usage, multiple tasks/users, authentication, deployment, publication and product adoption remain outside this Goal and are not inferred from this acceptance.
