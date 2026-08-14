@@ -6,7 +6,24 @@
   <h1 id="start-title">Your course, one clear next move.</h1>
   <p class="lede">Read the grounded script first, then carry one approved decision through planning, production and delivery. The desk keeps every transition local and restartable.</p>
 </section>
-{% if view %}
+{% if source_required %}
+<section class="workspace-card source-intake-card" aria-labelledby="source-intake-title">
+  <header class="task-heading">
+    <div>
+      <p class="eyebrow">Ground · Source intake</p>
+      <h2 id="source-intake-title">Start with the supported public course source.</h2>
+      <p class="stage-context">The source is acquired at one immutable upstream commit before the script is initialized.</p>
+    </div>
+  </header>
+  <form class="decision-zone" method="post" action="/start/source">
+    <label class="field" for="repository-url">Public GitHub repository URL
+      <input id="repository-url" name="repository_url" type="url" value="{{ repository_url }}" maxlength="128" autocomplete="url" required>
+    </label>
+    <p class="decision-copy">Only the fixed AI-For-Beginners Lesson 1 source is supported in this local Demo.</p>
+    <div class="action-row action-row-end"><button class="button button-primary" type="submit">Acquire source and continue</button></div>
+  </form>
+</section>
+{% elif view %}
 <section class="workspace-card start-card" aria-labelledby="task-title">
   <header class="task-heading">
     <div>
@@ -47,6 +64,7 @@
   <details class="source-drawer">
     <summary><span>Source evidence</span><span class="summary-hint">Locked commit · {{ view.source_evidence|length }} locator{% if view.source_evidence|length != 1 %}s{% endif %}</span></summary>
     <dl class="facts facts-compact">
+      <div><dt>Repository URL</dt><dd class="break-anywhere">{{ repository_url }}</dd></div>
       <div><dt>Repository commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
       <div><dt>Primary locator</dt><dd class="break-anywhere">{{ view.source_locator }}</dd></div>
       <div class="facts-wide"><dt>Source evidence</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>

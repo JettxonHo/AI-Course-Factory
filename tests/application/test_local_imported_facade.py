@@ -10,6 +10,13 @@ import unittest
 import zipfile
 
 from ai_course_factory.application import CourseFactoryApplication
+from tests.source_fixture import REAL_SHAPED_COMMIT, FixtureSourceConnector, ensure_source
+
+
+def _app(path: str | Path, **kwargs: object) -> CourseFactoryApplication:
+    app = CourseFactoryApplication(path, source_connector=FixtureSourceConnector(), **kwargs)
+    ensure_source(app)
+    return app
 
 
 def _tool(name: str, fallback: str) -> str:
@@ -51,7 +58,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
             root = Path(directory)
             imports = root / "desktop-assets"
             imports.mkdir()
-            app = CourseFactoryApplication(root / "data", visual_import_dir=imports)
+            app = _app(root / "data", visual_import_dir=imports)
             self._advance_to_production(app)
 
             cards = app.inspect().view.prompt_cards
@@ -83,7 +90,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
 
     def test_explicit_invalid_import_directory_fails_closed_without_fixture_fallback(self) -> None:
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory) / "data", visual_import_dir=Path("\0"))
+            app = _app(Path(directory) / "data", visual_import_dir=Path("\0"))
             self._advance_to_production(app)
             self.assertEqual(app.inspect().view.visual_mode, "imported")
             failed = app.produce_offline()
@@ -100,7 +107,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
             colours = ("red", "blue", "green", "yellow", "purple", "orange")
             for index, colour in enumerate(colours, start=1):
                 _write_png(imports / f"scene-{index}.png", colour)
-            app = CourseFactoryApplication(root / "data", visual_import_dir=imports)
+            app = _app(root / "data", visual_import_dir=imports)
             self._advance_to_production(app)
 
             produced = app.produce_offline()
@@ -127,7 +134,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
             self.assertEqual(tuple(scene.selected_audio_reference for scene in missing.view.scenes), before_audio)
 
             app.close()
-            resumed_missing = CourseFactoryApplication(root / "data", visual_import_dir=imports)
+            resumed_missing = _app(root / "data", visual_import_dir=imports)
             replay_before_replacement = resumed_missing.create_or_open()
             self.assertEqual(replay_before_replacement.view.stage, before_stage)
             self.assertEqual(replay_before_replacement.view.pending_action, before_pending_action)
@@ -141,7 +148,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
             self.assertEqual(invalid.status, "failure")
             self.assertEqual(invalid.error_code, "LOCAL_IMPORT_REPLACEMENT_PREFLIGHT_FAILED")
             resumed_missing.close()
-            reopened_invalid = CourseFactoryApplication(root / "data", visual_import_dir=imports)
+            reopened_invalid = _app(root / "data", visual_import_dir=imports)
             replay_after_invalid = reopened_invalid.create_or_open()
             self.assertEqual(replay_after_invalid.view.stage, before_stage)
             self.assertEqual(replay_after_invalid.view.pending_action, before_pending_action)
@@ -163,7 +170,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
 
             replacement_video = replaced.view.video_reference
             reopened_invalid.close()
-            resumed = CourseFactoryApplication(root / "data", visual_import_dir=imports)
+            resumed = _app(root / "data", visual_import_dir=imports)
             replay = resumed.create_or_open()
             self.assertEqual(replay.status, "success")
             self.assertTrue(replay.view.replacement_done)
@@ -176,7 +183,7 @@ class LocalImportedFacadeTests(unittest.TestCase):
             with zipfile.ZipFile(io.BytesIO(package_bytes)) as archive:
                 attribution = json.loads(archive.read("source-attribution.json"))
             self.assertEqual(attribution["repository_url"], "https://github.com/microsoft/AI-For-Beginners")
-            self.assertEqual(attribution["commit_sha"], "a" * 40)
+            self.assertEqual(attribution["commit_sha"], REAL_SHAPED_COMMIT)
             self.assertTrue(attribution["units"])
             visuals = attribution["visual_assets"]
             self.assertEqual(visuals["creator_supplied_via"], "creator-supplied via ChatGPT Desktop ImageGen")

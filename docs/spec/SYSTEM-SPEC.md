@@ -7,7 +7,7 @@
 | Status | Approved FAST-MVP System Baseline |
 | Approval | Product Owner, 2026-08-13 |
 | Product Input | `docs/product/PRD.md` |
-| Accepted local baseline | `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6` plus Issue #123 acceptance evidence |
+| Accepted local baseline | Issue #125 corrected F3 candidate based on `main@af61d31e949e20947517ba4d8ab6db867b6a5017`; final Goal verdict pending after merge |
 | Supersedes | System Spec v1.0 for daily development |
 
 This document defines the smallest stable system that can deliver the approved product job. Physical files, libraries and task sequencing belong in the Implementation Spec and `GOAL.md`.
@@ -166,7 +166,7 @@ For a known safe failure, the workspace may offer bounded retry. For an uncertai
 - Persistence: one process-restart continuation test.
 - UI: primary-path and actionable-failure browser checks.
 
-Issue #123 completed the fresh product-level run: exact Script v2 and Video v2 decisions, 12 zero-charge local attempts, playable 60-second H.264/AAC/mov_text output, visual-only Scene 2 replacement with preserved voice/audio/unaffected media, two restart replays and the exact four-file package. This closes the FAST-MVP verification target without changing the stable system contracts above.
+Issue #123 / PR #124 supplied partial product-level media evidence but did not prove the browser-submitted URL and default live GitHub acquisition. Issue #125 corrected that boundary and repeated the full same-task flow: a live immutable GitHub source, exact Script v2 and Video v2 decisions, 12 zero-charge local attempts, playable 60-second H.264/AAC/mov_text output, visual-only Scene 2 replacement with preserved voice/audio/unaffected media, two restart replays and the exact four-file package.
 
 Concurrency races, mutation campaigns, legacy-schema matrices and malformed-database suites are added only when a concrete change makes that risk part of the MVP path.
 

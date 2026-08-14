@@ -6,6 +6,7 @@ import unittest
 
 from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.production import GPTSoVITSConfiguration
+from tests.source_fixture import FixtureSourceConnector, ensure_source
 
 
 def _invalid_config() -> GPTSoVITSConfiguration:
@@ -24,8 +25,8 @@ def _invalid_config() -> GPTSoVITSConfiguration:
 class GPTSoVITSFacadeTests(unittest.TestCase):
     def test_missing_explicit_runtime_fails_before_any_voice_attempt_or_fixture_fallback(self):
         with TemporaryDirectory() as directory:
-            app = CourseFactoryApplication(Path(directory), tts_configuration=_invalid_config())
-            app.create_or_open()
+            app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector(), tts_configuration=_invalid_config())
+            ensure_source(app)
             app.submit_script_decision("approve")
             app.advance_planning()
             approved = app.submit_budget_decision("approve")

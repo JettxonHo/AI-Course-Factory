@@ -9,6 +9,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from ai_course_factory.web import create_app
+from tests.source_fixture import SUPPORTED_REPOSITORY_URL, FixtureSourceConnector
 
 
 def _tool(name: str, fallback: str) -> str:
@@ -55,8 +56,10 @@ class LocalImportedWebTests(unittest.TestCase):
             imports.mkdir()
             for index, colour in enumerate(("red", "blue", "green", "yellow", "purple", "orange"), start=1):
                 _write_png(imports / f"scene-{index}.png", colour)
-            client = TestClient(create_app(root / "data", visual_import_dir=imports), base_url="http://127.0.0.1")
+            client = TestClient(create_app(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports), base_url="http://127.0.0.1")
 
+            started = _post(client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL})
+            self.assertEqual(started.status_code, 303)
             start = client.get("/")
             self.assertEqual(start.status_code, 200)
             self.assertIn("no application Provider API call", start.text)
@@ -93,8 +96,8 @@ class LocalImportedWebTests(unittest.TestCase):
             root = Path(directory)
             imports = root / "desktop-assets"
             imports.mkdir()
-            client = TestClient(create_app(root / "data", visual_import_dir=imports), base_url="http://127.0.0.1")
-            client.get("/")
+            client = TestClient(create_app(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports), base_url="http://127.0.0.1")
+            self.assertEqual(_post(client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL}).status_code, 303)
             self.assertEqual(_post(client, "/start/script", {"action": "approve_script"}).status_code, 303)
             self.assertEqual(_post(client, "/review/action", {"action": "advance_planning"}).status_code, 303)
             self.assertEqual(_post(client, "/review/action", {"action": "approve_budget"}).status_code, 303)
