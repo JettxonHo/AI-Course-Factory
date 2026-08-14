@@ -8,7 +8,7 @@
 | Approved by | Product Owner |
 | Approval date | 2026-08-14 |
 | H0 merged baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (Issue #129 / PR #130) |
-| Current task | Issue #131 H1 Scene Generation Contract; implementation in progress on `codex/131-scene-generation-contract` |
+| Current task | Issue #133 H1 correction: repeated Storyboard approval POST replay on `codex/133-storyboard-approve-replay`; Issue #131 / PR #132 implementation merged at `main@ce05e778a63f35a3ffd1ff88d0295c2220cab1f4`, correction pending independent review and merge |
 | Goal type | Local single-user Creator Handoff MVP |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
@@ -63,13 +63,13 @@ Exit: Issue #129's exact docs Diff merged through PR #130 at `main@d96b091`; H0 
 
 ### H1 — Grounded Storyboard and Scene Generation Contract
 
-Status: **IN PROGRESS** (Issue #131)
+Status: **IN PROGRESS** (Issue #131 / PR #132 merged at `main@ce05e77`; bounded correction Issue #133 pending)
 
 Outcome: from exact approved Source/Script/Storyboard/Timeline/Production Request references, commit one human-reviewable ordered Scene Generation Contract and expose it through the existing three-view workspace.
 
 Exit: explicit Storyboard approval and exact lineage are durable; every Scene exposes its narration identity, visual intent/action, generation prompt, continuity, camera/motion, duration and fixed MP4 filename; restart reads the same contract without regeneration.
 
-H1 implementation is bounded by the approved Issue #131 Task Contract, exact ownership, migration/restart evidence, focused/full verification and exact `luna-worker`. H1 remains in progress until the feature is independently reviewed and merged.
+H1 implementation is bounded by the approved Issue #131 Task Contract and its Issue #133 HTTP replay correction, exact ownership, migration/restart evidence, focused/full verification and exact `luna-worker`. H1 remains in progress until the correction is independently reviewed and merged.
 
 ### H2 — Creator Handoff Package
 
@@ -98,7 +98,7 @@ Exit: technical and product-quality gates pass; no Preview Video is accepted as 
 ## 7. Authorized Scope
 
 - H0 is complete at `main@d96b091` through Issue #129 / PR #130.
-- Implement and independently review the bounded H1 Issue #131 Task Contract before any merge.
+- Implement and independently review the bounded H1 Issue #131 Task Contract and the approved Issue #133 correction before H1 is complete or H2 begins.
 - Reuse the current live Source, Artifact repository, Script/Storyboard/Final decisions, Task media projection, local GPT-SoVITS narration, FFmpeg composition and Publish Package.
 - Change frontend only where a milestone needs contract review, handoff download, import readiness/action or final quality evidence; retain exactly three server-rendered views.
 - Update related Goal/Status facts inside the corresponding feature PR using actual, not anticipated, merge/runtime evidence.

@@ -9,9 +9,10 @@
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130); FAST-MVP v1.1 remains complete history |
+| Current H1 correction baseline | `main@ce05e778a63f35a3ffd1ff88d0295c2220cab1f4`, branch `codex/133-storyboard-approve-replay` (Issue #133 pending independent review/merge) |
 | Goal contract | `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` |
 | Runtime | Python `>=3.12,<3.13` |
-| Authorization | H0 complete; H1 implementation active under Issue #131; H2-H4 coding requires a bounded Task Contract per milestone |
+| Authorization | H0 complete; Issue #131 / PR #132 H1 implementation merged at `main@ce05e77`, with correction Issue #133 active; H2-H4 coding requires a bounded Task Contract per milestone |
 
 Prefer connecting the existing implementation into a usable product over refactoring it. A task may change architecture only after it proves the vertical path cannot be completed inside the approved boundaries.
 
@@ -100,7 +101,7 @@ The first slice uses one operator-declared generated-clips directory supplied at
 
 ## 7. Approved Delivery Sequence
 
-The Goal is active. H0 is complete at `main@d96b091`; H1 is in progress under Issue #131; H2-H4 start only after the preceding milestone and their own bounded Task Contract.
+The Goal is active. H0 is complete at `main@d96b091`; Issue #131 / PR #132 is merged at `main@ce05e77`, and H1 remains in progress under correction Issue #133; H2-H4 start only after the preceding milestone and their own bounded Task Contract.
 
 ### H0 — Truth rebaseline
 
@@ -226,4 +227,4 @@ The accepted FAST-MVP Goal and PD-002 authorize the completed no-cost local Demo
 
 F3 acceptance does not authorize Provider credentials, fees, deployment, publication or a broader product scope.
 
-The approved v1.2 Goal does not authorize unbounded implementation. Issue #131 is the approved first H1 coding Task Contract; H2-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
+The approved v1.2 Goal does not authorize unbounded implementation. Issue #131 was the approved first H1 coding Task Contract and is merged; Issue #133 is the bounded H1 HTTP replay correction currently under review. H2-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
