@@ -330,3 +330,71 @@ Rejected because a client-side application, build system or editor would expand 
 - Only the frozen templates, stylesheet, optional favicon, web presentation tests and approved current-truth docs change; no application/domain/repository/production/packaging code or dependency changes are needed.
 - The existing autoescape, same-origin mutation boundary, security headers, POST action names, field names, media endpoints and provenance/fee facts remain authoritative.
 - Presentation evidence is local UI evidence only. F2.5 stays candidate/in progress until independent rendered browser review and the required regression gates pass; F3 remains blocked on F2.5.
+
+## Decision D-008 — Reposition near-term delivery around a Creator Handoff Package
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted; Creator Handoff MVP v1.2 Goal approved 2026-08-14 |
+| Decision Date | 2026-08-14 |
+| Decision Owner | Product Owner |
+| Applies To | Creator Handoff MVP v1.2 Goal and later bounded implementation |
+| Recording Task | Issue #129 (docs-only planning candidate) |
+
+### Context
+
+FAST-MVP v1.1 proved the exact public Source, grounded Script, local narration, Timeline/SRT, Scene selection, composition, Final Review and Publish Package chain. Its F2A still-image conversion also proved import, provenance, replacement and FFmpeg mechanics. It did not prove that six animated Scenes have the content quality, motion or visual rhythm expected of a publishable creator video; that output is therefore technical Preview evidence rather than the near-term product-quality result.
+
+At the current low production frequency, the Creator prefers to iterate manually in the subscription interfaces of Jimeng or Kling instead of operating an application-owned API key, resource package and retry control plane. Those products can generate video from text/images and references; Kling can also generate native speech/audio. Their editable subtitle export cannot be assumed to be a stable SRT contract. Provider capabilities and prices may change, so this decision does not assert that an API is always more expensive.
+
+### Canonical Terms
+
+- **Scene Generation Contract** — one immutable, provider-neutral Artifact that binds the exact approved Script, Storyboard, Timeline and Production Request to ordered per-Scene visual intent, prompt, character/style continuity, camera/action instructions, duration and expected import identity.
+- **Preview Video** — a locally composed technical/progress video, including the accepted F2A still-image path. It proves wiring and timing but does not satisfy the v1.2 product-quality gate.
+- **Creator Handoff Package** — a deterministic, traceable package for manual Scene generation. It contains exact references, per-Scene generation instructions, narration audio, canonical SRT/Timeline and provenance; it is not the Final Publish Package.
+- **Imported Generated Scene Clip** — a creator-supplied video bound to one exact Scene Generation Contract entry and explicit file selection, then locally validated/normalized and committed as the selected `scene_clip` Artifact without a fabricated Provider Attempt.
+- **Final Video** — the locally composed Video built from the selected Imported Generated Scene Clips plus AI Course Factory's exact approved narration, canonical SRT and Timeline, then bound by the existing Final Video decision.
+
+### Decision
+
+1. Reposition the near-term product around `Source -> grounded Script -> Storyboard -> Scene Generation Contract -> exact narration/SRT -> Creator Handoff Package -> manual external Scene generation -> explicit Scene clip import -> local Final Video -> Final Review -> Publish Package`.
+2. Keep manual Jimeng/Kling generation outside the application. It creates no Provider Attempt and no application charge; store creator-supplied provenance only.
+3. Keep exact narration audio, SRT and Timeline application-owned. Native external audio, dialogue, subtitles or effects may be recorded as imported facts or future optional tracks, but they do not replace the canonical narration/SRT by default.
+4. For the first vertical slice, accept one operator-declared generated-clips directory supplied at application startup/configuration. A Review-page POST triggers atomic full-set preflight/import of exact `scene-1.mp4` through `scene-6.mp4`; one Scene re-import uses exact `scene-2-replacement.mp4`. Never accept multipart upload, scan Downloads/Desktop, infer the newest file or guess an alternate Scene.
+5. Preserve the existing Artifact repository, exact References, Script/Storyboard/Final decisions, Scene identities/Versions, Task selection/stale impact, FFmpeg composition behavior and Final Publish Package. H3 may add only the honest imported-clip payload/input and Final lineage expansions described below, after an approved Goal and bounded Task Contract.
+6. Treat the F2A static-image path as Preview Video/technical evidence for v1.2. Preserve its completed v1.1 history rather than rewriting old acceptance.
+7. A future `JimengVideoAdapter` or `KlingVideoAdapter` may consume the same Scene Generation Contract. Only application-controlled API execution enters the Budget Authorization and Provider Attempt path; Provider/model/credential/price/cap choices require a separate Product Owner decision.
+8. Require human product-quality acceptance: a reviewer watches and listens to the complete result for claim fidelity, spoken naturalness, visual continuity/action and pacing. Codec, FFprobe, ASR and automated tests are necessary technical evidence, not substitutes for this gate.
+9. The manual Creator Handoff path does not enter Budget Review. Local runtime/input readiness is a non-monetary preflight; the application explicitly states that external subscription cost is not controlled by AI Course Factory. Existing Budget/Attempt semantics remain for v1.1 Preview maintenance and future application-controlled paid APIs. Local narration must remain durable/idempotent without a fabricated monetary authorization; its exact persistence wiring is deferred to the H2 Task Contract.
+
+### Stage and Ownership Consequences
+
+- The Artifact repository owns immutable Scene Generation Contract, Handoff Package, imported Scene Clip and Final Video Versions.
+- Existing Script and Storyboard Decision records own content/readiness choices; the existing Final Video Decision owns final approval. Package generation and clip import are not Decisions.
+- Task state owns the current handoff/import stage plus selected/current/stale Scene and delivery references.
+- The workspace owns configured input/output files; it never becomes the authority for Artifact identity.
+- The existing Publish Package still consumes only an exact approved Final Video. The Creator Handoff Package is a separate earlier package with different eligibility and contents.
+- `scene_clip` remains the Artifact type and retains its existing identity/version/Task-selection role, but gains a discriminated creator-import payload variant. That variant binds the exact Scene Generation Contract, Scene, declared filename, creator provenance and normalized output; it contains no fake `attempt_id` or `provider`.
+- v1.2 Final Review resolves all six selected Scene Clip Versions and accepts only creator-import variants bound to the same exact Scene Generation Contract. Legacy generated/Preview payloads remain readable but cannot satisfy that gate.
+
+### Rejected Alternatives
+
+#### Keep the six-still composition as the final product-quality output
+
+Rejected because it proves mechanics but does not establish animated content quality, action continuity or visual rhythm. Keeping the evidence is useful; representing it as final creator output is not.
+
+#### Integrate Jimeng/Kling APIs now
+
+Rejected for the near term because current manual iteration does not justify an application-owned credential, resource/cost control plane and retry semantics. This is a sequencing decision, not a claim that API prices are permanently higher.
+
+#### Build a separate end-to-end creator workflow or overload the Final Publish Package
+
+Rejected because a parallel workflow would duplicate accepted Source/Artifact/Decision/Task behavior, while overloading the final package would mix pre-generation instructions with post-approval delivery evidence. One additive handoff package and one explicit clip-import seam are smaller and clearer.
+
+#### Reuse the attempt-shaped Scene Clip payload with placeholder provider fields
+
+Rejected because the existing generated payload requires `attempt_id` and `provider`. Manual creator import has neither; inventing them would falsify provenance and weaken Budget/Attempt truth. The additive creator-import variant is the smallest honest compatibility expansion.
+
+### Authorization Boundary
+
+D-008 and the exact Creator Handoff MVP v1.2 Goal are approved. Issue #129 owns H0 documentation integration only; H1-H4 code still requires a bounded Task Contract and exact Luna dispatch per milestone. No Jimeng/Kling API/model/credential/price/cap, external fee, deployment or publication is authorized.
