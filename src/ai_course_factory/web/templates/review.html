@@ -11,11 +11,11 @@
   <header class="task-heading">
     <div>
       <p class="eyebrow">Current task · <span class="stage-code">{{ view.stage }}</span></p>
-      <h2 id="review-task-title">{% if view.pending_action == "advance_planning" %}Build the production plan{% elif view.pending_action == "approve_storyboard" %}Approve the storyboard{% elif view.pending_action == "approve_budget" %}Approve the production budget{% elif view.pending_action == "produce_offline" %}Run local production{% elif view.pending_action == "open_final" %}Open final review{% else %}{{ view.pending_action or view.stage }}{% endif %}</h2>
+      <h2 id="review-task-title">{% if view.pending_action == "advance_planning" %}Build the production plan{% elif view.pending_action == "approve_storyboard" %}Approve the storyboard{% elif view.stage == "handoff_readiness" %}Prepare the Creator Handoff Package{% elif view.stage == "external_generation_pending" %}Download the Creator Handoff Package{% elif view.pending_action == "approve_budget" %}Approve the production budget{% elif view.pending_action == "produce_offline" %}Run local production{% elif view.pending_action == "open_final" %}Open final review{% else %}{{ view.pending_action or view.stage }}{% endif %}</h2>
     </div>
     <div class="next-action" aria-label="Next action">
       <span class="next-action-label">Next action</span>
-      <strong>{% if view.pending_action == "advance_planning" %}Build plan{% elif view.pending_action == "approve_storyboard" %}Approve storyboard{% elif view.pending_action == "approve_budget" %}Approve budget{% elif view.pending_action == "produce_offline" %}Produce locally{% elif view.pending_action == "open_final" %}Open final review{% else %}No action pending{% endif %}</strong>
+      <strong>{% if view.pending_action == "advance_planning" %}Build plan{% elif view.pending_action == "approve_storyboard" %}Approve storyboard{% elif view.stage == "handoff_readiness" %}Prepare handoff{% elif view.stage == "external_generation_pending" %}Download handoff{% elif view.pending_action == "approve_budget" %}Approve budget{% elif view.pending_action == "produce_offline" %}Produce locally{% elif view.pending_action == "open_final" %}Open final review{% else %}No action pending{% endif %}</strong>
     </div>
   </header>
 
@@ -24,8 +24,8 @@
   <section class="decision-zone decision-zone-prominent" aria-labelledby="decision-zone-title">
     <div>
       <p class="eyebrow">Current gate</p>
-      <h3 id="decision-zone-title">{% if view.pending_action == "approve_storyboard" %}Approve the six-scene storyboard{% elif view.stage == "planning" %}Shape the six-scene production plan{% elif view.stage == "budget_review" %}Make the maximum spend explicit{% elif view.stage == "production" %}Run the authorized local production{% elif view.stage == "final_review" %}The cut is ready for a final look{% else %}Keep the evidence moving{% endif %}</h3>
-      <p class="decision-copy">{% if view.pending_action == "approve_storyboard" %}Approve this exact Storyboard to create the Timeline, Production Request and provider-neutral Scene Generation Contract. Rejecting records context while keeping the same Storyboard available for another approval.{% elif view.stage == "planning" %}Confirm the plan before Storyboard approval.{% elif view.stage == "budget_review" %}This approval is required even though the selected run is local and zero-cost.{% elif view.stage == "production" %}The current request and cap stay bound while local media is composed.{% elif view.stage == "final_review" %}Open the video when you are ready to approve the final evidence.{% else %}The current task state is preserved while you choose the next safe action.{% endif %}</p>
+      <h3 id="decision-zone-title">{% if view.pending_action == "approve_storyboard" %}Approve the six-scene storyboard{% elif view.stage == "handoff_readiness" %}Create the exact pre-generation handoff{% elif view.stage == "external_generation_pending" %}Take the handoff to your generation tool{% elif view.stage == "planning" %}Shape the six-scene production plan{% elif view.stage == "budget_review" %}Make the maximum spend explicit{% elif view.stage == "production" %}Run the authorized local production{% elif view.stage == "final_review" %}The cut is ready for a final look{% else %}Keep the evidence moving{% endif %}</h3>
+      <p class="decision-copy">{% if view.pending_action == "approve_storyboard" %}Approve this exact Storyboard to create the Timeline, Production Request and provider-neutral Scene Generation Contract. Rejecting records context while keeping the same Storyboard available for another approval.{% elif view.stage == "handoff_readiness" %}Prepare one deterministic ZIP with exact planning references, creator-readable Scene guidance, six local narrations, SRT/Timeline, provenance and optional reference stills.{% elif view.stage == "external_generation_pending" %}Download the package, create the six external Scene videos, and return the exact filenames for the later import milestone.{% elif view.stage == "planning" %}Confirm the plan before Storyboard approval.{% elif view.stage == "budget_review" %}This approval is required even though the selected run is local and zero-cost.{% elif view.stage == "production" %}The current request and cap stay bound while local media is composed.{% elif view.stage == "final_review" %}Open the video when you are ready to approve the final evidence.{% else %}The current task state is preserved while you choose the next safe action.{% endif %}</p>
     </div>
     <div class="decision-action">
       {% if view.pending_action == "advance_planning" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="advance_planning">Build production plan</button></form>{% endif %}
@@ -36,6 +36,8 @@
         <div class="button-row"><button class="button button-primary" name="action" value="approve_storyboard">Approve storyboard</button><button class="button button-secondary" name="action" value="reject_storyboard">Reject with context</button></div>
       </form>
       {% endif %}
+      {% if view.stage == "handoff_readiness" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="prepare_handoff_package">Prepare Creator Handoff Package</button></form>{% endif %}
+      {% if view.stage == "external_generation_pending" and view.handoff_package_reference %}<a class="button button-primary" href="/media/handoff_package" download>Download Creator Handoff Package</a>{% endif %}
       {% if view.stage == "budget_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="approve_budget">Approve no-cost budget</button></form>{% endif %}
       {% if view.stage == "production" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="produce_offline">{% if view.visual_mode == "imported" %}Produce imported visuals{% else %}Produce offline Fixture{% endif %}</button></form>{% endif %}
       {% if view.stage == "final_review" %}<form method="post" action="/review/action"><button class="button button-primary" name="action" value="open_final">Open final review</button></form>{% endif %}
@@ -50,6 +52,8 @@
   <div class="callout"><h3>Local imported visual run</h3><p>FFmpeg converts the operator-declared Desktop ImageGen stills. Desktop generation happened outside the application; no ChatGPT or other Visual Provider API call is made here, and the external charge is zero.</p></div>
   {% elif view.stage == "production" %}
   <div class="callout"><h3>Offline Fixture run</h3><p>FFmpeg creates deterministic local media. No Visual or TTS Provider is called, and no network request is made.</p></div>
+  {% elif view.stage in ["handoff_readiness", "external_generation_pending"] %}
+  <div class="callout"><h3>Manual generation boundary</h3><p>{{ view.external_generation_notice }}</p></div>
   {% endif %}
   {% if view.scene_generation_contract_reference %}
   <section class="facts-section" aria-labelledby="contract-title">
@@ -67,6 +71,18 @@
     </ol>
   </section>
   {% endif %}
+  {% if view.handoff_package_reference %}
+  <section class="facts-section" aria-labelledby="handoff-package-title">
+    <div class="section-heading compact-heading"><div><p class="eyebrow">Creator Handoff Package</p><h3 id="handoff-package-title">Deterministic pre-generation output</h3></div><p class="section-note">One immutable package Artifact; it is not the later Final Publish Package.</p></div>
+    <dl class="facts facts-grid">
+      <div><dt>Package</dt><dd>{{ view.handoff_package_reference.identity }} v{{ view.handoff_package_reference.version }}</dd></div>
+      <div><dt>Local narrations</dt><dd>{{ view.handoff_narration_references|length }} exact AAC/m4a outputs</dd></div>
+      <div><dt>Reference stills</dt><dd>{{ view.handoff_reference_still_facts|length }} labelled optional visual references</dd></div>
+      <div><dt>Application charge</dt><dd>0 micros</dd></div>
+    </dl>
+    {% if view.stage == "external_generation_pending" %}<p><a class="text-link" href="/media/handoff_package" download>Download the package ZIP</a> before manual generation.</p>{% endif %}
+  </section>
+  {% endif %}
   {% if view.tts_engine %}<div class="callout"><h3>Local narration: {{ view.tts_engine }}</h3><p>Reference: {{ view.tts_reference_provenance }} · application cloud/provider call: no · external charge: {{ view.tts_external_charge_micros }} micros.</p></div>{% endif %}
 
   <section class="facts-section" aria-labelledby="production-facts-title">
@@ -76,9 +92,15 @@
       <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
       <div><dt>Visual path</dt><dd>{% if view.visual_mode == "imported" %}Creator-supplied local import{% else %}Offline Fixture{% endif %}</dd></div>
       <div><dt>Voice path</dt><dd>{% if view.tts_engine %}{{ view.tts_engine }}{% else %}Offline Fixture{% endif %}</dd></div>
+      {% if view.stage in ["handoff_readiness", "external_generation_pending"] %}
+      <div><dt>Maximum amount</dt><dd>Not applicable for manual handoff</dd></div>
+      <div><dt>Maximum attempts</dt><dd>Not applicable for manual handoff</dd></div>
+      <div><dt>Budget approval</dt><dd>Budget authorization not required for manual handoff</dd></div>
+      {% else %}
       <div><dt>Maximum amount</dt><dd>{% if view.budget_maximum_amount_micros is not none %}{{ view.budget_maximum_amount_micros }} micros{% else %}Pending budget{% endif %}</dd></div>
       <div><dt>Maximum attempts</dt><dd>{% if view.budget_maximum_attempts is not none %}{{ view.budget_maximum_attempts }}{% else %}Pending budget{% endif %}</dd></div>
       <div><dt>Budget approval</dt><dd>{% if view.budget_approved %}Approved{% else %}Pending{% endif %}</dd></div>
+      {% endif %}
       <div><dt>External charge</dt><dd>{{ view.provider_attempt_charged_amount_micros }} micros</dd></div>
       {% if view.provider_attempt_count %}<div class="facts-wide"><dt>Attempts</dt><dd>{{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }}</dd></div>{% endif %}
     </dl>

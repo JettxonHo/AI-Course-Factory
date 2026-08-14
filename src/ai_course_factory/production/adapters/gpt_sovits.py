@@ -24,7 +24,14 @@ from typing import Any, Callable, Mapping
 from ai_course_factory.persistence import WorkspaceAdapter, WorkspaceFileReference, WorkspaceFileRecord, WorkspaceFailure
 
 from ..interfaces import VoiceGenerator
-from ..model import MediaGenerationResult, ProductionMediaFailure, VoiceSynthesisTask
+from ..model import (
+    LocalNarrationPreflight,
+    LocalNarrationResult,
+    LocalNarrationTask,
+    MediaGenerationResult,
+    ProductionMediaFailure,
+    VoiceSynthesisTask,
+)
 from . import fake as _fake
 
 
@@ -84,15 +91,7 @@ class GPTSoVITSConfiguration:
     timeout_seconds: int | float = 300
 
 
-@dataclass(frozen=True, slots=True)
-class GPTSoVITSPreflight:
-    """Successful, side-effect-free runtime preflight facts."""
-
-    repository_commit: str
-    model_identifier: str
-    reference_audio: str
-    reference_transcript: str
-    engine: str = GPT_SOVITS_PROVIDER
+GPTSoVITSPreflight = LocalNarrationPreflight
 
 
 Runner = Callable[..., subprocess.CompletedProcess[bytes]]
@@ -226,7 +225,7 @@ def _commit(workspace: WorkspaceAdapter, reference: WorkspaceFileReference, cont
 class GPTSoVITSSyntheticVoiceGenerator(VoiceGenerator):
     """Generate normalized AAC narration with an explicitly configured runtime."""
 
-    __slots__ = ("_workspace", "_config", "_runner")
+    __slots__ = ("_workspace", "_config", "_runner", "_preflight_result")
 
     def __init__(
         self,
@@ -238,6 +237,7 @@ class GPTSoVITSSyntheticVoiceGenerator(VoiceGenerator):
         self._workspace = workspace
         self._config = config
         self._runner = runner or subprocess.run
+        self._preflight_result: GPTSoVITSPreflight | ProductionMediaFailure | None = None
 
     @property
     def configuration(self) -> GPTSoVITSConfiguration:
@@ -262,17 +262,20 @@ class GPTSoVITSSyntheticVoiceGenerator(VoiceGenerator):
     def preflight(self) -> GPTSoVITSPreflight | ProductionMediaFailure:
         """Validate every external input before inference or workspace writes."""
 
+        if self._preflight_result is not None:
+            return self._preflight_result
+
         config = self._config
         if type(config.repository_commit) is not str or config.repository_commit != GPT_SOVITS_REPOSITORY_COMMIT:
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is invalid")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is invalid"))
         if config.model_identifier != GPT_SOVITS_MODEL_IDENTIFIER:
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS model identifier is invalid")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS model identifier is invalid"))
         if config.reference_transcript != GPT_SOVITS_REFERENCE_TRANSCRIPT or len(config.reference_transcript) > _MAX_NARRATION_LENGTH:
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS reference transcript is invalid")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS reference transcript is invalid"))
         if config.reference_language not in {"中文", "英文", "日文"} or config.target_language not in {"中文", "英文", "日文", "中英混合", "日英混合", "多语种混合"}:
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS language configuration is invalid")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS language configuration is invalid"))
         if type(config.timeout_seconds) not in (int, float) or not math.isfinite(float(config.timeout_seconds)) or config.timeout_seconds < 1 or config.timeout_seconds > 1800:
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is invalid")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is invalid"))
 
         external_python = _configured_path(config.external_python)
         external_python_real = _absolute_path(config.external_python)
@@ -302,7 +305,7 @@ class GPTSoVITSSyntheticVoiceGenerator(VoiceGenerator):
             or g2pw_model is None or not g2pw_model.is_dir()
             or os.path.realpath(ffmpeg) == os.path.realpath(ffprobe)
         ):
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete"))
         try:
             if (
                 not inference_script.is_relative_to(repository_root)
@@ -315,14 +318,14 @@ class GPTSoVITSSyntheticVoiceGenerator(VoiceGenerator):
                 or gpt_model.parent != repository_root / "GPT_SoVITS" / "pretrained_models" / GPT_SOVITS_MODEL_IDENTIFIER
                 or sovits_model.parent != repository_root / "GPT_SoVITS" / "pretrained_models" / GPT_SOVITS_MODEL_IDENTIFIER
             ):
-                return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete")
+                return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete"))
             config_text = tts_config.read_text(encoding="utf-8")
             if any(not _is_file(g2pw_model / name) for name in _G2PW_REQUIRED_FILES):
-                return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete")
+                return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete"))
         except (OSError, UnicodeError, ValueError):
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS runtime configuration is incomplete"))
         if "version: v2" not in config_text or "t2s_weights_path:" not in config_text or "vits_weights_path:" not in config_text:
-            return _failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS v2 model configuration is incomplete")
+            return self._remember_preflight(_failure("GPT_SOVITS_CONFIG_INVALID", "GPT-SoVITS v2 model configuration is incomplete"))
 
         with tempfile.TemporaryDirectory(prefix="acf-gpt-sovits-preflight-") as directory:
             preflight_root = Path(directory)
@@ -332,26 +335,64 @@ class GPTSoVITSSyntheticVoiceGenerator(VoiceGenerator):
             version = self._run([str(external_python), "--version"], cwd=preflight_root, env=runtime_env)
             version_text = ((version.stdout or b"") + (version.stderr or b"")).decode("utf-8", "ignore") if version is not None else ""
             if version is None or version.returncode != 0 or not version_text.startswith("Python 3.11"):
-                return _failure("GPT_SOVITS_PYTHON_UNAVAILABLE", "an external Python 3.11 runtime is required")
+                return self._remember_preflight(_failure("GPT_SOVITS_PYTHON_UNAVAILABLE", "an external Python 3.11 runtime is required"))
             dependencies = self._run([str(external_python), "-c", _RUNTIME_DEPENDENCY_PROBE], cwd=preflight_root, env=runtime_env)
             if dependencies is None or dependencies.returncode != 0:
-                return _failure("GPT_SOVITS_DEPENDENCIES_UNAVAILABLE", "the configured GPT-SoVITS Python runtime is missing required local dependencies")
+                return self._remember_preflight(_failure("GPT_SOVITS_DEPENDENCIES_UNAVAILABLE", "the configured GPT-SoVITS Python runtime is missing required local dependencies"))
 
         git = self._run(["git", "-C", str(repository_root), "rev-parse", "HEAD"], cwd=repository_root)
         actual_commit = (git.stdout or b"").decode("ascii", "ignore").strip() if git is not None and git.returncode == 0 else ""
         if actual_commit != config.repository_commit:
-            return _failure("GPT_SOVITS_REPOSITORY_COMMIT_MISMATCH", "the configured GPT-SoVITS repository commit does not match")
+            return self._remember_preflight(_failure("GPT_SOVITS_REPOSITORY_COMMIT_MISMATCH", "the configured GPT-SoVITS repository commit does not match"))
 
         probe = self._probe(reference_audio, ffprobe)
         if not self._valid_reference_probe(probe):
-            return _failure("GPT_SOVITS_REFERENCE_INVALID", "the configured GPT-SoVITS reference audio is not decodeable")
+            return self._remember_preflight(_failure("GPT_SOVITS_REFERENCE_INVALID", "the configured GPT-SoVITS reference audio is not decodeable"))
         try:
             with tempfile.NamedTemporaryFile(prefix="acf-gpt-sovits-preflight-", delete=True) as handle:
                 handle.write(b"preflight")
                 handle.flush()
         except (OSError, ValueError):
-            return _failure("GPT_SOVITS_OUTPUT_UNAVAILABLE", "the local narration output boundary is unavailable")
-        return GPTSoVITSPreflight(config.repository_commit, config.model_identifier, "reference audio", config.reference_transcript)
+            return self._remember_preflight(_failure("GPT_SOVITS_OUTPUT_UNAVAILABLE", "the local narration output boundary is unavailable"))
+        return self._remember_preflight(GPTSoVITSPreflight(config.repository_commit, config.model_identifier, "reference audio", config.reference_transcript))
+
+    def _remember_preflight(self, result: GPTSoVITSPreflight | ProductionMediaFailure) -> GPTSoVITSPreflight | ProductionMediaFailure:
+        # A successful readiness snapshot is stable for the adapter lifetime,
+        # but a failure can be transient (for example an operator repairs the
+        # configured runtime path before retrying).  Keep legacy ``synthesize``
+        # retry behaviour by never memoizing failures.
+        if isinstance(result, LocalNarrationPreflight):
+            self._preflight_result = result
+        return result
+
+    def render(self, task: LocalNarrationTask) -> LocalNarrationResult | ProductionMediaFailure:
+        """Render through the additive local seam without touching paid-attempt facts."""
+
+        if type(task) is not LocalNarrationTask:
+            return ProductionMediaFailure("validation", "INVALID_LOCAL_NARRATION_TASK", "local narration task is invalid")
+        voice_task = VoiceSynthesisTask(
+            task.task_id,
+            f"local-narration:{task.task_id}:{task.scene_id}",
+            task.production_request_reference,
+            task.scene_id,
+            task.language,
+            task.duration_seconds,
+            task.narration,
+            task.output_reference,
+        )
+        result = self.synthesize(voice_task)
+        if isinstance(result, ProductionMediaFailure):
+            return result
+        if not isinstance(result, MediaGenerationResult):
+            return ProductionMediaFailure("execution", "GPT_SOVITS_INFERENCE_FAILED", "local GPT-SoVITS narration failed safely")
+        return LocalNarrationResult(
+            task.task_id,
+            task.scene_id,
+            result.output_reference,
+            result.media_type,
+            result.duration_seconds,
+            result.result_code,
+        )
 
     def synthesize(self, task: VoiceSynthesisTask) -> MediaGenerationResult | ProductionMediaFailure:
         try:

@@ -17,6 +17,10 @@ from ai_course_factory.production import (
     GPT_SOVITS_SOVITS_MODEL_BASENAME,
     GPTSoVITSConfiguration,
     GPTSoVITSSyntheticVoiceGenerator,
+    LocalNarrationRenderer,
+    LocalNarrationPreflight,
+    LocalNarrationTask,
+    LocalNarrationResult,
     MediaGenerationResult,
     ProductionMediaFailure,
     VoiceGenerator,
@@ -77,6 +81,74 @@ def _fixture_runtime(root: Path) -> tuple[Path, Path, Path, GPTSoVITSConfigurati
 
 
 class GPTSoVITSSmokeAdapterTests(unittest.TestCase):
+    def test_preflight_failure_can_retry_after_runtime_boundary_is_repaired(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            _repo, executable, _reference, config = _fixture_runtime(root)
+            workspace = FilesystemWorkspace(root / "workspace")
+            workspace.prepare("task:handoff-preflight-retry")
+            repaired = False
+            calls = []
+
+            def runner(argv, **kwargs):
+                calls.append(argv)
+                if argv[0] == str(executable) and argv[1] == "--version":
+                    if not repaired:
+                        return subprocess.CompletedProcess(argv, 1, b"", b"runtime unavailable")
+                    return subprocess.CompletedProcess(argv, 0, b"Python 3.11.15\n", b"")
+                if argv[0] == str(executable) and argv[1] == "-c":
+                    return subprocess.CompletedProcess(argv, 0, b"", b"")
+                if argv[0] == "git":
+                    return subprocess.CompletedProcess(argv, 0, b"d523079fc05d9a8028d6085bffe4a2757c32abb6\n", b"")
+                return subprocess.run(argv, **kwargs)
+
+            adapter = GPTSoVITSSyntheticVoiceGenerator(workspace, config, runner=runner)
+            first = adapter.preflight()
+            self.assertIsInstance(first, ProductionMediaFailure)
+            self.assertEqual(first.code, "GPT_SOVITS_PYTHON_UNAVAILABLE")
+            repaired = True
+            second = adapter.preflight()
+            self.assertIsInstance(second, LocalNarrationPreflight)
+            self.assertEqual(sum(1 for argv in calls if len(argv) > 1 and argv[1] == "--version"), 2)
+
+    def test_local_narration_renderer_reuses_validated_runtime_across_scenes(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, executable, _reference, config = _fixture_runtime(root)
+            workspace = FilesystemWorkspace(root / "workspace")
+            workspace.prepare("task:handoff")
+            calls = []
+
+            def runner(argv, **kwargs):
+                calls.append(argv)
+                if argv[0] == str(executable) and argv[1] == "--version":
+                    return subprocess.CompletedProcess(argv, 0, b"Python 3.11.15\n", b"")
+                if argv[0] == str(executable) and argv[1] == "-c":
+                    return subprocess.CompletedProcess(argv, 0, b"", b"")
+                if argv[0] == "git":
+                    return subprocess.CompletedProcess(argv, 0, b"d523079fc05d9a8028d6085bffe4a2757c32abb6\n", b"")
+                if argv[0] == str(executable):
+                    output = Path(argv[argv.index("--output_path") + 1]) / "output.wav"
+                    with wave.open(str(output), "wb") as handle:
+                        handle.setnchannels(1)
+                        handle.setsampwidth(2)
+                        handle.setframerate(24000)
+                        handle.writeframes(b"\0\0" * 2400)
+                    return subprocess.CompletedProcess(argv, 0, b"", b"")
+                return subprocess.run(argv, **kwargs)
+
+            adapter = GPTSoVITSSyntheticVoiceGenerator(workspace, config, runner=runner)
+            self.assertIsInstance(adapter, LocalNarrationRenderer)
+            for index in range(1, 3):
+                task = LocalNarrationTask(
+                    "task:handoff", ArtifactReference("production_request", "episode-1", 1), f"scene-{index}",
+                    "Simplified Chinese", 1.0, "你好。", WorkspaceFileReference("task:handoff", "media", f"handoff-narration-scene-{index}.m4a"),
+                )
+                result = adapter.render(task)
+                self.assertIsInstance(result, LocalNarrationResult)
+            self.assertEqual(sum(1 for argv in calls if len(argv) > 1 and argv[1] == "--version"), 1)
+            self.assertEqual(sum(1 for argv in calls if len(argv) > 1 and argv[1] == "-c"), 1)
+            self.assertEqual(sum(1 for argv in calls if argv and argv[0] == "git"), 1)
     def test_fake_cli_generates_zero_charge_normalized_audio_through_voice_seam(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

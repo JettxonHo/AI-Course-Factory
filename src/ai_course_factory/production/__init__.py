@@ -23,8 +23,11 @@ from .attempt import (
     ProviderAttemptReservation,
 )
 from .sqlite_attempt import SQLiteProviderAttemptRepository
-from .interfaces import MediaComposer, VisualGenerator, VoiceGenerator
+from .interfaces import LocalNarrationRenderer, MediaComposer, VisualGenerator, VoiceGenerator
 from .model import (
+    LocalNarrationPreflight,
+    LocalNarrationResult,
+    LocalNarrationTask,
     MediaCompositionResult,
     MediaCompositionScene,
     MediaCompositionTask,
@@ -83,6 +86,10 @@ __all__ = [
     "MediaCompositionScene",
     "MediaCompositionTask",
     "MediaComposer",
+    "LocalNarrationPreflight",
+    "LocalNarrationRenderer",
+    "LocalNarrationResult",
+    "LocalNarrationTask",
     "MediaGenerationResult",
     "ProductionCompositionResult",
     "ProductionExecutionResult",

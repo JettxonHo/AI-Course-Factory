@@ -22,6 +22,7 @@ from .gpt_sovits import (
     GPTSoVITSVoiceGenerator,
     GPTSoVITSSyntheticVoiceGenerator,
 )
+from ..interfaces import LocalNarrationRenderer
 
 __all__ = [
     "DeterministicFakeVisualGenerator",
@@ -44,4 +45,5 @@ __all__ = [
     "GPTSoVITSPreflight",
     "GPTSoVITSVoiceGenerator",
     "GPTSoVITSSyntheticVoiceGenerator",
+    "LocalNarrationRenderer",
 ]

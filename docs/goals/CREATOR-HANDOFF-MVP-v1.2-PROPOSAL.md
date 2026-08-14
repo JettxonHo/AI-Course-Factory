@@ -8,8 +8,8 @@
 | Product direction | Accepted by Product Owner on 2026-08-14 |
 | Exact Goal approval | Product Owner, 2026-08-14 |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130) |
-| Planning Issue | #129 (closed); H1 implementation #131 / PR #132 merged at `main@ce05e77`; bounded correction #133 pending independent review and merge |
-| Current H1 correction | Issue #133 on `codex/133-storyboard-approve-replay`, based on `main@ce05e778a63f35a3ffd1ff88d0295c2220cab1f4` |
+| Planning Issue | #129 (closed); H1 implementation #131 / PR #132 plus correction #133 / PR #134 merged at `main@91b4512`; H2 Issue #135 is the active candidate |
+| Current H2 candidate | Issue #135 on `codex/135-creator-handoff-package`, based on `main@91b451225c40fd7fa884355ac7da6fa1e373238b` |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
 This file records the approved contract behind the active `GOAL.md`. It does not by itself authorize H2-H4 implementation Task Contracts, and it does not reopen FAST-MVP v1.1.
@@ -89,11 +89,11 @@ It contains no Jimeng/Kling request body and no credential/price facts. Manual a
 
 One deterministic package Artifact plus workspace ZIP. Approved contents:
 
-1. `handoff-manifest.json` — exact Artifact References, ordered Scene entries, expected filenames and provenance contract;
-2. `scene-generation-guide.md` — global continuity plus readable per-Scene prompt/camera/action instructions;
-3. `narration/scene-1.m4a` through `scene-6.m4a` — exact approved application-owned narration;
-4. `subtitles.srt` — canonical SRT;
-5. optional explicitly selected reference stills, labelled as reference/Preview inputs rather than generated final clips.
+1. `generation-guide.md` — global continuity plus readable per-Scene prompt/camera/action instructions;
+2. `scene-generation-contract.json` and `timeline.json` — exact planning facts;
+3. `subtitles.srt` and `narration/scene-1.m4a` through `scene-6.m4a` — canonical application-owned narration/text;
+4. `provenance.json`, `reference-stills/README.md` and optional labelled `reference-stills/scene-1.png` through `scene-6.png`;
+5. `handoff-manifest.json` — deterministic file facts and hashes.
 
 The Handoff Package does not contain or imply an approved Final Video and cannot satisfy the final Publish Package gate.
 
@@ -123,7 +123,7 @@ The composition path consumes the ordered selected Imported Generated Scene Clip
 
 **Outcome:** the browser exposes the exact grounded Script/Storyboard and a human-reviewable ordered generation contract with prompt, continuity, camera/action, duration and filename for every Scene.
 
-**Exit:** exact lineage is committed after an explicit Storyboard `approve`; prompts contain no platform SDK payload. Issue #131 / PR #132 provides the implementation; Issue #133 closes the repeated HTTP approval replay contract before H1 is complete.
+**Exit:** exact lineage is committed after an explicit Storyboard `approve`; prompts contain no platform SDK payload. Issue #131 / PR #132 plus Issue #133 / PR #134 are merged at `main@91b4512`; H1 is complete.
 
 ### H2 — Creator Handoff Package
 
@@ -172,6 +172,6 @@ The Product Owner approved these defaults on 2026-08-14:
 
 ## 9. Authorization and Stop Conditions
 
-The Goal is approved and active. H0 is `COMPLETE` at `main@d96b091`; Issue #131 / PR #132 is merged at `main@ce05e77`, while H1 remains in progress under correction Issue #133 until its independent review and merge. H2-H4 still require one bounded Issue/Task Contract each; no API call, credential, charge or deployment is authorized by this contract alone.
+The Goal is approved and active. H0 is `COMPLETE`; H1 is `COMPLETE` through Issue #131 / PR #132 plus Issue #133 / PR #134 at `main@91b4512`. H2 is currently bounded by Issue #135 and remains an unmerged candidate; H3-H4 still require one bounded Issue/Task Contract each. No API call, credential, charge or deployment is authorized by this contract alone.
 
 Stop and return to Product Owner review before selecting a Jimeng/Kling API/model, using credentials, changing Budget/caps, replacing the canonical narration/SRT contract, adding a new Decision type, expanding beyond the fixed one-task Demo or weakening exact Artifact/Final approval invariants.

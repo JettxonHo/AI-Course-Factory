@@ -7,16 +7,16 @@ Observed: 2026-08-14 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | FAST-MVP v1.1 remains accepted history; Product Owner approved the exact Creator Handoff MVP v1.2 Goal and eight defaults on 2026-08-14 |
-| Current repository baseline | `main@ce05e778a63f35a3ffd1ff88d0295c2220cab1f4` (Issue #131 / PR #132 merged; H1 correction Issue #133 is based here and pending independent review/merge) |
+| Current repository baseline | `main@91b451225c40fd7fa884355ac7da6fa1e373238b` (Issue #131 / PR #132 plus Issue #133 / PR #134 merged; H1 complete) |
 | Accepted FAST-MVP v1.1 baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Active milestone | H1 Grounded Storyboard and Scene Generation Contract, IN PROGRESS |
-| Current task | Issue #133 on `codex/133-storyboard-approve-replay`; exact Luna implementation route configured, runtime identity not independently verified |
-| H1 merged implementation and correction evidence | Issue #131 / PR #132 supplied 85 focused tests and 432 full regression tests with compileall/Diff checks; independent review found repeated HTTP approve replay missing, and Issue #133 adds the bounded route/test correction; H1 remains incomplete until #133 is independently reviewed and merged |
+| Active milestone | H2 Creator Handoff Package, IN PROGRESS |
+| Current task | Issue #135 on `codex/135-creator-handoff-package`; candidate remains unmerged pending independent review and full regression |
+| H1 merged implementation and correction evidence | Issue #131 / PR #132 plus Issue #133 / PR #134 are merged at `main@91b4512`; 433-test regression, compileall and Diff checks are recorded as merged H1 evidence |
 | Historical merged regression evidence | 414 local tests passed after Issue #121 / PR #122; no hosted CI is claimed |
 | F3 repository gates | Issue #125: 52 focused tests and 422 full tests passed; compileall and Diff/ownership checks passed; no hosted CI is claimed |
 | F3 runtime evidence | Fresh browser task acquired live GitHub commit `33e781bf...` and then completed Script v2, real local media, two restarts, Scene 2 replacement, Final approval and byte-identical four-file export replay |
-| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; H0 is complete, Issue #131 / PR #132 is merged, and H1 remains in progress pending correction #133 |
+| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; H0 and H1 are complete, and H2 Issue #135 is in progress as an unmerged candidate |
 | Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -106,7 +106,7 @@ Issue #119 / PR #120 is merged and independently accepted COMPLETE. It adds loca
 
 Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 / PR #124 then supplied partial F3 media evidence without proving live source acquisition; Issue #125 / PR #126 supplied and merged the accepted bounded correction at `main@f388e4a`.
 
-Issue #129 closed and its exact docs Diff merged through PR #130 at `main@d96b091`; H0 is COMPLETE and H1 was READY from that real baseline. Issue #131 / PR #132 implemented the bounded H1 contract and merged at `main@ce05e77`; independent review found the repeated HTTP approval replay gap, so Issue #133 on `codex/133-storyboard-approve-replay` is the active bounded correction and H1 is not complete before it is independently reviewed and merged.
+Issue #129 closed and its exact docs Diff merged through PR #130; H0 is COMPLETE. Issue #131 / PR #132 implemented the bounded H1 contract and Issue #133 / PR #134 corrected repeated HTTP approval replay; both are merged at `main@91b4512`, so H1 is COMPLETE. Issue #135 is the active H2 candidate and remains unmerged pending independent review.
 
 ## 5. Current Direction
 
@@ -120,15 +120,15 @@ The approved first import interaction is fixed: one operator-declared generated-
 
 Authorized now:
 
-- H1 Issue #133 correction and independent review after the merged Issue #131 implementation;
-- H2-H4 planning/Task Contract only after the preceding milestone actually merges;
+- H2 Issue #135 implementation and independent review after H1 actually merged at `main@91b4512`;
+- H3-H4 planning/Task Contract only after the preceding milestone actually merges;
 - bounded maintenance of the merged F1 flow;
 - maintenance of the accepted fixed local Demo;
 - no-cost local validation and evidence replay.
 
 Not authorized now:
 
-- H2-H4 implementation or a Luna dispatch before each exact milestone Task Contract passes review;
+- H3-H4 implementation or a Luna dispatch before each exact milestone Task Contract passes review;
 - cloud Provider selection, credentials or real calls;
 - any fee or budget increase;
 - deployment or external publication;

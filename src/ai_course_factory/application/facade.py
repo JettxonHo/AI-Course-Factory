@@ -57,7 +57,14 @@ from ai_course_factory.knowledge import (
     SourceNormalizer,
     SourceRecordBuilder,
 )
-from ai_course_factory.packaging import PackagingFailure, PublishPackageBuilder, PublishPackageResult
+from ai_course_factory.packaging import (
+    CreatorHandoffPackageBuilder,
+    HandoffPackageFailure,
+    HandoffPackageResult,
+    PackagingFailure,
+    PublishPackageBuilder,
+    PublishPackageResult,
+)
 from ai_course_factory.persistence import FilesystemWorkspace, WorkspaceFileReference
 from ai_course_factory.production import (
     BudgetAuthorizationBoundary,
@@ -69,6 +76,7 @@ from ai_course_factory.production import (
     GPT_SOVITS_PROVIDER,
     GPTSoVITSConfiguration,
     GPTSoVITSSyntheticVoiceGenerator,
+    LocalNarrationRenderer,
     LOCAL_IMPORTED_PROVIDER,
     LocalImportedVisualGenerator,
     MediaCompositionScene,
@@ -272,6 +280,11 @@ class ApplicationView:
     timeline_reference: ArtifactReference | None = None
     production_request_reference: ArtifactReference | None = None
     storyboard_decision_context: str | None = None
+    handoff_package_reference: ArtifactReference | None = None
+    handoff_package_output: WorkspaceFileReference | None = None
+    handoff_narration_references: tuple[WorkspaceFileReference, ...] = ()
+    handoff_reference_still_facts: tuple[str, ...] = ()
+    external_generation_notice: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -307,6 +320,9 @@ class _State:
     replacement_done: bool = False
     visual_mode: str = "fixture"
     tts_mode: str = "fixture"
+    handoff_package_output: WorkspaceFileReference | None = None
+    handoff_narration_references: tuple[WorkspaceFileReference, ...] = ()
+    handoff_reference_still_facts: tuple[str, ...] = ()
 
 
 class _OfflineRuntime:
@@ -505,6 +521,7 @@ class CourseFactoryApplication:
         visual_import_dir: str | Path | None = None,
         tts_configuration: GPTSoVITSConfiguration | None = None,
         source_connector: object | None = None,
+        local_narration_renderer: LocalNarrationRenderer | None = None,
     ) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -524,6 +541,7 @@ class CourseFactoryApplication:
         self.ffmpeg_executable = ffmpeg_executable or shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
         self.ffprobe_executable = ffprobe_executable or shutil.which("ffprobe") or "/opt/homebrew/bin/ffprobe"
         self.tts_configuration = tts_configuration
+        self.local_narration_renderer = local_narration_renderer
         # Production uses the real, read-only GitHub connector. Tests and
         # deterministic local acceptance inject an explicit source boundary.
         self.source_connector = source_connector if source_connector is not None else GitHubSourceConnector()
@@ -603,14 +621,23 @@ class CourseFactoryApplication:
 
     def read_output(self, kind: str) -> ApplicationDownload | None:
         """Read one current video, subtitle, or exported package by role."""
-        if kind not in {"video", "subtitle", "package"}:
+        if kind not in {"video", "subtitle", "package", "handoff_package"}:
             return None
         state = self._load_state()
         if state is None:
             return None
         try:
             version: ArtifactVersion | None = None
-            if kind == "package":
+            if kind == "handoff_package":
+                reference = state.handoff_package_output
+                if reference is None and state.refs.get("handoff_package") is not None:
+                    handoff = self.artifacts.get(state.refs["handoff_package"])
+                    payload = handoff.payload if isinstance(handoff, ArtifactVersion) else None
+                    output_payload = payload.get("output_reference") if isinstance(payload, Mapping) else None
+                    reference = _workspace_from(dict(output_payload)) if isinstance(output_payload, Mapping) else None
+                media_type = "application/zip"
+                filename = "creator-handoff-package.zip"
+            elif kind == "package":
                 reference = state.package_output
                 media_type = "application/zip"
                 filename = "episode-01.zip"
@@ -892,6 +919,69 @@ class CourseFactoryApplication:
             return self._success(updated)
         except Exception:
             return self._failure("STORYBOARD_DECISION_FAILED", state)
+
+    def prepare_handoff_package(self) -> ApplicationResult:
+        """Prepare the deterministic pre-generation package after Storyboard approval."""
+
+        state = self._load_state()
+        if state is None:
+            return self._failure("TASK_NOT_FOUND")
+        if state.stage == "external_generation_pending" and state.refs.get("handoff_package") is not None:
+            return self._success(state)
+        if state.stage != "handoff_readiness" or state.pending_action is not None:
+            return self._failure("HANDOFF_READINESS_REQUIRED", state)
+        if "storyboard" not in state.decision_ids:
+            return self._failure("STORYBOARD_APPROVAL_REQUIRED", state)
+        renderer = self.local_narration_renderer
+        if renderer is None:
+            if self.tts_configuration is None:
+                return self._failure("GPT_SOVITS_CONFIG_REQUIRED", state)
+            renderer = GPTSoVITSSyntheticVoiceGenerator(self.workspace, self.tts_configuration)
+        try:
+            builder = CreatorHandoffPackageBuilder(self.artifacts, self.storyboard_decisions, self.workspace, renderer)
+            output = WorkspaceFileReference(TASK_ID, "exports", "creator-handoff-package.zip")
+            result = builder.build(
+                TASK_ID,
+                state.refs["source"],
+                state.refs["script"],
+                state.refs["character"],
+                state.refs["storyboard"],
+                state.refs["timeline"],
+                state.refs["production_request"],
+                state.refs["scene_generation_contract"],
+                state.decision_ids["storyboard"],
+                reference_stills_directory=self.visual_import_dir,
+                output_reference=output,
+                artifact_identity="handoff:episode-1",
+                package_commit_id="handoff-package:episode-1",
+            )
+            if isinstance(result, HandoffPackageFailure):
+                return self._failure(result.code, state, result.message)
+            if not isinstance(result, HandoffPackageResult):
+                return self._failure("HANDOFF_PACKAGE_FAILED", state)
+            refs = {**state.refs, "handoff_package": result.package_reference}
+            updated = _State(
+                TASK_ID,
+                "external_generation_pending",
+                None,
+                refs,
+                state.decision_ids,
+                None,
+                None,
+                state.package_output,
+                None,
+                None,
+                state.replacement_done,
+                state.visual_mode,
+                state.tts_mode,
+                result.output_reference,
+                result.narration_references,
+                tuple(f"reference-stills/scene-{index}.png" for index in range(1, 7)),
+            )
+            self._save_state(updated)
+            return self._success(updated)
+        except Exception:
+            return self._failure("HANDOFF_PACKAGE_FAILED", state)
 
     def submit_budget_decision(self, action: str = "approve", *, maximum_approved_amount_micros: int | None = None, maximum_attempts: int | None = None, decision_context: str = "") -> ApplicationResult:
         state = self._load_state()
@@ -1274,10 +1364,13 @@ class CourseFactoryApplication:
         value = json.loads(row[1])
         refs = {key: _ref_from(raw) for key, raw in value["refs"].items()}
         output = _workspace_from(value["package_output"]) if value.get("package_output") else None
-        return _State(value["task_id"], value["stage"], value.get("pending_action"), refs, dict(value.get("decision_ids", {})), value.get("authorization_id"), value.get("composition"), output, value.get("failure_category"), value.get("failure_message"), bool(value.get("replacement_done", False)), value.get("visual_mode", "fixture"), value.get("tts_mode", "fixture"))
+        handoff_output = _workspace_from(value["handoff_package_output"]) if value.get("handoff_package_output") else None
+        handoff_narration = tuple(_workspace_from(item) for item in value.get("handoff_narration_references", ()))
+        handoff_stills = tuple(item for item in value.get("handoff_reference_still_facts", ()) if type(item) is str)
+        return _State(value["task_id"], value["stage"], value.get("pending_action"), refs, dict(value.get("decision_ids", {})), value.get("authorization_id"), value.get("composition"), output, value.get("failure_category"), value.get("failure_message"), bool(value.get("replacement_done", False)), value.get("visual_mode", "fixture"), value.get("tts_mode", "fixture"), handoff_output, handoff_narration, handoff_stills)
 
     def _save_state(self, state: _State) -> None:
-        value = {"task_id": state.task_id, "stage": state.stage, "pending_action": state.pending_action, "refs": {key: _ref_json(ref) for key, ref in state.refs.items()}, "decision_ids": dict(state.decision_ids), "authorization_id": state.authorization_id, "composition": state.composition, "package_output": _workspace_json(state.package_output) if state.package_output else None, "failure_category": state.failure_category, "failure_message": state.failure_message, "replacement_done": state.replacement_done, "visual_mode": state.visual_mode, "tts_mode": state.tts_mode}
+        value = {"task_id": state.task_id, "stage": state.stage, "pending_action": state.pending_action, "refs": {key: _ref_json(ref) for key, ref in state.refs.items()}, "decision_ids": dict(state.decision_ids), "authorization_id": state.authorization_id, "composition": state.composition, "package_output": _workspace_json(state.package_output) if state.package_output else None, "handoff_package_output": _workspace_json(state.handoff_package_output) if state.handoff_package_output else None, "handoff_narration_references": [_workspace_json(reference) for reference in state.handoff_narration_references], "handoff_reference_still_facts": list(state.handoff_reference_still_facts), "failure_category": state.failure_category, "failure_message": state.failure_message, "replacement_done": state.replacement_done, "visual_mode": state.visual_mode, "tts_mode": state.tts_mode}
         encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
         self._state_connection.execute("INSERT INTO application_state(singleton, schema_version, state_json) VALUES(1, ?, ?) ON CONFLICT(singleton) DO UPDATE SET schema_version=excluded.schema_version, state_json=excluded.state_json", (_STATE_SCHEMA, encoded))
 
@@ -1295,7 +1388,7 @@ class CourseFactoryApplication:
         category = _failure_category(code)
         safe_message = _safe_actionable_failure(code, category, message)
         if state is not None:
-            failure_state = _State(state.task_id, state.stage, state.pending_action, state.refs, state.decision_ids, state.authorization_id, state.composition, state.package_output, category, safe_message, state.replacement_done, state.visual_mode, state.tts_mode)
+            failure_state = _State(state.task_id, state.stage, state.pending_action, state.refs, state.decision_ids, state.authorization_id, state.composition, state.package_output, category, safe_message, state.replacement_done, state.visual_mode, state.tts_mode, state.handoff_package_output, state.handoff_narration_references, state.handoff_reference_still_facts)
             if persist_state:
                 try:
                     self._save_state(failure_state)
@@ -1382,10 +1475,42 @@ class CourseFactoryApplication:
                 )
             except Exception:
                 generation_entries = ()
+        handoff_package_reference = state.refs.get("handoff_package")
+        handoff_package_output = state.handoff_package_output
+        handoff_narration_references = state.handoff_narration_references
+        handoff_reference_still_facts = state.handoff_reference_still_facts
+        handoff_narration_metadata: Mapping[str, Any] | None = None
+        if handoff_package_reference is not None:
+            try:
+                handoff_version = self.artifacts.get(handoff_package_reference)
+                payload = handoff_version.payload if isinstance(handoff_version, ArtifactVersion) else None
+                if isinstance(payload, Mapping):
+                    if handoff_package_output is None and isinstance(payload.get("output_reference"), Mapping):
+                        handoff_package_output = _workspace_from(dict(payload["output_reference"]))
+                    if not handoff_narration_references and type(payload.get("narration_references")) is tuple:
+                        handoff_narration_references = tuple(_workspace_from(dict(item)) for item in payload["narration_references"] if isinstance(item, Mapping))
+                    if isinstance(payload.get("local_narration"), Mapping):
+                        handoff_narration_metadata = payload["local_narration"]
+            except Exception:
+                pass
+        view_tts_engine = GPT_SOVITS_PROVIDER if state.tts_mode == "gpt-sovits" else None
+        view_tts_reference = "locally generated Qwen3-TTS Serena synthetic reference" if state.tts_mode == "gpt-sovits" else None
+        view_tts_charge: int | None = 0 if state.tts_mode == "gpt-sovits" else None
+        if handoff_narration_metadata is not None:
+            if type(handoff_narration_metadata.get("engine")) is str:
+                view_tts_engine = handoff_narration_metadata["engine"]
+            if type(handoff_narration_metadata.get("reference_provenance")) is str:
+                view_tts_reference = handoff_narration_metadata["reference_provenance"]
+            if type(handoff_narration_metadata.get("external_charge_micros")) is int:
+                view_tts_charge = handoff_narration_metadata["external_charge_micros"]
         if state.stage == "script_review":
             available = ("approve_script", "revise_script", "reject_script")
         elif state.stage == "planning" and state.pending_action == "approve_storyboard":
             available = ("approve_storyboard", "reject_storyboard")
+        elif state.stage == "handoff_readiness":
+            available = ("prepare_handoff_package",)
+        elif state.stage == "external_generation_pending":
+            available = ("download_handoff_package",)
         elif state.pending_action == "export_package":
             available = ("export_package",)
         elif state.stage == "final_review":
@@ -1407,15 +1532,20 @@ class CourseFactoryApplication:
             selected_delivery.get("subtitle"), state.refs.get("package"), state.package_output,
             state.failure_category, state.failure_message, tuple(available), True, state.replacement_done,
             attempt_count, attempt_statuses, charged_amount, local_label, prompt_cards, state.visual_mode,
-            GPT_SOVITS_PROVIDER if state.tts_mode == "gpt-sovits" else None,
-            "locally generated Qwen3-TTS Serena synthetic reference" if state.tts_mode == "gpt-sovits" else None,
-            0 if state.tts_mode == "gpt-sovits" else None,
+            view_tts_engine,
+            view_tts_reference,
+            view_tts_charge,
             storyboard_reference,
             scene_generation_contract_reference,
             generation_entries,
             timeline_reference,
             production_request_reference,
             storyboard_decision_context,
+            handoff_package_reference,
+            handoff_package_output,
+            handoff_narration_references,
+            handoff_reference_still_facts,
+            "External Jimeng/Kling subscription generation is outside AI Course Factory; no application Attempt or charge is created.",
         )
 
 
