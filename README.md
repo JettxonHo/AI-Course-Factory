@@ -7,12 +7,14 @@ AI Course Factory 是一个本地优先的 AI 教育短视频生产应用。它�
 ```text
 Public GitHub source
   -> grounded Script + human review
-  -> production plan + budget approval
+  -> approved Storyboard + Scene Generation Contract
+  -> deterministic Creator Handoff Package + local narration
+  -> manual external Scene generation (outside the application)
   -> Visual/TTS or explicit Desktop ImageGen import + FFmpeg
   -> final review + local export
 ```
 
-本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS 和 F2.5 Warm Editorial 三页体验。Issue #123 / PR #124 的媒体证据因 Fixture Source 仅保留为部分历史；Issue #125 / PR #126 从全新数据目录通过浏览器提交支持的公开 URL，以默认连接器获取 live GitHub source，并在同一任务完成真实本地媒体、两次重启、Scene 2 视觉替换和四文件 ZIP。纠正合并后，主控策划于 2026-08-14 给出 `GOAL_APPROVED`。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
+本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS、F2.5 Warm Editorial 三页体验和 H1 Scene Generation Contract。Issue #135 正在把 H2 Creator Handoff Package 接入 Review：明确 Storyboard approve 后，应用完成非货币化本地运行时/六张参考 still 预检，生成可重放的 ZIP；Jimeng/Kling 手工订阅生成不产生应用 Attempt 或 charge。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
 
 ## 已验收的本地工作台
 

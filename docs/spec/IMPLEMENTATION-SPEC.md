@@ -9,10 +9,10 @@
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130); FAST-MVP v1.1 remains complete history |
-| Current H1 correction baseline | `main@ce05e778a63f35a3ffd1ff88d0295c2220cab1f4`, branch `codex/133-storyboard-approve-replay` (Issue #133 pending independent review/merge) |
+| Current H2 baseline | `main@91b451225c40fd7fa884355ac7da6fa1e373238b`, branch `codex/135-creator-handoff-package` (Issue #135 candidate pending independent review/merge) |
 | Goal contract | `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` |
 | Runtime | Python `>=3.12,<3.13` |
-| Authorization | H0 complete; Issue #131 / PR #132 H1 implementation merged at `main@ce05e77`, with correction Issue #133 active; H2-H4 coding requires a bounded Task Contract per milestone |
+| Authorization | H0 and H1 complete; Issue #131 / PR #132 plus Issue #133 / PR #134 merged at `main@91b4512`; H2 Issue #135 is the current bounded candidate, while H3-H4 require their own Task Contracts |
 
 Prefer connecting the existing implementation into a usable product over refactoring it. A task may change architecture only after it proves the vertical path cannot be completed inside the approved boundaries.
 
@@ -101,7 +101,7 @@ The first slice uses one operator-declared generated-clips directory supplied at
 
 ## 7. Approved Delivery Sequence
 
-The Goal is active. H0 is complete at `main@d96b091`; Issue #131 / PR #132 is merged at `main@ce05e77`, and H1 remains in progress under correction Issue #133; H2-H4 start only after the preceding milestone and their own bounded Task Contract.
+The Goal is active. H0 and H1 are complete; Issue #131 / PR #132 plus Issue #133 / PR #134 are merged at `main@91b4512`. H2 is bounded by Issue #135; H3-H4 start only after the preceding milestone and their own bounded Task Contract.
 
 ### H0 — Truth rebaseline
 
@@ -113,7 +113,7 @@ After explicit Storyboard approval, commit one immutable ordered contract from e
 
 ### H2 — Creator Handoff Package
 
-Add an adjacent deterministic builder rather than a mode on `PublishPackageBuilder`. After non-monetary local runtime/input preflight, it writes an earlier package containing a manifest, readable generation guide, exact narration, canonical SRT/Timeline and optional labelled reference assets. It commits handoff package facts through the existing Artifact repository and Workspace; the manual path creates no Budget Authorization. The H2 Task Contract must preserve idempotent local GPT-SoVITS output/restart without constructing a monetary authorization or weakening the paid-attempt ledger.
+Issue #135 adds `CreatorHandoffPackageBuilder` in `packaging/handoff.py` rather than a mode on `PublishPackageBuilder`. After non-monetary local runtime/input preflight, it writes an earlier deterministic package containing `generation-guide.md`, exact Contract/Timeline JSON, narration/Scene m4a files, canonical SRT, provenance, labelled optional stills and a normalized manifest. It commits one `creator_handoff_package` Artifact through the existing repository and Workspace; the manual path creates no Budget Authorization. The additive `LocalNarrationRenderer` seam keeps GPT-SoVITS `synthesize` compatibility while caching validated runtime facts for six local renders. H2 retry reuses immutable staged narration/package bytes and rejects changed exact inputs without a Version 2.
 
 ### H3 — Imported Scene clip composition
 
@@ -227,4 +227,4 @@ The accepted FAST-MVP Goal and PD-002 authorize the completed no-cost local Demo
 
 F3 acceptance does not authorize Provider credentials, fees, deployment, publication or a broader product scope.
 
-The approved v1.2 Goal does not authorize unbounded implementation. Issue #131 was the approved first H1 coding Task Contract and is merged; Issue #133 is the bounded H1 HTTP replay correction currently under review. H2-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
+The approved v1.2 Goal does not authorize unbounded implementation. Issue #131 and bounded correction #133 are merged at `main@91b4512`; Issue #135 is the active H2 coding Task Contract and remains a candidate pending independent review and full regression. H3-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.

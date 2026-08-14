@@ -15,7 +15,7 @@ from starlette.templating import Jinja2Templates
 
 from ai_course_factory.application import ApplicationResult, CourseFactoryApplication
 from ai_course_factory.application.facade import REPOSITORY_URL
-from ai_course_factory.production import GPTSoVITSConfiguration, GPT_SOVITS_REFERENCE_TRANSCRIPT
+from ai_course_factory.production import GPTSoVITSConfiguration, GPT_SOVITS_REFERENCE_TRANSCRIPT, LocalNarrationRenderer
 
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
@@ -31,6 +31,7 @@ _FORM_ACTIONS = {
     "advance_planning",
     "approve_storyboard",
     "reject_storyboard",
+    "prepare_handoff_package",
     "approve_budget",
     "produce_offline",
     "approve_final",
@@ -162,6 +163,7 @@ def create_app(
     source_connector: object | None = None,
     visual_import_dir: str | Path | None = None,
     tts_configuration: GPTSoVITSConfiguration | None = None,
+    local_narration_renderer: LocalNarrationRenderer | None = None,
 ) -> FastAPI:
     """Create the local workspace app with one durable facade instance."""
     configured_dir = data_dir or os.environ.get("AI_COURSE_FACTORY_DATA_DIR") or ".ai-course-factory"
@@ -182,6 +184,7 @@ def create_app(
     app.state.course_factory_source_connector = source_connector
     app.state.course_factory_visual_import_dir = visual_import_dir if visual_import_dir is not None else os.environ.get("AI_COURSE_FACTORY_VISUAL_IMPORT_DIR")
     app.state.course_factory_tts_configuration = tts_configuration
+    app.state.course_factory_local_narration_renderer = local_narration_renderer
     app.state.templates = templates
     app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
@@ -207,6 +210,7 @@ def create_app(
                 source_connector=app.state.course_factory_source_connector,
                 visual_import_dir=app.state.course_factory_visual_import_dir,
                 tts_configuration=app.state.course_factory_tts_configuration,
+                local_narration_renderer=app.state.course_factory_local_narration_renderer,
             )
         return app.state.course_factory
 
@@ -299,6 +303,8 @@ def create_app(
                     "reject",
                     decision_context=values.get("decision_context", ""),
                 )
+            elif action == "prepare_handoff_package" and current.view.stage == "handoff_readiness":
+                result = facade().prepare_handoff_package()
             elif action == "approve_budget" and current.view.stage == "budget_review":
                 result = facade().submit_budget_decision("approve")
             elif action == "produce_offline" and current.view.stage == "production":
@@ -352,7 +358,7 @@ def create_app(
 
     @app.get("/media/{kind}", name="download")
     async def download(kind: str) -> Response:
-        if kind not in {"video", "subtitle", "package"}:
+        if kind not in {"video", "subtitle", "package", "handoff_package"}:
             return Response("Not found.", status_code=404, media_type="text/plain")
         try:
             download = facade().read_output(kind)
@@ -363,7 +369,7 @@ def create_app(
         return Response(
             download.content,
             media_type=download.media_type,
-            headers={"Content-Disposition": f"inline; filename=\"{download.filename}\"" if kind != "package" else f"attachment; filename=\"{download.filename}\""},
+            headers={"Content-Disposition": f"inline; filename=\"{download.filename}\"" if kind not in {"package", "handoff_package"} else f"attachment; filename=\"{download.filename}\""},
         )
 
     return app

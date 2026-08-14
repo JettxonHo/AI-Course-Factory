@@ -34,6 +34,42 @@ class VoiceSynthesisTask:
 
 
 @dataclass(frozen=True, slots=True)
+class LocalNarrationTask:
+    """Provider-independent task for the pre-generation handoff narration."""
+
+    task_id: str
+    production_request_reference: ArtifactReference
+    scene_id: str
+    language: str
+    duration_seconds: int | float
+    narration: str
+    output_reference: WorkspaceFileReference
+
+
+@dataclass(frozen=True, slots=True)
+class LocalNarrationResult:
+    """Durable result of one local handoff narration render."""
+
+    task_id: str
+    scene_id: str
+    output_reference: WorkspaceFileReference
+    media_type: str
+    duration_seconds: int | float
+    result_code: str
+
+
+@dataclass(frozen=True, slots=True)
+class LocalNarrationPreflight:
+    """Side-effect-free local narration runtime facts."""
+
+    repository_commit: str
+    model_identifier: str
+    reference_audio: str
+    reference_transcript: str
+    engine: str = "local-gpt-sovits-v2"
+
+
+@dataclass(frozen=True, slots=True)
 class MediaGenerationResult:
     attempt_id: str
     scene_id: str
@@ -117,6 +153,9 @@ __all__ = [
     "MediaCompositionScene",
     "MediaCompositionTask",
     "MediaGenerationResult",
+    "LocalNarrationPreflight",
+    "LocalNarrationResult",
+    "LocalNarrationTask",
     "ProductionCompositionResult",
     "ProductionExecutionResult",
     "ProductionMediaFailure",
