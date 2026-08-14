@@ -7,7 +7,7 @@
 | Status | Approved FAST-MVP System Baseline |
 | Approval | Product Owner, 2026-08-13 |
 | Product Input | `docs/product/PRD.md` |
-| Accepted local baseline | Issue #125 corrected F3 candidate based on `main@af61d31e949e20947517ba4d8ab6db867b6a5017`; final Goal verdict pending after merge |
+| Accepted local baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1`; FAST-MVP v1.1 `GOAL_APPROVED` on 2026-08-14 |
 | Supersedes | System Spec v1.0 for daily development |
 
 This document defines the smallest stable system that can deliver the approved product job. Physical files, libraries and task sequencing belong in the Implementation Spec and `GOAL.md`.
