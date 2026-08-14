@@ -1,67 +1,67 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f4eddf">
-    <title>{{ title }} · AI Course Factory</title>
+    <title>{{ title }} · AI 课程工厂</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">跳到主要内容</a>
     {% set route_kind = "review" if request.url.path == "/review" else ("final" if request.url.path == "/final" else "start") %}
     {% set stage_index = 0 %}
-    {% if view and view.stage in ("planning", "budget_review", "production") %}{% set stage_index = 1 %}{% endif %}
+    {% if view and view.stage in ("planning", "handoff_readiness", "external_generation_pending", "budget_review", "production") %}{% set stage_index = 1 %}{% endif %}
     {% if view and (view.stage in ("final_review", "exported", "rejected") or view.pending_action == "export_package") %}{% set stage_index = 2 %}{% endif %}
     <header class="site-header">
       <div class="shell header-inner">
-        <a class="wordmark" href="/" aria-label="AI Course Factory home">
+        <a class="wordmark" href="/" aria-label="AI 课程工厂首页">
           <span class="wordmark-mark" aria-hidden="true">P</span>
-          <span class="wordmark-copy">AI Course Factory <small>offline workspace</small></span>
+          <span class="wordmark-copy">AI 课程工厂 <small>本地创作工作台</small></span>
         </a>
-        <nav class="workspace-nav" aria-label="Workspace">
-          <a href="/"{% if route_kind == "start" %} aria-current="page"{% endif %}>Start</a>
-          <a href="/review"{% if route_kind == "review" %} aria-current="page"{% endif %}>Review / Produce</a>
-          <a href="/final"{% if route_kind == "final" %} aria-current="page"{% endif %}>Final / Export</a>
+        <nav class="workspace-nav" aria-label="工作台导航">
+          <a href="/"{% if route_kind == "start" %} aria-current="page"{% endif %}>内容与脚本</a>
+          <a href="/review"{% if route_kind == "review" %} aria-current="page"{% endif %}>制作与回导</a>
+          <a href="/final"{% if route_kind == "final" %} aria-current="page"{% endif %}>终审与交付</a>
         </nav>
       </div>
     </header>
     <main id="main" class="shell">
-      <section class="stage-track" aria-label="Production stages">
-        <p class="stage-track-label">Production desk</p>
+      <section class="stage-track" aria-label="制作阶段">
+        <p class="stage-track-label">当前工作阶段</p>
         <ol class="stage-track-list">
           <li class="stage-step {% if stage_index > 0 %}is-complete{% elif stage_index == 0 %}is-current{% else %}is-upcoming{% endif %}" data-stage-state="{% if stage_index > 0 %}completed{% elif stage_index == 0 %}current{% else %}upcoming{% endif %}">
             <a href="/"{% if stage_index == 0 %} aria-current="step"{% endif %}>
               <span class="stage-step-number" aria-hidden="true">01</span>
-              <span><strong>Ground</strong><small>Script &amp; source</small></span>
+              <span><strong>内容定稿</strong><small>来源与脚本</small></span>
             </a>
           </li>
           <li class="stage-step {% if stage_index > 1 %}is-complete{% elif stage_index == 1 %}is-current{% else %}is-upcoming{% endif %}" data-stage-state="{% if stage_index > 1 %}completed{% elif stage_index == 1 %}current{% else %}upcoming{% endif %}">
             <a href="/review"{% if stage_index == 1 %} aria-current="step"{% endif %}>
               <span class="stage-step-number" aria-hidden="true">02</span>
-              <span><strong>Produce</strong><small>Plan &amp; budget</small></span>
+              <span><strong>制作与回导</strong><small>分镜、交接与导入</small></span>
             </a>
           </li>
           <li class="stage-step {% if stage_index == 2 %}is-current{% else %}is-upcoming{% endif %}" data-stage-state="{% if stage_index == 2 %}current{% else %}upcoming{% endif %}">
             <a href="/final"{% if stage_index == 2 %} aria-current="step"{% endif %}>
               <span class="stage-step-number" aria-hidden="true">03</span>
-              <span><strong>Deliver</strong><small>Review &amp; export</small></span>
+              <span><strong>终审交付</strong><small>检查与导出</small></span>
             </a>
           </li>
         </ol>
       </section>
       {% if message %}
-      <div class="notice notice-error" role="alert">{{ message }}</div>
+      <div class="notice notice-error" role="alert"><strong>操作未完成</strong><p>{{ message }}</p></div>
       {% endif %}
       {% block content %}{% endblock %}
     </main>
     <footer class="shell site-footer">
-      <span>Local-only evidence workspace</span>
+      <span>本地证据工作台</span>
       <span aria-hidden="true">·</span>
-      <span>no application Provider API call</span>
+      <span>应用不调用 Provider API</span>
       <span aria-hidden="true">·</span>
-      <span>no external charge</span>
+      <span>不产生外部费用</span>
     </footer>
   </body>
 </html>

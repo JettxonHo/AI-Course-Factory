@@ -9,10 +9,10 @@
 | Exact Goal approval | Product Owner, 2026-08-14 |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130) |
 | Planning Issue | #129 (closed); H1 implementation #131 / PR #132 plus correction #133 / PR #134 merged at `main@91b4512`; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` |
-| Current H3 candidate | Issue #137 on `codex/137-generated-scene-import`, based on `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629` |
+| Current H3.5 candidate | Issue #139 on `codex/139-chinese-creator-workspace`, based on H3 `main@cbdd150c31c6bab289c634c40ffa2078d5081e53` |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
-This file records the approved contract behind the active `GOAL.md`. H2 is complete through Issue #135 / PR #136 with accepted 444-test regression evidence; H3 is in progress only under Issue #137. H3.5 and H4 remain separately gated, and this file does not reopen FAST-MVP v1.1.
+This file records the approved contract behind the active `GOAL.md`. H2 is complete through Issue #135 / PR #136 with accepted 444-test regression evidence; H3 is complete through Issue #137 / PR #138 at `main@cbdd150c` with accepted 458-test evidence. H3.5 is in progress only under Issue #139 and approved D-009 Direction A; H4 remains separately gated, and this file does not reopen FAST-MVP v1.1.
 
 ## 2. Approved Exact Goal
 
@@ -139,7 +139,7 @@ H2 status: **COMPLETE** (Issue #135 / PR #136; `main@c4f2f5e`; accepted 444-test
 
 **Exit:** imported clip provenance is visible; no implicit directory scan occurs; exact references drive composition and stale impact.
 
-H3 status: **IN PROGRESS** (Issue #137 candidate; independent review and merge remain pending).
+H3 status: **COMPLETE** (Issue #137 / PR #138 merged at `main@cbdd150c`; accepted 458-test regression evidence).
 
 ### H3.5 — Simplified-Chinese Creator workspace
 
@@ -147,13 +147,15 @@ H3 status: **IN PROGRESS** (Issue #137 candidate; independent review and merge r
 
 **Exit:** the separately approved workspace design and browser evidence pass; H3.5 does not authorize Provider/API, upload or H4 human-quality scope.
 
+H3.5 status: **IN PROGRESS** (Issue #139 on `codex/139-chinese-creator-workspace`; Direction A approved, independent review and merge pending). D-009 fixes the presentation-only phase mapping, desktop three-zone workbench, mobile status → work → primary action → evidence ordering, Chinese action labels and external-generation primary/secondary rule without adding a public stage or view-model seam.
+
 ### H4 — Browser acceptance and product-quality gate
 
 **Outcome:** one fresh browser flow completes Source -> Handoff -> manual external generation -> import -> Final Review -> Publish Package, including restart/replay.
 
 **Exit:** technical gates pass and a named human reviewer watches/listens to the full result at normal speed, records content/listening/visual-rhythm findings, and approves the exact Final Video Version.
 
-Frontend work is limited to the controls and evidence needed for handoff download, clip import/status and final review. H0-H4 do not authorize a general redesign, fourth page, SPA, timeline editor or upload manager.
+Frontend work is limited to the controls, evidence and approved D-009 presentation needed for handoff download, clip import/status and final review. H0-H4 do not authorize an unrelated redesign, fourth page, SPA, timeline editor or upload manager.
 
 ## 7. Product-Quality Acceptance
 
@@ -182,6 +184,6 @@ The Product Owner approved these defaults on 2026-08-14:
 
 ## 9. Authorization and Stop Conditions
 
-The Goal is approved and active. H0 and H1 are complete; H2 is `COMPLETE` through Issue #135 / PR #136 at `main@c4f2f5e` with 444-test evidence. H3 is `IN PROGRESS` under Issue #137; H3.5 and H4 remain pending and each requires its own bounded Issue/Task Contract. No API call, credential, charge or deployment is authorized by this contract alone.
+The Goal is approved and active. H0-H2 are complete; H2 is `COMPLETE` through Issue #135 / PR #136 at `main@c4f2f5e` with 444-test evidence. H3 is `COMPLETE` through Issue #137 / PR #138 at `main@cbdd150c` with accepted 458-test evidence. H3.5 is `IN PROGRESS` under Issue #139; H4 remains pending and each later milestone requires its own bounded Issue/Task Contract. No API call, credential, charge or deployment is authorized by this contract alone.
 
 Stop and return to Product Owner review before selecting a Jimeng/Kling API/model, using credentials, changing Budget/caps, replacing the canonical narration/SRT contract, adding a new Decision type, expanding beyond the fixed one-task Demo or weakening exact Artifact/Final approval invariants.

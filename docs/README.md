@@ -14,7 +14,7 @@ Read in this order:
 | How do Agents, Issues, tests and reviews operate? | `DEVELOPMENT-WORKFLOW.md` and `../AGENTS.md` |
 | Why was a hard-to-reverse choice made? | `decision-log.md` |
 
-FAST-MVP v1.1 is the completed historical family. Creator Handoff MVP v1.2 is the current `APPROVED / ACTIVE` family; H0 and H1 are complete, H2 is complete through Issue #135 / PR #136 at `main@c4f2f5e` with 444-test regression evidence, and Issue #137 is the active bounded H3 Generated Scene Clip Import candidate. H3.5 Simplified-Chinese workspace redesign and H4 browser/human-quality acceptance remain separately gated.
+FAST-MVP v1.1 is the completed historical family. Creator Handoff MVP v1.2 is the current `APPROVED / ACTIVE` family; H0-H2 are complete, H3 is complete through Issue #137 / PR #138 at `main@cbdd150c` with accepted 458-test regression evidence, and Issue #139 is the active bounded H3.5 Simplified-Chinese Creator workspace candidate. H4 browser/human-quality acceptance remains separately gated.
 
 ## 2. Conflict Rule
 

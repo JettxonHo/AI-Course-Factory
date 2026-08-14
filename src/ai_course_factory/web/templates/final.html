@@ -1,88 +1,196 @@
 {% extends "base.html" %}
-{% set title = "Final / Export" %}
+{% set title = "终审与交付" %}
 {% block content %}
 <section class="intro" data-view-kind="final" aria-labelledby="final-title">
-  <p class="eyebrow">Final / Export</p>
-  <h1 id="final-title">Watch the evidence. Make the last call.</h1>
-  <p class="lede">The playable 9:16 cut stays beside the decision rail, so replace, approve, reject and export are distinct, visible states.</p>
+  <p class="eyebrow">终审与交付</p>
+  <h1 id="final-title">看完整个成片，再做最后决定。</h1>
+  <p class="lede">播放器、六段场景选择和证据都在同一页。通过终审后才可以生成交付包；退回和重新导入始终是清晰的次级选择。</p>
 </section>
+
 {% if view %}
-<section class="workspace-card final-card" aria-labelledby="final-task-title">
-  <header class="task-heading">
-    <div>
-      <p class="eyebrow">Current task · <span class="stage-code">{{ view.stage }}</span></p>
-      <h2 id="final-task-title">{% if view.pending_action == "approve_final" %}Final video review{% elif view.pending_action == "replace_scene" %}Scene replacement review{% elif view.pending_action == "export_package" %}Package ready to export{% elif view.stage == "exported" %}Delivery package exported{% else %}{{ view.stage }}{% endif %}</h2>
+<section class="workspace-card final-card workbench-card" aria-labelledby="final-task-title">
+  <div class="workbench-layout">
+    <aside class="phase-rail" data-workbench-slot="status" aria-label="终审阶段说明">
+      <p class="eyebrow">终审交付</p>
+      <h2>检查并交付</h2>
+      <p>确认视频、旁白、字幕与场景来源后，生成可追溯的交付包。</p>
+      <p class="rail-kicker">当前状态</p>
+      <strong class="status-chip">
+        {% if view.pending_action == "approve_final" %}待终审
+        {% elif view.pending_action == "replace_scene" %}等待重新导入
+        {% elif view.pending_action == "export_package" %}可生成交付包
+        {% elif view.package_reference %}交付包已生成
+        {% else %}终审信息已保存{% endif %}
+      </strong>
+      <a class="rail-link" href="/review">返回制作与回导</a>
+    </aside>
+
+    <div class="work-column">
+      <article class="current-work" data-workbench-slot="work">
+        <header class="task-heading">
+          <div>
+            <p class="eyebrow">当前任务</p>
+            <h2 id="final-task-title">
+              {% if view.pending_action == "approve_final" %}终审视频
+              {% elif view.pending_action == "replace_scene" %}等待场景重新导入
+              {% elif view.pending_action == "export_package" %}生成交付包
+              {% elif view.stage == "exported" or view.package_reference %}交付包已生成
+              {% else %}终审与交付{% endif %}
+            </h2>
+            <p class="stage-context">任务 {{ view.task_id }} · 视频 {% if view.video_reference %}{{ view.video_reference.identity }} v{{ view.video_reference.version }}{% else %}尚未生成{% endif %}</p>
+          </div>
+        </header>
+
+        <section class="media-stage" aria-labelledby="media-title">
+          <div class="section-heading compact-heading">
+            <div><p class="eyebrow">可播放证据</p><h3 id="media-title">9:16 竖屏成片</h3></div>
+            {% if view.video_reference %}<span class="status-label">视频 v{{ view.video_reference.version }}</span>{% endif %}
+          </div>
+          {% if view.video_reference %}
+          <div class="player-wrap"><video controls preload="metadata" src="/media/video"><track kind="subtitles" srclang="zh" src="/media/subtitle" label="中文字幕"></video><p class="media-caption">视频 v{{ view.video_reference.version }} · {% if view.visual_mode in ("imported", "creator_import") %}本地导入场景证据{% else %}本地 Fixture 证据{% endif %}</p></div>
+          {% else %}
+          <div class="empty-state empty-state-inline"><h3>视频尚未就绪</h3><p>先完成制作与回导，再进入终审。</p></div>
+          {% endif %}
+        </section>
+
+        <section class="scene-board" aria-labelledby="scene-board-title">
+          <div class="section-heading compact-heading"><div><p class="eyebrow">场景选择</p><h3 id="scene-board-title">六段场景</h3></div><p class="section-note">一次只允许重新导入一个场景；其他已用媒体保持不变。</p></div>
+          <ol class="scene-list final-scenes">
+            {% for scene in view.scenes %}
+            <li>
+              <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
+              <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
+              <span class="scene-status">{% if scene.status == "ready" %}已选用{% else %}待制作{% endif %}</span>
+              {% if not view.replacement_done and view.stage == "final_review" and view.pending_action in ("approve_final", "replace_scene") and (view.visual_mode not in ("imported", "creator_import") or scene.scene_id == "scene-2") %}
+              <form method="post" action="/final/action" class="inline-form"><input type="hidden" name="action" value="replace_scene"><input type="hidden" name="scene_id" value="{{ scene.scene_id }}"><button class="button button-tertiary" type="submit">{% if view.visual_mode in ("imported", "creator_import") %}重新导入场景 2 视频{% else %}替换本地场景{% endif %}</button></form>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ol>
+        </section>
+      </article>
     </div>
-    <div class="next-action" aria-label="Next action">
-      <span class="next-action-label">Next action</span>
-      <strong>{% if view.pending_action == "approve_final" %}Approve or replace{% elif view.pending_action == "replace_scene" %}Replace one scene{% elif view.pending_action == "export_package" %}Export package{% elif view.package_reference %}Download package{% else %}No action pending{% endif %}</strong>
-    </div>
-  </header>
 
-  <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
-  {% if view.visual_mode == "imported" %}<div class="callout provenance-callout"><strong>Source attribution:</strong> creator-supplied via ChatGPT Desktop ImageGen; generated outside application; model version not verified by application; no application Provider API call; external charge 0.</div>{% elif view.visual_mode == "creator_import" %}<div class="callout provenance-callout"><strong>Source attribution:</strong> six creator-supplied MP4s were normalized locally to the fixed playable video contract; native audio, subtitles and effects remain provenance-only; no application Provider attempt or charge.</div>{% endif %}
-  {% if view.visual_mode == "creator_import" and view.imported_scene_facts %}
-  <section class="facts-section" aria-labelledby="creator-import-facts-title">
-    <div class="section-heading compact-heading"><div><p class="eyebrow">Creator import</p><h3 id="creator-import-facts-title">Current Scene Clip references</h3></div><p class="section-note">Exact committed basenames and Artifact Versions selected by this Final Video.</p></div>
-    <ul class="facts-list">{% for fact in view.imported_scene_facts %}<li>{{ fact }}</li>{% endfor %}</ul>
-  </section>
-  {% endif %}
-  {% if view.tts_engine %}<div class="callout provenance-callout"><strong>Local narration:</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</div>{% endif %}
-  {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure · {{ view.failure_category }}</strong><p>{{ view.failure_message }}</p></div>{% endif %}
+    <aside class="context-rail" data-workbench-slot="action" aria-label="终审状态与操作">
+      <p class="eyebrow">当前状态</p>
+      <h3>
+        {% if view.pending_action == "approve_final" %}待你确认终审
+        {% elif view.pending_action == "replace_scene" %}需要重新导入场景
+        {% elif view.pending_action == "export_package" %}终审已通过
+        {% elif view.package_reference %}交付包可下载
+        {% else %}等待终审{% endif %}
+      </h3>
+      <p class="decision-copy">
+        {% if view.pending_action == "approve_final" %}先完整观看和收听，再通过终审或退回；重新导入按钮保持次级。{% elif view.pending_action == "replace_scene" %}上一次终审已退回。重新导入场景 2 后，回到同一页面再次检查。{% elif view.pending_action == "export_package" %}终审决定已记录，下一步生成包含 MP4、字幕和证据的交付包。{% elif view.package_reference %}交付包已经生成，可以重复下载而无需重新制作。{% else %}当前终审事实已保存。{% endif %}
+      </p>
 
-  <div class="final-layout">
-    <section class="media-stage" aria-labelledby="media-title">
-      <div class="section-heading compact-heading"><div><p class="eyebrow">Playable evidence</p><h3 id="media-title">Vertical cut</h3></div>{% if view.video_reference %}<span class="status-label">Video v{{ view.video_reference.version }}</span>{% endif %}</div>
-      {% if view.video_reference %}
-      <div class="player-wrap"><video controls preload="metadata" src="/media/video"><track kind="subtitles" srclang="zh" src="/media/subtitle" label="中文"></video><p class="media-caption">Video v{{ view.video_reference.version }} · {% if view.visual_mode in ("imported", "creator_import") %}local imported visual evidence{% else %}local Fixture evidence{% endif %}</p></div>
-      {% else %}<div class="empty-state empty-state-inline"><h3>Video not ready</h3><p>Complete offline production before final review.</p></div>{% endif %}
-
-      <section class="scene-board" aria-labelledby="scene-board-title">
-        <div class="section-heading compact-heading"><div><p class="eyebrow">Scene selections</p><h3 id="scene-board-title">Storyboard rows</h3></div><p class="section-note">One bounded replacement; unaffected media stays selected.</p></div>
-        <ol class="scene-list final-scenes">
-          {% for scene in view.scenes %}
-          <li>
-            <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
-            <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
-            <span class="scene-status">{{ scene.status }}</span>
-            {% if not view.replacement_done and view.stage == "final_review" and view.pending_action in ("approve_final", "replace_scene") and (view.visual_mode not in ("imported", "creator_import") or scene.scene_id == "scene-2") %}
-            <form method="post" action="/final/action" class="inline-form"><input type="hidden" name="action" value="replace_scene"><input type="hidden" name="scene_id" value="{{ scene.scene_id }}"><button class="button button-tertiary" type="submit">{% if view.visual_mode in ("imported", "creator_import") %}Replace scene-2 visual{% else %}Replace locally{% endif %}</button></form>
-            {% endif %}
-          </li>
-          {% endfor %}
-        </ol>
+      <section class="decision-zone decision-zone-prominent" aria-labelledby="final-decision-title">
+        <div>
+          <p class="eyebrow">下一步</p>
+          <h3 id="final-decision-title">
+            {% if view.pending_action == "approve_final" %}通过终审
+            {% elif view.pending_action == "replace_scene" %}查看更新后的成片
+            {% elif view.pending_action == "export_package" %}生成交付包
+            {% elif view.package_reference %}交付包已就绪
+            {% else %}查看终审{% endif %}
+          </h3>
+        </div>
+        <div class="decision-action">
+          {% if view.stage == "final_review" and view.pending_action == "approve_final" %}
+          <form class="rail-form" method="post" action="/final/action">
+            <button class="button button-primary" name="action" value="approve_final">通过终审</button>
+            <div class="secondary-actions"><button class="button button-secondary" name="action" value="reject_final">退回终审</button></div>
+            <label class="field" for="final-context">退回说明
+              <textarea id="final-context" name="decision_context" rows="3" maxlength="128" placeholder="退回时填写具体原因。"></textarea>
+            </label>
+          </form>
+          {% elif view.stage == "final_review" and view.pending_action == "replace_scene" %}
+          <a class="button button-primary" href="/final">查看更新后的成片</a>
+          {% elif view.pending_action == "export_package" %}
+          <form class="rail-form" method="post" action="/final/action"><button class="button button-primary" name="action" value="export_package">生成交付包</button></form>
+          {% elif view.package_reference %}
+          <a class="button button-secondary rail-download" href="/media/package">下载交付包</a>
+          {% else %}
+          <a class="button button-primary" href="/final">查看终审</a>
+          {% endif %}
+        </div>
       </section>
-    </section>
 
-    <aside class="decision-rail" aria-labelledby="decision-rail-title">
-      <p class="eyebrow">Decision rail</p>
-      <h3 id="decision-rail-title">{% if view.pending_action == "approve_final" %}Choose the delivery state{% elif view.pending_action == "replace_scene" %}Repair one scene{% elif view.pending_action == "export_package" %}Ship the approved evidence{% elif view.package_reference %}Delivery is ready{% else %}Final state{% endif %}</h3>
-      <p class="decision-copy">{% if view.pending_action == "approve_final" %}Approve the playable cut, or replace one bounded scene before approving.{% elif view.pending_action == "replace_scene" %}The previous final decision was rejected. Replace a scene, then review the refreshed cut.{% elif view.pending_action == "export_package" %}The final decision is recorded. Export writes the approved MP4, SRT and evidence package locally.{% elif view.package_reference %}The package is complete and can be downloaded again without regenerating media.{% else %}The current task state is preserved.{% endif %}</p>
-      {% if view.local_replacement_label %}<div class="callout"><strong>{{ view.local_replacement_label }}</strong></div>{% endif %}
-      <div class="rail-status">
-        <dl class="facts facts-rail">
-          <div><dt>Script</dt><dd>{{ view.script_reference.identity }} v{{ view.script_reference.version }}</dd></div>
-          <div><dt>Source commit</dt><dd><code>{{ view.source_commit }}</code></dd></div>
-          <div><dt>Video</dt><dd>{% if view.video_reference %}Ready · v{{ view.video_reference.version }}{% else %}Not ready{% endif %}</dd></div>
-          <div><dt>Replacement</dt><dd>{% if view.replacement_done %}Complete{% else %}Available once{% endif %}</dd></div>
-          <div><dt>Final decision</dt><dd>{% if view.pending_action == "export_package" or view.package_reference %}Approved{% elif view.pending_action == "replace_scene" %}Needs revision{% else %}Pending{% endif %}</dd></div>
-          <div><dt>Package</dt><dd>{% if view.package_reference %}{{ view.package_reference.identity }} v{{ view.package_reference.version }}{% else %}Pending{% endif %}</dd></div>
-        </dl>
-      </div>
-      {% if view.provider_attempt_count %}<div class="attempt-facts">{% if view.visual_mode == "imported" %}<strong>Local processing attempts:</strong>{% else %}<strong>Provider attempts:</strong>{% endif %} {{ view.provider_attempt_count }} · {{ view.provider_attempt_statuses|join(", ") }} · charged {{ view.provider_attempt_charged_amount_micros }} micros</div>{% endif %}
-      {% if view.stage == "final_review" and view.pending_action == "approve_final" %}
-      <form class="rail-form" method="post" action="/final/action">
-        <button class="button button-primary" name="action" value="approve_final">Approve final video</button>
-        <button class="button button-secondary" name="action" value="reject_final">Reject final video</button>
-        <label class="field" for="final-context">Rejection context <textarea id="final-context" name="decision_context" rows="3" maxlength="128" placeholder="Required for rejection."></textarea></label>
-      </form>
+      {% if view.package_reference %}<p class="context-note">交付包可以重复下载；不会再次生成媒体。</p>{% endif %}
+    </aside>
+
+    <aside class="evidence-rail" data-workbench-slot="evidence" aria-label="终审来源与交付证据">
+      {% if view.failure_category %}
+      <div class="notice notice-error" role="alert"><strong>上一步未完成</strong><p>{{ view.failure_message }}</p></div>
       {% endif %}
-      {% if view.pending_action == "export_package" %}<form class="rail-form" method="post" action="/final/action"><button class="button button-primary" name="action" value="export_package">Export package</button></form>{% endif %}
-      {% if view.package_reference %}<a class="button button-secondary rail-download" href="/media/package">Download package</a>{% endif %}
+
+      {% if view.visual_mode == "creator_import" %}
+      <section class="callout provenance-callout" aria-labelledby="creator-import-title">
+        <strong id="creator-import-title">创作者导入事实</strong>
+        <p>六个 MP4 已在本地规范化为固定可播放格式。外部音频、字幕和效果只作为来源说明；应用没有创建 Provider Attempt，也没有产生费用。</p>
+      </section>
+      {% elif view.visual_mode == "imported" %}
+      <section class="callout provenance-callout" aria-labelledby="visual-import-title">
+        <strong id="visual-import-title">参考画面来源</strong>
+        <p>画面由创作者在应用外生成，再由本地处理流程转换；应用不调用 Visual Provider API，外部费用为 0。</p>
+      </section>
+      {% endif %}
+
+      {% if view.tts_engine %}
+      <section class="callout provenance-callout" aria-labelledby="final-narration-title">
+        <strong id="final-narration-title">应用所有的本地旁白</strong>
+        <p>{{ view.tts_engine }} · {{ view.tts_reference_provenance }} · 应用不调用云 Provider · 外部费用 {{ view.tts_external_charge_micros }} micros。</p>
+      </section>
+      {% endif %}
+
+      {% if view.visual_mode == "creator_import" and view.imported_scene_facts %}
+      <section class="facts-section" aria-labelledby="creator-import-facts-title">
+        <div class="section-heading compact-heading"><div><p class="eyebrow">场景来源</p><h3 id="creator-import-facts-title">当前导入的场景视频</h3></div><p class="section-note">每个固定文件名和 Artifact 版本都绑定到当前成片。</p></div>
+        <ul class="facts-list">{% for fact in view.imported_scene_facts %}<li>{{ fact }}</li>{% endfor %}</ul>
+      </section>
+      {% endif %}
+
+      <section class="facts-section" aria-labelledby="final-facts-title">
+        <div class="section-heading compact-heading"><div><p class="eyebrow">证据摘要</p><h3 id="final-facts-title">来源与交付事实</h3></div><p class="section-note">准确的引用、旁白、字幕和费用事实始终可查。</p></div>
+        <dl class="facts facts-grid">
+          <div><dt>脚本版本</dt><dd>{{ view.script_reference.identity }} v{{ view.script_reference.version }}</dd></div>
+          <div><dt>来源提交</dt><dd><code>{{ view.source_commit }}</code></dd></div>
+          <div><dt>视频版本</dt><dd>{% if view.video_reference %}{{ view.video_reference.identity }} v{{ view.video_reference.version }}{% else %}待生成{% endif %}</dd></div>
+          <div><dt>字幕版本</dt><dd>{% if view.subtitle_reference %}{{ view.subtitle_reference.identity }} v{{ view.subtitle_reference.version }}{% else %}待生成{% endif %}</dd></div>
+          <div><dt>交付包</dt><dd>{% if view.package_reference %}{{ view.package_reference.identity }} v{{ view.package_reference.version }}{% else %}待生成{% endif %}</dd></div>
+          <div><dt>应用费用</dt><dd>{{ view.provider_attempt_charged_amount_micros }} micros</dd></div>
+        </dl>
+        {% if view.provider_attempt_count %}
+        <details class="runtime-facts">
+          <summary>查看执行与来源事实</summary>
+          <dl class="facts facts-grid">
+            <div><dt>执行次数</dt><dd>{{ view.provider_attempt_count }}</dd></div>
+            <div><dt>执行状态</dt><dd>{% for item in view.provider_attempt_statuses %}<span class="evidence-line"><code>{{ item }}</code></span>{% endfor %}</dd></div>
+            <div><dt>累计费用</dt><dd>{{ view.provider_attempt_charged_amount_micros }} micros</dd></div>
+            {% if view.failure_category %}<div><dt>故障类别</dt><dd><code>{{ view.failure_category }}</code></dd></div>{% endif %}
+          </dl>
+        </details>
+        {% endif %}
+      </section>
+
+      <details class="runtime-facts">
+        <summary>运行事实</summary>
+        <dl class="facts facts-rail">
+          <div><dt>当前阶段</dt><dd><code>{{ view.stage }}</code></dd></div>
+          <div><dt>下一动作</dt><dd><code>{{ view.pending_action or "none" }}</code></dd></div>
+          <div><dt>可用动作</dt><dd>{% if view.available_actions %}{% for action in view.available_actions %}<code>{{ action }}</code>{% if not loop.last %}、{% endif %}{% endfor %}{% else %}无{% endif %}</dd></div>
+          {% if view.failure_category %}<div><dt>故障类别</dt><dd><code>{{ view.failure_category }}</code></dd></div>{% endif %}
+        </dl>
+      </details>
     </aside>
   </div>
 </section>
 {% else %}
-<section class="empty-state" data-view-kind="final" aria-labelledby="empty-final-title"><p class="eyebrow">Final / Export</p><h2 id="empty-final-title">Final review is not available</h2><p>Complete the review and production gates first.</p><a class="button button-primary" href="/review">Open Review / Produce</a></section>
+<section class="empty-state" data-view-kind="final" aria-labelledby="empty-final-title">
+  <p class="eyebrow">终审与交付</p>
+  <h2 id="empty-final-title">终审尚不可用</h2>
+  <p>请先完成制作与回导的准备。</p>
+  <a class="button button-primary" href="/review">打开制作与回导</a>
+</section>
 {% endif %}
 {% endblock %}

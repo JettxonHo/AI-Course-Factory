@@ -8,7 +8,7 @@
 | Approved by | Product Owner |
 | Approval date | 2026-08-14 |
 | H0 merged baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (Issue #129 / PR #130) |
-| Current task | H3 Issue #137 Generated Scene Clip Import on `codex/137-generated-scene-import`; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629` |
+| Current task | H3.5 Issue #139 Simplified-Chinese Creator workspace on `codex/139-chinese-creator-workspace`; H3 Issue #137 / PR #138 is complete at `main@cbdd150c31c6bab289c634c40ffa2078d5081e53` |
 | Goal type | Local single-user Creator Handoff MVP |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
@@ -81,15 +81,15 @@ Exit: package replay is byte-stable; local narration is durable/idempotent witho
 
 ### H3 — Generated Scene Clip import and exact composition
 
-Status: **IN PROGRESS** (Issue #137 candidate; independent review pending)
+Status: **COMPLETE** (Issue #137 / PR #138 merged at `main@cbdd150c31c6bab289c634c40ffa2078d5081e53`; accepted 458-test regression)
 
 Outcome: atomically import exact `scene-1.mp4` through `scene-6.mp4` from one configured directory, compose with canonical narration/SRT, and support exact `scene-2-replacement.mp4` while preserving unaffected media.
 
-Exit: creator-import payload/input/Final-gate compatibility is proven; no partial side effect occurs on failed preflight; restart and stale/recompose behavior remain exact. H3 remains in progress until Issue #137 is independently reviewed and merged.
+Exit: creator-import payload/input/Final-gate compatibility is proven; no partial side effect occurs on failed preflight; restart and stale/recompose behavior remain exact. Issue #137 is closed and PR #138 is merged; the merged candidate has accepted 458-test regression evidence.
 
 ### H3.5 — Simplified-Chinese Creator workspace
 
-Status: **PENDING H3**
+Status: **IN PROGRESS** (Issue #139 on `codex/139-chinese-creator-workspace`; independent review and merge remain pending)
 
 Outcome: redesign the three-view Creator workspace for the approved Simplified-Chinese product experience without changing H3 media lineage or Final-gate truth.
 
@@ -106,7 +106,7 @@ Exit: technical and product-quality gates pass; no Preview Video is accepted as 
 ## 7. Authorized Scope
 
 - H0 is complete at `main@d96b091` through Issue #129 / PR #130.
-- Implement and independently review the bounded H3 Issue #137 Task Contract after H2 is complete at `main@c4f2f5e`.
+- Implement and independently review the bounded H3.5 Issue #139 Task Contract after H3 is complete at `main@cbdd150c`.
 - Reuse the current live Source, Artifact repository, Script/Storyboard/Final decisions, Task media projection, local GPT-SoVITS narration, FFmpeg composition and Publish Package.
 - Change frontend only where a milestone needs contract review, handoff download, import readiness/action or final quality evidence; retain exactly three server-rendered views.
 - Update related Goal/Status facts inside the corresponding feature PR using actual, not anticipated, merge/runtime evidence.

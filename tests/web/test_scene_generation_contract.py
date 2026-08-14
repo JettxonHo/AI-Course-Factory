@@ -72,9 +72,9 @@ class SceneGenerationContractWebTests(unittest.TestCase):
 
             review = client.get("/review")
             self.assertEqual(review.status_code, 200)
-            self.assertIn("Approve storyboard", review.text)
+            self.assertIn("通过分镜", review.text)
             self.assertIn('name="decision_context"', review.text)
-            self.assertIn("Storyboard at a glance", review.text)
+            self.assertIn("六段场景一览", review.text)
 
             approved = _post(client, "/review/action", {"action": "approve_storyboard"})
             self.assertEqual(approved.status_code, 303)
@@ -82,7 +82,7 @@ class SceneGenerationContractWebTests(unittest.TestCase):
             ready = client.get("/review")
             self.assertEqual(ready.status_code, 200)
             self.assertIn("handoff_readiness", ready.text)
-            self.assertIn("Scene Generation Contract", ready.text)
+            self.assertIn("场景生成合同", ready.text)
             self.assertIn("scene-1.mp4", ready.text)
             self.assertIn("scene-6.mp4", ready.text)
             self.assertEqual(ready.text.count('data-view-kind="'), 1)
@@ -142,11 +142,9 @@ class SceneGenerationContractWebTests(unittest.TestCase):
             )
             self.assertEqual(rejected.status_code, 303)
             review = client.get("/review")
-            self.assertIn(f"Last decision context: {context}", review.text)
-            self.assertIn(
-                '<textarea id="storyboard-decision-context" name="decision_context" rows="3" maxlength="128" placeholder="Why this storyboard is ready, or what should be reconsidered."></textarea>',
-                review.text,
-            )
+            self.assertIn(context, review.text)
+            self.assertIn("分镜仍可使用", review.text)
+            self.assertIn('id="storyboard-decision-context" name="decision_context"', review.text)
 
             approved = _post(client, "/review/action", {"action": "approve_storyboard"})
             self.assertEqual(approved.status_code, 303)
