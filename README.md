@@ -14,7 +14,7 @@ Public GitHub source
   -> final review + local export
 ```
 
-本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS、F2.5 Warm Editorial 三页体验和 H1 Scene Generation Contract。Issue #135 正在把 H2 Creator Handoff Package 接入 Review：明确 Storyboard approve 后，应用完成非货币化本地运行时/六张参考 still 预检，生成可重放的 ZIP；Jimeng/Kling 手工订阅生成不产生应用 Attempt 或 charge。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
+本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS、F2.5 Warm Editorial 三页体验、H1 Scene Generation Contract 和 H2 Creator Handoff Package（Issue #135 / PR #136，444-test regression）。当前 H3 Issue #137 正在把六个 Creator MP4 导入、固定可播放归一化、精确 H2 narration 合成和 Final gate 接入 Review；Jimeng/Kling 手工订阅生成不产生应用 Attempt 或 charge。H3.5 简体中文工作台重设计与 H4 人工 watch/listen 验收仍待后续里程碑。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
 
 ## 已验收的本地工作台
 
@@ -35,6 +35,16 @@ PYTHONPATH=src uv run python -m ai_course_factory.web \
 ```
 
 Desktop ImageGen 生成发生在应用外；导入模式的本地处理费用为 0，仍须先通过现有 Budget approval。缺失或不可解码的文件会在任何 attempt、media 或 Artifact side effect 前一次性报告安全的文件名。
+
+H3 Creator MP4 导入同样只接受启动时显式配置的目录和精确文件名，不接受浏览器上传、路径表单或 Downloads/Desktop 扫描：
+
+```bash
+PYTHONPATH=src uv run python -m ai_course_factory.web \
+  --data-dir ./var/ai-course-factory \
+  --generated-clips-dir ./var/creator-generated-clips
+```
+
+应用会在一次 Review POST 中预检并归一化 `scene-1.mp4` 至 `scene-6.mp4`；视频输入固定为 H.264、540x960、yuv420p、24fps、精确 Timeline 时长。外部原生音频、字幕和效果只记录为 provenance，不会替代 H2 narration。
 
 配置 F2B 本地 GPT-SoVITS 时，必须显式提供外部 Python 3.11、官方仓库/commit、v2 推理脚本与配置、精确模型文件、Serena 参考音频和参考文本；应用不会扫描本机目录或使用云端凭据：
 

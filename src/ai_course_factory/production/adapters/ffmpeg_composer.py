@@ -16,6 +16,7 @@ from ai_course_factory.persistence import (
 )
 
 from ..model import (
+    CommittedMediaCompositionTask,
     MediaCompositionResult,
     MediaCompositionScene,
     MediaCompositionTask,
@@ -203,6 +204,43 @@ def _task_valid(task: object) -> bool:
     return 0 < expected_start <= _MAX_DURATION_MILLISECONDS
 
 
+def _committed_task_valid(task: object) -> bool:
+    if type(task) is not CommittedMediaCompositionTask or not _safe_identity(task.task_id) or not _safe_identity(task.composition_id):
+        return False
+    try:
+        _fake._safe_workspace_task(task.task_id)
+    except Exception:
+        return False
+    if (
+        not _safe_artifact_reference(task.production_request_reference, "production_request")
+        or not _safe_artifact_reference(task.timeline_reference, "timeline")
+        or not _safe_workspace_reference(task.output_reference, task.task_id)
+        or type(task.scenes) is not tuple or len(task.scenes) != 6
+    ):
+        return False
+    expected_start = 0
+    seen: set[str] = set()
+    for scene in task.scenes:
+        if (
+            type(scene.scene_id) is not str or scene.scene_id in seen
+            or not _safe_artifact_reference(scene.clip_reference, "scene_clip")
+            or not _safe_artifact_reference(scene.audio_reference, "scene_audio")
+            or not _safe_workspace_reference(scene.clip_output_reference, task.task_id)
+            or not _safe_workspace_reference(scene.audio_output_reference, task.task_id)
+            or not _duration_milliseconds(scene.start_milliseconds)
+            or not _duration_milliseconds(scene.end_milliseconds)
+            or scene.start_milliseconds != expected_start
+            or scene.end_milliseconds <= scene.start_milliseconds
+            or not _safe_subtitle(scene.subtitle_text)
+        ):
+            return False
+        if _workspace_key(scene.clip_output_reference) == _workspace_key(scene.audio_output_reference) or _workspace_key(scene.clip_output_reference) == _workspace_key(task.output_reference) or _workspace_key(scene.audio_output_reference) == _workspace_key(task.output_reference):
+            return False
+        seen.add(scene.scene_id)
+        expected_start = scene.end_milliseconds
+    return expected_start > 0 and expected_start <= _MAX_DURATION_MILLISECONDS
+
+
 def _reference_payload(reference: ArtifactReference) -> dict[str, object]:
     return {
         "artifact_type": reference.artifact_type,
@@ -256,6 +294,32 @@ def _binding(task: MediaCompositionTask) -> str:
     return _BINDING_PREFIX + hashlib.sha256(encoded).hexdigest()
 
 
+def _committed_binding(task: CommittedMediaCompositionTask) -> str:
+    encoded = json.dumps(
+        {
+            "task_id": task.task_id,
+            "composition_id": task.composition_id,
+            "production_request_reference": _reference_payload(task.production_request_reference),
+            "timeline_reference": _reference_payload(task.timeline_reference),
+            "output_reference": _workspace_payload(task.output_reference),
+            "scenes": [
+                {
+                    "scene_id": scene.scene_id,
+                    "start_milliseconds": scene.start_milliseconds,
+                    "end_milliseconds": scene.end_milliseconds,
+                    "clip_reference": _reference_payload(scene.clip_reference),
+                    "audio_reference": _reference_payload(scene.audio_reference),
+                    "clip_output_reference": _workspace_payload(scene.clip_output_reference),
+                    "audio_output_reference": _workspace_payload(scene.audio_output_reference),
+                    "subtitle_text": scene.subtitle_text,
+                }
+                for scene in task.scenes
+            ],
+        }, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")
+    return _BINDING_PREFIX + hashlib.sha256(encoded).hexdigest()
+
+
 def _input_probe_valid(
     probe: Mapping[str, Any], result: MediaGenerationResult, expected_seconds: float,
 ) -> float | None:
@@ -293,6 +357,23 @@ def _input_probe_valid(
             and type(stream.get("channels")) is int
             and stream.get("channels") == 1
         )
+    return duration if valid else None
+
+
+def _committed_probe_valid(probe: Mapping[str, Any] | None, expected_seconds: float, *, audio: bool) -> float | None:
+    if not isinstance(probe, Mapping) or not isinstance(probe.get("format"), Mapping) or probe["format"].get("format_name") != _MP4_FORMAT:
+        return None
+    streams = probe.get("streams")
+    if type(streams) is not list or len(streams) != 1 or not isinstance(streams[0], Mapping):
+        return None
+    stream = streams[0]
+    duration = _fixture._number(stream.get("duration"))
+    if duration is None or abs(duration - expected_seconds) > _INPUT_DURATION_TOLERANCE:
+        return None
+    if audio:
+        valid = stream.get("codec_type") == "audio" and stream.get("codec_name") == "aac" and stream.get("sample_rate") in {"48000", 48000} and stream.get("channels") == 1
+    else:
+        valid = stream.get("codec_type") == "video" and stream.get("codec_name") == "h264" and stream.get("width") == 540 and stream.get("height") == 960 and stream.get("pix_fmt") == "yuv420p" and _fixture._is_24_fps(stream.get("r_frame_rate")) and _fixture._is_24_fps(stream.get("avg_frame_rate"))
     return duration if valid else None
 
 
@@ -471,6 +552,70 @@ class FFmpegMediaComposer:
                 return _composition_failed()
             return output
 
+    def _compose_committed(self, task: CommittedMediaCompositionTask) -> bytes | ProductionMediaFailure:
+        total_seconds = task.scenes[-1].end_milliseconds / 1000
+        binding = _committed_binding(task)
+        with TemporaryDirectory(prefix="acf-ffmpeg-compose-committed-") as directory:
+            root = Path(directory)
+            visual_paths: list[Path] = []
+            voice_paths: list[Path] = []
+            durations: list[tuple[float, float]] = []
+            for index, scene in enumerate(task.scenes):
+                visual = self._read_input(scene.clip_output_reference)
+                voice = self._read_input(scene.audio_output_reference)
+                if isinstance(visual, ProductionMediaFailure) or isinstance(voice, ProductionMediaFailure):
+                    return _composition_failed()
+                visual_path = root / f"scene-{index:02d}-visual.mp4"
+                voice_path = root / f"scene-{index:02d}-voice.m4a"
+                try:
+                    visual_path.write_bytes(visual)
+                    voice_path.write_bytes(voice)
+                    visual_probe = _fixture._probe(visual_path, self._ffprobe_executable, self._timeout_seconds)
+                    voice_probe = _fixture._probe(voice_path, self._ffprobe_executable, self._timeout_seconds)
+                except Exception:
+                    return _composition_failed()
+                expected = (scene.end_milliseconds - scene.start_milliseconds) / 1000
+                visual_duration = _committed_probe_valid(visual_probe, expected, audio=False)
+                voice_duration = _committed_probe_valid(voice_probe, expected, audio=True)
+                if visual_duration is None or voice_duration is None:
+                    return _composition_failed()
+                visual_paths.append(visual_path); voice_paths.append(voice_path); durations.append((visual_duration, voice_duration))
+            srt_path = root / "subtitles.srt"; output_path = root / "composition.mp4"
+            try:
+                cues = "\n".join(
+                    item
+                    for index, scene in enumerate(task.scenes, start=1)
+                    for item in (str(index), f"{_srt_timestamp(scene.start_milliseconds)} --> {_srt_timestamp(scene.end_milliseconds)}", scene.subtitle_text, "")
+                )
+                srt_path.write_text(cues, encoding="utf-8", newline="\n")
+            except (OSError, ValueError):
+                return _composition_failed()
+            filter_parts: list[str] = []; video_labels: list[str] = []; audio_labels: list[str] = []
+            for index, scene in enumerate(task.scenes):
+                target = (scene.end_milliseconds - scene.start_milliseconds) / 1000
+                visual_duration, voice_duration = durations[index]
+                visual_pad = max(0.0, target - visual_duration); voice_pad = max(0.0, target - voice_duration)
+                visual_chain = f"[{2 * index}:v:0]setpts=PTS-STARTPTS,fps=24"
+                if visual_pad > 0: visual_chain += f",tpad=stop_mode=clone:stop_duration={visual_pad:.6f}"
+                visual_chain += f",trim=duration={target:.6f},setpts=PTS-STARTPTS[v{index}]"
+                audio_chain = f"[{2 * index + 1}:a:0]asetpts=PTS-STARTPTS,aresample=48000"
+                if voice_pad > 0: audio_chain += f",apad=pad_dur={voice_pad:.6f}"
+                audio_chain += f",atrim=duration={target:.6f},asetpts=PTS-STARTPTS[a{index}]"
+                filter_parts.extend((visual_chain, audio_chain)); video_labels.append(f"[v{index}]"); audio_labels.append(f"[a{index}]")
+            filter_parts.extend(("".join(video_labels) + f"concat=n={len(video_labels)}:v=1:a=0[vout]", "".join(audio_labels) + f"concat=n={len(audio_labels)}:v=0:a=1[aout]"))
+            argv: list[str] = [self._ffmpeg_executable, "-hide_banner", "-nostdin", "-loglevel", "error", "-y"]
+            for visual_path, voice_path in zip(visual_paths, voice_paths): argv.extend(("-i", str(visual_path), "-i", str(voice_path)))
+            argv.extend(("-f", "srt", "-i", str(srt_path), "-filter_complex", ";".join(filter_parts)))
+            subtitle_index = 2 * len(task.scenes)
+            argv.extend(("-map", "[vout]", "-map", "[aout]", "-map", f"{subtitle_index}:s:0", "-c:v", "libx264", "-preset", "ultrafast", "-threads", "1", "-pix_fmt", "yuv420p", "-r", "24", "-c:a", "aac", "-b:a", "64k", "-ar", "48000", "-ac", "1", "-c:s", "mov_text", "-t", f"{total_seconds:.6f}", "-map_metadata", "-1", "-metadata", f"comment={binding}", "-movflags", "+faststart", str(output_path)))
+            if _fixture._run(argv, self._timeout_seconds, capture_stdout=False) is None:
+                return _composition_failed()
+            output = _fixture._safe_result_bytes(output_path)
+            if output is None:
+                return _composition_failed()
+            probe = _fixture._probe(output_path, self._ffprobe_executable, self._timeout_seconds)
+            return output if probe is not None and _final_probe_valid(probe, binding, total_seconds) else _composition_failed()
+
     def _read_input(self, reference: WorkspaceFileReference) -> bytes | ProductionMediaFailure:
         try:
             content = self._workspace.read(reference)
@@ -504,6 +649,23 @@ class FFmpegMediaComposer:
                 task.scenes[-1].end_milliseconds,
                 "SUCCESS",
             )
+        except Exception:
+            return _composition_failed()
+
+    def compose_committed(self, task: CommittedMediaCompositionTask) -> MediaCompositionResult | ProductionMediaFailure:
+        if not _committed_task_valid(task):
+            return _invalid_task()
+        configuration_failure = self._configuration_failure()
+        if configuration_failure is not None:
+            return configuration_failure
+        try:
+            output = self._compose_committed(task)
+            if isinstance(output, ProductionMediaFailure):
+                return output
+            failure = _fake._commit_fixture(self._workspace, task.output_reference, output)
+            if failure is not None:
+                return failure
+            return MediaCompositionResult(task.composition_id, task.production_request_reference, task.timeline_reference, tuple(scene.scene_id for scene in task.scenes), _COMPOSER, task.output_reference, _MEDIA_TYPE, task.scenes[-1].end_milliseconds, "SUCCESS")
         except Exception:
             return _composition_failed()
 

@@ -37,6 +37,7 @@ from ai_course_factory.agents import (
     TimelineModelRuntimeResult,
 )
 from ai_course_factory.artifacts import (
+    ArtifactCandidate,
     ArtifactReference,
     ArtifactVersion,
     FinalVideoDecisionBoundary,
@@ -70,6 +71,12 @@ from ai_course_factory.production import (
     BudgetAuthorizationBoundary,
     BudgetDecisionOutcome,
     BudgetFailure,
+    CommittedMediaCompositionScene,
+    CommittedMediaCompositionTask,
+    CreatorImportedFinalCandidateGate,
+    CreatorSceneClipImporter,
+    CreatorSceneClipImportFailure,
+    CreatorSceneClipImportSuccess,
     FFmpegFixtureVisualGenerator,
     FFmpegFixtureVoiceGenerator,
     FFmpegMediaComposer,
@@ -172,6 +179,17 @@ def _safe_actionable_failure(code: str, category: str | None, detail: str | None
             return f"Local visual import requires valid PNG/JPEG files: {', '.join(names)}."
         if code == "LOCAL_IMPORT_DIRECTORY_REQUIRED":
             return "An explicit local visual import directory is required."
+    if code.startswith("CREATOR_SCENE_IMPORT") or code.startswith("CREATOR_SCENE_REPLACEMENT"):
+        allowed = set(re.findall(r"scene-(?:[1-6](?:-replacement)?|2-replacement)\.mp4", detail or ""))
+        if allowed:
+            names = tuple(
+                name
+                for name in (*tuple(f"scene-{index}.mp4" for index in range(1, 7)), "scene-2-replacement.mp4")
+                if name in allowed
+            )
+            return f"Creator Scene import requires valid MP4 files: {', '.join(names)}."
+        if code == "CREATOR_SCENE_IMPORT_DIRECTORY_REQUIRED":
+            return "An explicit generated-clips directory is required."
     return _safe_failure_message(category)
 
 
@@ -285,6 +303,7 @@ class ApplicationView:
     handoff_narration_references: tuple[WorkspaceFileReference, ...] = ()
     handoff_reference_still_facts: tuple[str, ...] = ()
     external_generation_notice: str | None = None
+    imported_scene_facts: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -522,6 +541,7 @@ class CourseFactoryApplication:
         tts_configuration: GPTSoVITSConfiguration | None = None,
         source_connector: object | None = None,
         local_narration_renderer: LocalNarrationRenderer | None = None,
+        generated_clips_directory: str | Path | None = None,
     ) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -551,6 +571,10 @@ class CourseFactoryApplication:
             # Preserve explicit-but-invalid import mode so it fails closed at
             # preflight instead of silently falling back to Fixture visuals.
             self.visual_import_dir = Path("\0") if visual_import_dir is not None else None
+        try:
+            self.generated_clips_directory = Path(generated_clips_directory).expanduser().resolve() if generated_clips_directory is not None else None
+        except (OSError, TypeError, ValueError):
+            self.generated_clips_directory = Path("\0") if generated_clips_directory is not None else None
 
     def close(self) -> None:
         for value in (self.checkpoints, self.media_repository, self.attempts, self.budget_decisions, self.final_decisions, self.storyboard_decisions, self.script_decisions, self.artifacts):
@@ -983,6 +1007,98 @@ class CourseFactoryApplication:
         except Exception:
             return self._failure("HANDOFF_PACKAGE_FAILED", state)
 
+    def import_generated_scene_clips(self) -> ApplicationResult:
+        """Import the complete creator video set and compose the H3 candidate."""
+        state = self._load_state()
+        if state is None:
+            return self._failure("TASK_NOT_FOUND")
+        if state.composition is not None and state.stage in {"scene_clip_import", "final_review"} and state.visual_mode == "creator_import":
+            return self._success(state)
+        if state.stage != "external_generation_pending" or state.pending_action is not None:
+            return self._failure("SCENE_CLIP_IMPORT_NOT_READY", state)
+        if self.generated_clips_directory is None:
+            return self._failure("CREATOR_SCENE_IMPORT_DIRECTORY_REQUIRED", state, persist_state=False)
+        handoff_reference = state.refs.get("handoff_package")
+        contract_reference = state.refs.get("scene_generation_contract")
+        request_reference = state.refs.get("production_request")
+        if handoff_reference is None or contract_reference is None or request_reference is None:
+            return self._failure("SCENE_CLIP_IMPORT_NOT_READY", state)
+        try:
+            request = self.artifacts.get(request_reference)
+            contract = self.artifacts.get(contract_reference)
+            handoff = self.artifacts.get(handoff_reference)
+            entries = contract.payload["scene_generation_contract"]["scenes"]
+            durations = tuple((entry["scene_id"], entry["duration_milliseconds"]) for entry in entries)
+            handoff_payload = handoff.payload if isinstance(handoff, ArtifactVersion) else None
+            narration_values = handoff_payload.get("narration_references") if isinstance(handoff_payload, Mapping) else None
+            if type(narration_values) is not tuple or len(narration_values) != 6:
+                return self._failure("H2_NARRATION_INPUT_UNAVAILABLE", state, persist_state=False)
+            narration_refs = tuple(_workspace_from(dict(item)) for item in narration_values if isinstance(item, Mapping))
+            if (
+                len(narration_refs) != 6
+                or len(set(narration_refs)) != 6
+                or any(reference.task_id != TASK_ID or reference.area != "media" for reference in narration_refs)
+                or any(not isinstance(self.workspace.read(reference), bytes) for reference in narration_refs)
+            ):
+                return self._failure("H2_NARRATION_INPUT_UNAVAILABLE", state, persist_state=False)
+            importer = CreatorSceneClipImporter(
+                self.workspace,
+                self.generated_clips_directory,
+                task_id=TASK_ID,
+                scene_durations=durations,
+                ffmpeg_executable=self.ffmpeg_executable,
+                ffprobe_executable=self.ffprobe_executable,
+            )
+            imported = importer.import_full_set()
+            if isinstance(imported, CreatorSceneClipImportFailure):
+                return self._failure(imported.code, state, imported.message, persist_state=False)
+            if not isinstance(imported, CreatorSceneClipImportSuccess) or len(imported.clips) != 6:
+                return self._failure("CREATOR_SCENE_IMPORT_FAILED", state, persist_state=False)
+            clip_refs: list[ArtifactReference] = []
+            audio_refs: list[ArtifactReference] = []
+            for entry, clip, audio_output in zip(entries, imported.clips, narration_refs, strict=True):
+                scene_id = entry["scene_id"]
+                clip_candidate = self._creator_clip_candidate(request_reference, contract_reference, clip, prior_reference=None, commit_id=f"creator-import:scene-clip:{scene_id}:v1")
+                clip_reference = self.artifacts.commit(clip_candidate)
+                clip_refs.append(clip_reference)
+                audio_candidate = self._local_narration_candidate(request_reference, contract_reference, handoff_reference, scene_id, audio_output, entry["duration_milliseconds"], prior_reference=None, commit_id=f"creator-import:scene-audio:{scene_id}:v1")
+                audio_refs.append(self.artifacts.commit(audio_candidate))
+            committed_scene_values: list[CommittedMediaCompositionScene] = []
+            start_milliseconds = 0
+            for entry, clip, clip_reference, audio_reference, audio_output in zip(entries, imported.clips, clip_refs, audio_refs, narration_refs, strict=True):
+                end_milliseconds = start_milliseconds + int(entry["duration_milliseconds"])
+                committed_scene_values.append(CommittedMediaCompositionScene(entry["scene_id"], start_milliseconds, end_milliseconds, clip_reference, clip.output_reference, audio_reference, audio_output, entry["narration"]))
+                start_milliseconds = end_milliseconds
+            committed_scenes = tuple(committed_scene_values)
+            task = CommittedMediaCompositionTask(TASK_ID, "composition:episode-1", request_reference, state.refs["timeline"], committed_scenes, WorkspaceFileReference(TASK_ID, "media", "composition.mp4"))
+            orchestrator = self._orchestrator()
+            result = orchestrator.compose_committed(request_reference, request, task, artifact_identity="media:episode-1", composition_commit_id="composition:episode-1")
+            if isinstance(result, ProductionMediaFailure):
+                return self._failure(result.code, state, result.message, persist_state=False)
+            final_gate = CreatorImportedFinalCandidateGate(self.artifacts).validate(result.video_reference, contract_reference)
+            if isinstance(final_gate, ProductionMediaFailure):
+                return self._failure(final_gate.code, state, final_gate.message, persist_state=False)
+            media = TaskMediaProjectionService(self.artifacts, self.media_repository)
+            snapshot_result = media.inspect(TASK_ID)
+            if snapshot_result.status == "failure":
+                created = media.create(TASK_ID, "media:create:creator-import", request_reference)
+                if created.status != "success":
+                    return self._failure(created.error_code or "MEDIA_TASK_CREATE_FAILED", state, persist_state=False)
+                snapshot_result = created
+            snapshot = snapshot_result.snapshot
+            if snapshot is None:
+                return self._failure("MEDIA_TASK_NOT_FOUND", state, persist_state=False)
+            selections = tuple((scene.scene_id, "scene_clip", reference) for scene, reference in zip(committed_scenes, result.scene_clip_references, strict=True)) + tuple((scene.scene_id, "scene_audio", reference) for scene, reference in zip(committed_scenes, result.scene_audio_references, strict=True))
+            projected = media.select_batch(TASK_ID, "media:creator-import:v1", snapshot.revision, selections, (("subtitle", result.subtitle_reference), ("master_audio", result.master_audio_reference), ("video", result.video_reference)))
+            if projected.status != "success":
+                return self._failure(projected.error_code or "MEDIA_SELECTION_FAILED", state, persist_state=False)
+            refs = {**state.refs, "subtitle": result.subtitle_reference, "master_audio": result.master_audio_reference, "video": result.video_reference}
+            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, None, self._committed_composition_json(task, result), None, None, None, False, "creator_import", state.tts_mode, state.handoff_package_output, state.handoff_narration_references or narration_refs, state.handoff_reference_still_facts)
+            self._save_state(updated)
+            return self._success(updated)
+        except Exception:
+            return self._failure("CREATOR_SCENE_IMPORT_FAILED", state, persist_state=False)
+
     def submit_budget_decision(self, action: str = "approve", *, maximum_approved_amount_micros: int | None = None, maximum_attempts: int | None = None, decision_context: str = "") -> ApplicationResult:
         state = self._load_state()
         if state is None:
@@ -1064,6 +1180,10 @@ class CourseFactoryApplication:
             return self._failure("SCENE_REPLACEMENT_UNAVAILABLE", state)
         if scene_id not in SCENE_IDS:
             return self._failure("INVALID_SCENE_ID", state)
+        if state.visual_mode == "creator_import":
+            if scene_id != "scene-2":
+                return self._failure("SCENE_REPLACEMENT_UNAVAILABLE", state)
+            return self._replace_creator_scene_two(state)
         if state.visual_mode == "imported" and scene_id != "scene-2":
             return self._failure("SCENE_REPLACEMENT_UNAVAILABLE", state)
         try:
@@ -1124,6 +1244,58 @@ class CourseFactoryApplication:
         except Exception:
             return self._failure("SCENE_REPLACEMENT_FAILED", state)
 
+    def _replace_creator_scene_two(self, state: _State) -> ApplicationResult:
+        if state.replacement_done or state.composition is None or self.generated_clips_directory is None:
+            return self._failure("SCENE_REPLACEMENT_UNAVAILABLE", state)
+        try:
+            request_reference = state.refs["production_request"]
+            contract_reference = state.refs["scene_generation_contract"]
+            request = self.artifacts.get(request_reference)
+            contract = self.artifacts.get(contract_reference)
+            entries = contract.payload["scene_generation_contract"]["scenes"]
+            importer = CreatorSceneClipImporter(self.workspace, self.generated_clips_directory, task_id=TASK_ID, scene_durations=tuple((entry["scene_id"], entry["duration_milliseconds"]) for entry in entries), ffmpeg_executable=self.ffmpeg_executable, ffprobe_executable=self.ffprobe_executable)
+            imported = importer.replace_scene_two()
+            if isinstance(imported, CreatorSceneClipImportFailure):
+                return self._failure(imported.code, state, imported.message, persist_state=False)
+            if not isinstance(imported, CreatorSceneClipImportSuccess) or len(imported.clips) != 1:
+                return self._failure("CREATOR_SCENE_REPLACEMENT_FAILED", state, persist_state=False)
+            replacement = imported.clips[0]
+            composition_value = state.composition
+            old_scene = next(item for item in composition_value["scenes"] if item["scene_id"] == "scene-2")
+            old_clip_reference = _ref_from(old_scene["clip_reference"])
+            clip_candidate = self._creator_clip_candidate(request_reference, contract_reference, replacement, prior_reference=old_clip_reference, commit_id=f"creator-import:scene-clip:scene-2:v{old_clip_reference.version + 1}")
+            clip_reference = self.artifacts.commit(clip_candidate)
+            committed_task = self._committed_composition_task(composition_value, request_reference, output_name="composition-replaced.mp4")
+            scenes = list(committed_task.scenes)
+            scene_two_index = next(index for index, scene in enumerate(scenes) if scene.scene_id == "scene-2")
+            original = scenes[scene_two_index]
+            scenes[scene_two_index] = CommittedMediaCompositionScene(original.scene_id, original.start_milliseconds, original.end_milliseconds, clip_reference, replacement.output_reference, original.audio_reference, original.audio_output_reference, original.subtitle_text)
+            replaced_task = CommittedMediaCompositionTask(committed_task.task_id, committed_task.composition_id, committed_task.production_request_reference, committed_task.timeline_reference, tuple(scenes), committed_task.output_reference)
+            previous_result = self._committed_composition_result(composition_value)
+            result = self._orchestrator().compose_committed(request_reference, request, replaced_task, artifact_identity="media:episode-1", composition_commit_id="composition-replaced-1", previous_result=previous_result)
+            if isinstance(result, ProductionMediaFailure):
+                return self._failure(result.code, state, result.message, persist_state=False)
+            final_gate = CreatorImportedFinalCandidateGate(self.artifacts).validate(result.video_reference, contract_reference)
+            if isinstance(final_gate, ProductionMediaFailure):
+                return self._failure(final_gate.code, state, final_gate.message, persist_state=False)
+            media = TaskMediaProjectionService(self.artifacts, self.media_repository)
+            snapshot_result = media.inspect(TASK_ID)
+            if snapshot_result.status != "success" or snapshot_result.snapshot is None:
+                return self._failure("MEDIA_TASK_NOT_FOUND", state, persist_state=False)
+            projected = media.select_batch(TASK_ID, "media:creator-import:replacement:scene-2", snapshot_result.snapshot.revision, (("scene-2", "scene_clip", result.scene_clip_references[scene_two_index]),), (("video", result.video_reference),))
+            if projected.status != "success":
+                return self._failure(projected.error_code or "MEDIA_SELECTION_FAILED", state, persist_state=False)
+            refs = {**state.refs, "video": result.video_reference, "master_audio": result.master_audio_reference}
+            review_service = FinalVideoReviewApplicationService(self.artifacts, FinalVideoDecisionBoundary(self.final_decisions), FinalVideoReviewWorkflow(self.artifacts, self.checkpoints))
+            review_started = review_service.start(TASK_ID, _final_thread(result.video_reference), result.video_reference)
+            if review_started.status == "failure":
+                return self._failure(review_started.error_code or "FINAL_REVIEW_FAILED", state, persist_state=False)
+            updated = _State(TASK_ID, "final_review", "approve_final", refs, state.decision_ids, None, self._committed_composition_json(replaced_task, result), None, None, None, True, "creator_import", state.tts_mode, state.handoff_package_output, state.handoff_narration_references, state.handoff_reference_still_facts)
+            self._save_state(updated)
+            return self._success(updated)
+        except Exception:
+            return self._failure("CREATOR_SCENE_REPLACEMENT_FAILED", state, persist_state=False)
+
     def submit_final_decision(self, action: str = "approve", *, decision_context: str = "") -> ApplicationResult:
         state = self._load_state()
         if state is None:
@@ -1135,6 +1307,13 @@ class CourseFactoryApplication:
         if action in {"reject", "revise"} and not decision_context.strip():
             return self._failure("INVALID_DECISION_CONTEXT", state)
         try:
+            if state.visual_mode == "creator_import":
+                contract_reference = state.refs.get("scene_generation_contract")
+                if contract_reference is None:
+                    return self._failure("CREATOR_FINAL_GATE_INVALID_REFERENCE", state)
+                final_gate = CreatorImportedFinalCandidateGate(self.artifacts).validate(state.refs["video"], contract_reference)
+                if isinstance(final_gate, ProductionMediaFailure):
+                    return self._failure(final_gate.code, state, final_gate.message)
             service = FinalVideoReviewApplicationService(self.artifacts, FinalVideoDecisionBoundary(self.final_decisions), FinalVideoReviewWorkflow(self.artifacts, self.checkpoints))
             video_reference = state.refs["video"]
             thread_id = _final_thread(video_reference)
@@ -1310,8 +1489,96 @@ class CourseFactoryApplication:
     def _composition_json(self, task: MediaCompositionTask, result: ProductionCompositionResult) -> dict[str, Any]:
         return {"task_id": task.task_id, "composition_id": task.composition_id, "production_request_reference": _ref_json(task.production_request_reference), "timeline_reference": _ref_json(task.timeline_reference), "output_reference": _workspace_json(task.output_reference), "scenes": [{"scene_id": scene.scene_id, "start_milliseconds": scene.start_milliseconds, "end_milliseconds": scene.end_milliseconds, "subtitle_text": scene.subtitle_text, "visual_result": _media_result_json(scene.visual_result), "voice_result": _media_result_json(scene.voice_result)} for scene in task.scenes], "scene_clip_references": [_ref_json(item) for item in result.scene_clip_references], "scene_audio_references": [_ref_json(item) for item in result.scene_audio_references], "subtitle_reference": _ref_json(result.subtitle_reference), "master_audio_reference": _ref_json(result.master_audio_reference), "video_reference": _ref_json(result.video_reference)}
 
+    def _committed_composition_json(self, task: CommittedMediaCompositionTask, result: ProductionCompositionResult) -> dict[str, Any]:
+        return {
+            "kind": "creator_import",
+            "task_id": task.task_id,
+            "composition_id": task.composition_id,
+            "production_request_reference": _ref_json(task.production_request_reference),
+            "timeline_reference": _ref_json(task.timeline_reference),
+            "output_reference": _workspace_json(task.output_reference),
+            "scenes": [
+                {
+                    "scene_id": scene.scene_id,
+                    "start_milliseconds": scene.start_milliseconds,
+                    "end_milliseconds": scene.end_milliseconds,
+                    "subtitle_text": scene.subtitle_text,
+                    "clip_reference": _ref_json(scene.clip_reference),
+                    "clip_output_reference": _workspace_json(scene.clip_output_reference),
+                    "audio_reference": _ref_json(scene.audio_reference),
+                    "audio_output_reference": _workspace_json(scene.audio_output_reference),
+                }
+                for scene in task.scenes
+            ],
+            "scene_clip_references": [_ref_json(item) for item in result.scene_clip_references],
+            "scene_audio_references": [_ref_json(item) for item in result.scene_audio_references],
+            "subtitle_reference": _ref_json(result.subtitle_reference),
+            "master_audio_reference": _ref_json(result.master_audio_reference),
+            "video_reference": _ref_json(result.video_reference),
+        }
+
+    def _creator_clip_candidate(self, request_reference: ArtifactReference, contract_reference: ArtifactReference, clip: object, *, prior_reference: ArtifactReference | None, commit_id: str) -> ArtifactCandidate:
+        return ArtifactCandidate(
+            "scene_clip",
+            f"media:episode-1:{clip.scene_id}",
+            {
+                "source_kind": "creator_import",
+                "production_request_reference": request_reference,
+                "scene_generation_contract_reference": contract_reference,
+                "scene_id": clip.scene_id,
+                "declared_filename": clip.declared_filename,
+                "creator_provenance": clip.creator_provenance,
+                "output_reference": _workspace_json(clip.output_reference),
+                "media_type": clip.media_type,
+                "duration_milliseconds": clip.duration_milliseconds,
+            },
+            ({"creator_import": True},),
+            (request_reference, contract_reference),
+            True,
+            commit_id,
+            prior_reference,
+        )
+
+    def _local_narration_candidate(self, request_reference: ArtifactReference, contract_reference: ArtifactReference, handoff_reference: ArtifactReference, scene_id: str, output_reference: WorkspaceFileReference, duration_milliseconds: int, *, prior_reference: ArtifactReference | None, commit_id: str) -> ArtifactCandidate:
+        return ArtifactCandidate(
+            "scene_audio",
+            f"media:episode-1:{scene_id}",
+            {
+                "source_kind": "local_narration",
+                "production_request_reference": request_reference,
+                "scene_generation_contract_reference": contract_reference,
+                "creator_handoff_package_reference": handoff_reference,
+                "scene_id": scene_id,
+                "output_reference": _workspace_json(output_reference),
+                "media_type": "audio/mp4",
+                "duration_milliseconds": duration_milliseconds,
+            },
+            ({"local_narration": True},),
+            (request_reference, contract_reference, handoff_reference),
+            True,
+            commit_id,
+            prior_reference,
+        )
+
     def _composition_result(self, value: Mapping[str, Any]) -> ProductionCompositionResult:
         return ProductionCompositionResult(TASK_ID, value["composition_id"], _ref_from(value["production_request_reference"]), _ref_from(value["timeline_reference"]), tuple(_ref_from(item) for item in value["scene_clip_references"]), tuple(_ref_from(item) for item in value["scene_audio_references"]), _ref_from(value["subtitle_reference"]), _ref_from(value["master_audio_reference"]), _ref_from(value["video_reference"]), _workspace_from(value["output_reference"]), "SUCCESS")
+
+    def _committed_composition_result(self, value: Mapping[str, Any]) -> ProductionCompositionResult:
+        return self._composition_result(value)
+
+    def _committed_composition_task(self, value: Mapping[str, Any], request_reference: ArtifactReference, *, output_name: str | None = None) -> CommittedMediaCompositionTask:
+        scenes = tuple(
+            CommittedMediaCompositionScene(
+                item["scene_id"], item["start_milliseconds"], item["end_milliseconds"],
+                _ref_from(item["clip_reference"]), _workspace_from(item["clip_output_reference"]),
+                _ref_from(item["audio_reference"]), _workspace_from(item["audio_output_reference"]), item["subtitle_text"],
+            )
+            for item in value["scenes"]
+        )
+        output = _workspace_from(value["output_reference"])
+        if output_name is not None:
+            output = WorkspaceFileReference(TASK_ID, "media", output_name)
+        return CommittedMediaCompositionTask(TASK_ID, value["composition_id"], request_reference, _ref_from(value["timeline_reference"]), scenes, output)
 
     def _composition_task(self, value: Mapping[str, Any], request_reference: ArtifactReference, *, output_name: str | None = None) -> MediaCompositionTask:
         scenes = tuple(MediaCompositionScene(item["scene_id"], item["start_milliseconds"], item["end_milliseconds"], _media_result_from(item["visual_result"]), _media_result_from(item["voice_result"]), item["subtitle_text"]) for item in value["scenes"])
@@ -1479,6 +1746,23 @@ class CourseFactoryApplication:
         handoff_package_output = state.handoff_package_output
         handoff_narration_references = state.handoff_narration_references
         handoff_reference_still_facts = state.handoff_reference_still_facts
+        imported_scene_facts: tuple[str, ...] = ()
+        if state.visual_mode == "creator_import" and isinstance(state.composition, Mapping):
+            facts: list[str] = []
+            raw_scenes = state.composition.get("scenes")
+            if type(raw_scenes) is list:
+                for raw_scene in raw_scenes:
+                    if not isinstance(raw_scene, Mapping) or type(raw_scene.get("scene_id")) is not str:
+                        continue
+                    try:
+                        clip_reference = _ref_from(raw_scene["clip_reference"])
+                        clip_version = self.artifacts.get(clip_reference)
+                        clip_payload = clip_version.payload if isinstance(clip_version, ArtifactVersion) else {}
+                        filename = clip_payload.get("declared_filename", f"{raw_scene['scene_id']}.mp4") if isinstance(clip_payload, Mapping) else f"{raw_scene['scene_id']}.mp4"
+                        facts.append(f"{raw_scene['scene_id']}: {filename} · {clip_reference.identity} v{clip_reference.version}")
+                    except Exception:
+                        continue
+            imported_scene_facts = tuple(facts)
         handoff_narration_metadata: Mapping[str, Any] | None = None
         if handoff_package_reference is not None:
             try:
@@ -1510,7 +1794,13 @@ class CourseFactoryApplication:
         elif state.stage == "handoff_readiness":
             available = ("prepare_handoff_package",)
         elif state.stage == "external_generation_pending":
-            available = ("download_handoff_package",)
+            available = (
+                ("download_handoff_package", "import_generated_scene_clips")
+                if state.refs.get("handoff_package") is not None and self.generated_clips_directory is not None
+                else ("download_handoff_package",)
+                if state.refs.get("handoff_package") is not None
+                else ()
+            )
         elif state.pending_action == "export_package":
             available = ("export_package",)
         elif state.stage == "final_review":
@@ -1546,6 +1836,7 @@ class CourseFactoryApplication:
             handoff_narration_references,
             handoff_reference_still_facts,
             "External Jimeng/Kling subscription generation is outside AI Course Factory; no application Attempt or charge is created.",
+            imported_scene_facts,
         )
 
 

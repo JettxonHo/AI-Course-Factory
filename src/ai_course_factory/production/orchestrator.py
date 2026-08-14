@@ -14,9 +14,10 @@ from .attempt import (
     ProviderAttemptReservation,
 )
 from .budget import _validate_request
-from .composition import compose_product_path
+from .composition import compose_committed_product_path, compose_product_path
 from .interfaces import VisualGenerator, VoiceGenerator
 from .model import (
+    CommittedMediaCompositionTask,
     MediaGenerationResult,
     MediaCompositionTask,
     ProductionCompositionResult,
@@ -417,6 +418,28 @@ class ProductionOrchestrator:
     ) -> ProductionCompositionResult | ProductionMediaFailure:
         return compose_product_path(
             self._attempt_ledger,
+            self._media_composer,
+            self._artifact_repository,
+            production_request_reference,
+            production_request_version,
+            composition_task,
+            artifact_identity=artifact_identity,
+            composition_commit_id=composition_commit_id,
+            previous_result=previous_result,
+        )
+
+    def compose_committed(
+        self,
+        production_request_reference: ArtifactReference,
+        production_request_version: ArtifactVersion,
+        composition_task: CommittedMediaCompositionTask,
+        *,
+        artifact_identity: str,
+        composition_commit_id: str,
+        previous_result: ProductionCompositionResult | None = None,
+    ) -> ProductionCompositionResult | ProductionMediaFailure:
+        """Compose committed creator-import media without consulting attempts."""
+        return compose_committed_product_path(
             self._media_composer,
             self._artifact_repository,
             production_request_reference,

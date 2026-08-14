@@ -32,6 +32,7 @@ _FORM_ACTIONS = {
     "approve_storyboard",
     "reject_storyboard",
     "prepare_handoff_package",
+    "import_generated_scene_clips",
     "approve_budget",
     "produce_offline",
     "approve_final",
@@ -45,6 +46,25 @@ _SCENE_IDS = {f"scene-{index}" for index in range(1, 7)}
 
 class _FormError(ValueError):
     pass
+
+
+def _creator_import_replay_ready(view: object) -> bool:
+    """Allow only a completed creator-import view to replay the import POST."""
+    if view is None:
+        return False
+    try:
+        imported_facts = view.imported_scene_facts
+        return (
+            view.stage == "final_review"
+            and view.visual_mode == "creator_import"
+            and view.handoff_package_reference is not None
+            and view.video_reference is not None
+            and type(imported_facts) is tuple
+            and len(imported_facts) == len(_SCENE_IDS)
+            and all(type(fact) is str and fact for fact in imported_facts)
+        )
+    except AttributeError:
+        return False
 
 
 def _templates() -> Jinja2Templates:
@@ -162,6 +182,7 @@ def create_app(
     application: CourseFactoryApplication | None = None,
     source_connector: object | None = None,
     visual_import_dir: str | Path | None = None,
+    generated_clips_directory: str | Path | None = None,
     tts_configuration: GPTSoVITSConfiguration | None = None,
     local_narration_renderer: LocalNarrationRenderer | None = None,
 ) -> FastAPI:
@@ -183,6 +204,7 @@ def create_app(
     app.state.course_factory_data_dir = configured_dir
     app.state.course_factory_source_connector = source_connector
     app.state.course_factory_visual_import_dir = visual_import_dir if visual_import_dir is not None else os.environ.get("AI_COURSE_FACTORY_VISUAL_IMPORT_DIR")
+    app.state.course_factory_generated_clips_directory = generated_clips_directory
     app.state.course_factory_tts_configuration = tts_configuration
     app.state.course_factory_local_narration_renderer = local_narration_renderer
     app.state.templates = templates
@@ -209,6 +231,7 @@ def create_app(
                 app.state.course_factory_data_dir,
                 source_connector=app.state.course_factory_source_connector,
                 visual_import_dir=app.state.course_factory_visual_import_dir,
+                generated_clips_directory=app.state.course_factory_generated_clips_directory,
                 tts_configuration=app.state.course_factory_tts_configuration,
                 local_narration_renderer=app.state.course_factory_local_narration_renderer,
             )
@@ -305,6 +328,14 @@ def create_app(
                 )
             elif action == "prepare_handoff_package" and current.view.stage == "handoff_readiness":
                 result = facade().prepare_handoff_package()
+            elif action == "import_generated_scene_clips" and (
+                (
+                    current.view.stage == "external_generation_pending"
+                    and current.view.handoff_package_reference is not None
+                )
+                or _creator_import_replay_ready(current.view)
+            ):
+                result = facade().import_generated_scene_clips()
             elif action == "approve_budget" and current.view.stage == "budget_review":
                 result = facade().submit_budget_decision("approve")
             elif action == "produce_offline" and current.view.stage == "production":
@@ -319,6 +350,8 @@ def create_app(
             return _failure_page(templates, request, "review.html", None)
         if result.status != "success":
             return _failure_page(templates, request, "review.html", result)
+        if action == "import_generated_scene_clips" and result.view is not None and result.view.stage == "final_review":
+            return RedirectResponse("/review", status_code=303)
         if result.view is not None and result.view.stage == "final_review":
             return RedirectResponse("/final", status_code=303)
         return RedirectResponse("/review", status_code=303)
@@ -379,6 +412,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the AI Course Factory offline workspace")
     parser.add_argument("--data-dir", required=True, help="explicit durable local data directory")
     parser.add_argument("--visual-import-dir", required=False, help="explicit directory containing scene-1.png through scene-6.png")
+    parser.add_argument("--generated-clips-dir", required=False, help="explicit directory containing scene-1.mp4 through scene-6.mp4")
     parser.add_argument("--tts-external-python", required=False)
     parser.add_argument("--tts-repository-root", required=False)
     parser.add_argument("--tts-repository-commit", required=False)
@@ -412,7 +446,7 @@ def main() -> None:
             reference_transcript=args.tts_reference_transcript,
             model_identifier=args.tts_model_identifier,
         )
-    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir, tts_configuration=tts_configuration), host="127.0.0.1", port=args.port, log_level="info")
+    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir, generated_clips_directory=args.generated_clips_dir, tts_configuration=tts_configuration), host="127.0.0.1", port=args.port, log_level="info")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from ai_course_factory.artifacts import ArtifactCandidate, ArtifactCommitBoundary, ArtifactCommitError, ArtifactNotFoundError, ArtifactReference
 from ai_course_factory.persistence import WorkspaceFileReference
 from ai_course_factory.production import (
+    CommittedMediaCompositionTask,
     MediaCompositionResult,
     MediaCompositionScene,
     MediaCompositionTask,
@@ -45,6 +46,20 @@ class _Composer:
             task.output_reference,
             "video/mp4",
             task.scenes[-1].end_milliseconds,
+            "SUCCESS",
+        )
+
+    def compose_committed(self, task):
+        self.calls.append(task)
+        return MediaCompositionResult(
+            task.composition_id,
+            task.production_request_reference,
+            task.timeline_reference,
+            tuple(scene.scene_id for scene in task.scenes),
+            "test-composer",
+            task.output_reference,
+            "video/mp4",
+            task.scenes[-1].end_milliseconds if task.scenes else 0,
             "SUCCESS",
         )
 
@@ -182,6 +197,36 @@ def _composition_case(task_id="task:composition"):
 
 
 class ProductionCompositionOrchestratorTests(unittest.TestCase):
+    def test_committed_path_rejects_invalid_shape_without_consulting_attempt_ledger(self):
+        request_reference, request, legacy_task, ledger, composer, repository = _composition_case()
+        committed_task = CommittedMediaCompositionTask(
+            legacy_task.task_id,
+            legacy_task.composition_id,
+            legacy_task.production_request_reference,
+            legacy_task.timeline_reference,
+            (),
+            legacy_task.output_reference,
+        )
+
+        result = ProductionOrchestrator(
+            ledger,
+            object(),
+            composer,
+            clock=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            media_composer=composer,
+            artifact_repository=repository,
+        ).compose_committed(
+            request_reference,
+            request,
+            committed_task,
+            artifact_identity="media:episode-1",
+            composition_commit_id="composition-commit-committed-invalid",
+        )
+
+        self.assertIsInstance(result, ProductionMediaFailure)
+        self.assertEqual(result.code, "INVALID_COMPOSITION_CONTEXT")
+        self.assertEqual(ledger.get_calls, [])
+
     def test_composition_result_is_frozen_slotted_and_has_exact_public_shape(self):
         self.assertTrue(ProductionCompositionResult.__dataclass_params__.frozen)
         self.assertTrue(hasattr(ProductionCompositionResult, "__slots__"))
