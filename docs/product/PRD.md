@@ -118,7 +118,7 @@ The MVP is accepted when one browser-driven Demo proves:
 
 Required evidence is the browser flow, the exported package, F2A visual-asset evidence plus the local GPT-SoVITS execution records, focused tests for changed behavior and the full regression run before merge/acceptance.
 
-Issue #117's accepted F2A evidence covers six local image inputs, exact preflight failure, local H.264 conversion, visual-only replacement, restart replay and honest external-source attribution. Issue #119 accepted the local GPT-SoVITS TTS path. Issue #123 / PR #124 supplied partial media/recovery evidence but did not prove live GitHub acquisition. Issue #125 corrected that boundary and repeated the complete same-task source-to-package browser acceptance; final Goal approval remains a post-merge planning verdict.
+Issue #117's accepted F2A evidence covers six local image inputs, exact preflight failure, local H.264 conversion, visual-only replacement, restart replay and honest external-source attribution. Issue #119 accepted the local GPT-SoVITS TTS path. Issue #123 / PR #124 supplied partial media/recovery evidence but did not prove live GitHub acquisition. Issue #125 / PR #126 corrected that boundary and repeated the complete same-task source-to-package browser acceptance; the planning controller accepted the merged combined evidence as `GOAL_APPROVED` on 2026-08-14.
 
 ## 8. Non-goals
 
@@ -136,4 +136,4 @@ Issue #117's accepted F2A evidence covers six local image inputs, exact prefligh
 - `PD-002` Approved: local GPT-SoVITS v2 through explicit external Python 3.11/repository/model configuration and the fixed synthetic Serena reference, with zero external charge.
 - `PD-003` Smoke-test and full-Demo cost/attempt caps remain unchanged and local F2B inference does not incur external charge.
 
-FAST-MVP acceptance does not authorize cloud credentials, paid calls, fees or deployment. F2A's external image generation remains outside the application, while F2B's local GPT-SoVITS inference uses no credentials or application Provider API call. F2.5 remains complete; the corrected F3 candidate is approved for merge but is local-product evidence, not cloud or deployed-runtime evidence.
+FAST-MVP acceptance does not authorize cloud credentials, paid calls, fees or deployment. F2A's external image generation remains outside the application, while F2B's local GPT-SoVITS inference uses no credentials or application Provider API call. F2.5 and F3 are complete for the fixed local single-user product; this is local-product evidence, not cloud or deployed-runtime evidence.

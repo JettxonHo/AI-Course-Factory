@@ -2,9 +2,9 @@
 
 ## Verdict
 
-**CORRECTED F3 CANDIDATE / APPROVED FOR MERGE**
+**GOAL_APPROVED**
 
-Issue #123 / PR #124 recorded partial media/recovery evidence on 2026-08-14 but used a Fixture source and did not establish the PRD Source boundary. Issue #125 supersedes that verdict with a new browser run from a previously nonexistent data directory on a candidate based on `main@af61d31e949e20947517ba4d8ab6db867b6a5017`. The Creator submitted the supported public URL, the default connector acquired a live immutable source, and the same task completed Script review, Budget, real local media, recovery, Final approval and export. Independent main review approves the correction for merge; final Goal approval remains a post-merge planning verdict.
+Issue #123 / PR #124 recorded partial media/recovery evidence on 2026-08-14 but used a Fixture source and did not establish the PRD Source boundary. Issue #125 / PR #126 superseded that verdict with a new browser run from a previously nonexistent data directory. The Creator submitted the supported public URL, the default connector acquired a live immutable source, and the same task completed Script review, Budget, real local media, recovery, Final approval and export. The correction merged at `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1`; after independent review of the merged correction and upstream source facts, the planning controller accepted FAST-MVP v1.1 as `GOAL_APPROVED` on 2026-08-14.
 
 This verdict accepts a local, single-user MVP. It is not evidence of cloud Provider use, paid execution, deployment, publication, adoption, or production operations.
 
@@ -103,9 +103,9 @@ After the second restart, video, subtitle and package endpoints all returned HTT
 - Source, Budget, local attempt, zero-charge, visual and TTS provenance remained visible while raw configuration paths and internal errors did not appear.
 - Screenshots and generated inspection assets remain outside the repository.
 
-## Repository verification (Issue #125 candidate)
+## Repository verification (Issue #125 / PR #126)
 
-The correction branch passed:
+The merged correction passed:
 
 - 52 focused source, web, local-import, GPT-SoVITS, facade and durable integration tests;
 - the complete 422-test local regression;
@@ -116,4 +116,4 @@ The normal repository suite does not invoke the opt-in heavy GPT-SoVITS acceptan
 
 ## Remaining boundary
 
-Issue #123/#124 remains partial historical media/recovery evidence; Issue #125 supplies the corrected same-run live-source acceptance and is approved for merge. FAST-MVP v1.1 is not finally accepted until the planning controller reviews the merged correction. Automatic cloud Visual/TTS Providers, credentials, paid usage, multiple tasks/users, authentication, deployment, publication and product adoption remain outside this Goal and are not inferred from this acceptance.
+Issue #123/#124 remains partial historical media/recovery evidence; Issue #125 / PR #126 supplies the corrected same-run live-source acceptance. The planning controller accepted the merged combined evidence as `GOAL_APPROVED`. Automatic cloud Visual/TTS Providers, credentials, paid usage, multiple tasks/users, authentication, deployment, publication and product adoption remain outside this Goal and are not inferred from this acceptance.

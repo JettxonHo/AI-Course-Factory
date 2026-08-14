@@ -8,7 +8,7 @@
 | Approval | Product Owner, 2026-08-13 |
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
-| Accepted local baseline | Issue #125 corrected F3 candidate based on `main@af61d31e949e20947517ba4d8ab6db867b6a5017`; final Goal verdict pending after merge |
+| Accepted local baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1`; FAST-MVP v1.1 `GOAL_APPROVED` on 2026-08-14 |
 | Runtime | Python `>=3.12,<3.13` |
 | Supersedes | Implementation Spec v1.0 for daily development |
 
@@ -57,7 +57,7 @@ The merged F2.5 baseline has 414 passing local regression tests. Issue #123 / PR
 
 ## 4. Accepted Vertical Product Boundary
 
-F2A local-import Visuals, F2B local GPT-SoVITS and the F2.5 Warm Editorial workspace remain independently accepted for the fixed local Demo. Issue #125's corrected F3 browser acceptance is approved for merge; final Goal approval remains a post-merge planning verdict. Automatic cloud Providers, deployment, multiple tasks/users and general production operations remain outside this implementation baseline.
+F2A local-import Visuals, F2B local GPT-SoVITS, the F2.5 Warm Editorial workspace and the corrected F3 browser acceptance are complete for the fixed local Demo. The planning controller accepted the merged Issue #125 / PR #126 evidence as `GOAL_APPROVED`. Automatic cloud Providers, deployment, multiple tasks/users and general production operations remain outside this implementation baseline.
 
 ## 5. Physical Direction
 
@@ -119,7 +119,7 @@ F2.5 passed focused rendered-HTML/static checks, 1440px/375px browser review, in
 
 ### F3 — Real Demo acceptance
 
-Issue #123 / PR #124 ran the fixed Demo through the browser and recorded partial media evidence but did not prove browser-submitted live GitHub acquisition. Issue #125 owns the correction and repeated the full browser flow from source intake through exact live commit acquisition, Script v2, explicit Budget approval, six imported visuals, six real local GPT-SoVITS narrations, Video v2 after visual-only replacement, two restarts and an exact four-file package. The durable candidate record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
+Issue #123 / PR #124 ran the fixed Demo through the browser and recorded partial media evidence but did not prove browser-submitted live GitHub acquisition. Issue #125 / PR #126 completed the correction and repeated the full browser flow from source intake through exact live commit acquisition, Script v2, explicit Budget approval, six imported visuals, six real local GPT-SoVITS narrations, Video v2 after visual-only replacement, two restarts and an exact four-file package. The durable acceptance record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
 
 ## 8. Task Contract Minimum
 

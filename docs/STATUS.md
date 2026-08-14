@@ -7,14 +7,14 @@ Observed: 2026-08-14 (Asia/Shanghai)
 | Fact | Current evidence |
 | --- | --- |
 | Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| F3 acceptance baseline | Historical media baseline `main@e155d193032aad6a9c98e1e8cbebd4e10febdbc6`; correction baseline `af61d31e949e20947517ba4d8ab6db867b6a5017` |
+| Current accepted baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Acceptance branch | `codex/125-live-source-f3-correction` |
-| Current task | Issue #125 live-source correction is `APPROVED FOR MERGE`; #123/#124 remains partial historical media evidence |
+| Active milestone | None; FAST-MVP v1.1 is complete |
+| Current task | No active implementation Task Contract; Issue #127 records the final docs-only Goal verdict |
 | Historical merged regression evidence | 414 local tests passed after Issue #121 / PR #122; no hosted CI is claimed |
 | F3 repository gates | Issue #125: 52 focused tests and 422 full tests passed; compileall and Diff/ownership checks passed; no hosted CI is claimed |
 | F3 runtime evidence | Fresh browser task acquired live GitHub commit `33e781bf...` and then completed Script v2, real local media, two restarts, Scene 2 replacement, Final approval and byte-identical four-file export replay |
-| Product state | F1, F2A, F2B and F2.5 are COMPLETE; F3 correction is `APPROVED FOR MERGE`, with final planning Goal verdict pending after merge |
+| Product state | F1, F2A, F2B, F2.5 and F3 are COMPLETE; FAST-MVP v1.1 is `GOAL_APPROVED` |
 | Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -55,7 +55,7 @@ These facts plus Issue #125 prove the corrected fixed live-source browser flow. 
 
 ## 3. FAST-MVP Acceptance
 
-F1, F2A, F2B and F2.5 remain complete for the fixed local Demo. Issue #123 / PR #124 supplied partial media, approval, restart, Scene replacement and export evidence but did not prove live source acquisition. Issue #125 corrected that boundary and repeated the complete same-task browser run. The durable candidate record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`; final Goal approval remains a post-merge planning verdict.
+F1, F2A, F2B and F2.5 remain complete for the fixed local Demo. Issue #123 / PR #124 supplied partial media, approval, restart, Scene replacement and export evidence but did not prove live source acquisition. Issue #125 / PR #126 corrected that boundary, repeated the complete same-task browser run and merged at `main@f388e4a`. The planning controller accepted the combined evidence as `GOAL_APPROVED` on 2026-08-14; the durable record is `docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md`.
 
 ## 3b. Issue #115 / PR #116 F1 Correction Evidence
 
@@ -79,7 +79,7 @@ F1, F2A, F2B and F2.5 remain complete for the fixed local Demo. Issue #123 / PR 
 - Recovery/export: two process restarts performed no regeneration; Video/SRT/ZIP endpoints replayed HTTP 200 and byte-identical outputs; the ZIP contains exactly video, subtitle, GitHub/visual/TTS attribution and Artifact Manifest.
 - UX: the Warm Editorial UI completed the full flow at 1440x900 and 375x812 without horizontal overflow, with visible keyboard focus and no raw machine paths.
 - These bullets remain historical media/recovery evidence only; they do not prove live GitHub acquisition or final Goal approval.
-- Repository gates: 37 focused tests and the complete 414-test local regression passed on the historical candidate; Issue #125 adds a separate source-correction gate and does not claim the final full regression yet.
+- Repository gates: 37 focused tests and the complete 414-test local regression passed on the historical candidate; Issue #125 / PR #126 later supplied the separate accepted source-correction gates recorded below.
 
 ## 3f. Issue #125 Corrected F3 Live-Source Evidence
 
@@ -102,11 +102,11 @@ Issue #117 / PR #118 is merged and closed at `main@b2642c1`; F2A is independentl
 
 Issue #119 / PR #120 is merged and independently accepted COMPLETE. It adds local GPT-SoVITS v2 through explicit external Python 3.11/repository/model/reference configuration, with six zero-charge voice attempts, no Fixture fallback, and additive package attribution.
 
-Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 / PR #124 then supplied partial F3 media evidence without proving live source acquisition; Issue #125 owns and has passed the bounded correction candidate.
+Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 / PR #124 then supplied partial F3 media evidence without proving live source acquisition; Issue #125 / PR #126 supplied and merged the accepted bounded correction at `main@f388e4a`.
 
 ## 5. Current Direction
 
-Merge the independently approved Issue #125 correction, then request the planning controller's final Goal verdict on the merged result. Any cloud Provider, paid use, deployment, publication, multiple-task/user expansion or new Goal requires separate Product Owner authorization.
+FAST-MVP v1.1 is complete for the fixed local single-user product. No milestone is active. Any cloud Provider, paid use, deployment, publication, multiple-task/user expansion or new Goal requires separate Product Owner authorization.
 
 ## 6. Authorization and Evidence Boundary
 
