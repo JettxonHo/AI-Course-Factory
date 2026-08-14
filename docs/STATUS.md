@@ -6,15 +6,16 @@ Observed: 2026-08-14 (Asia/Shanghai)
 
 | Fact | Current evidence |
 | --- | --- |
-| Product direction | Product Owner approved FAST-MVP v1.1 on 2026-08-13 |
-| Current accepted baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1` |
+| Product direction | FAST-MVP v1.1 remains accepted history; Product Owner approved the exact Creator Handoff MVP v1.2 Goal and eight defaults on 2026-08-14 |
+| Current repository planning baseline | `main@bb676a236a32eb9cc03ddca0e5bd71584791097c` |
+| Accepted FAST-MVP v1.1 baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1` |
 | Historical F1 baseline | `main@cf458341f4e6bdd324e51ebfc835f19c4a2b0e31`; bounded correction integrated through Issue #115 / PR #116 (historical, not the current starting main) |
-| Active milestone | None; FAST-MVP v1.1 is complete |
-| Current task | No active implementation Task Contract; Issue #127 records the final docs-only Goal verdict |
+| Active milestone | H0 truth rebaseline, approved candidate awaiting Issue #129 merge |
+| Current task | Issue #129 owns the exact eight-file docs-only H0 closure; no implementation Task Contract is active |
 | Historical merged regression evidence | 414 local tests passed after Issue #121 / PR #122; no hosted CI is claimed |
 | F3 repository gates | Issue #125: 52 focused tests and 422 full tests passed; compileall and Diff/ownership checks passed; no hosted CI is claimed |
 | F3 runtime evidence | Fresh browser task acquired live GitHub commit `33e781bf...` and then completed Script v2, real local media, two restarts, Scene 2 replacement, Final approval and byte-identical four-file export replay |
-| Product state | F1, F2A, F2B, F2.5 and F3 are COMPLETE; FAST-MVP v1.1 is `GOAL_APPROVED` |
+| Product state | FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED`; Creator Handoff MVP v1.2 is `APPROVED / ACTIVE`; implementation has not started |
 | Provider authorization | `PD-002` approved for local GPT-SoVITS v2; no cloud credentials, external charge or deployment authorized |
 
 This file is a current snapshot, not authorization and not a historical PR transcript. Git and GitHub retain detailed history.
@@ -104,21 +105,29 @@ Issue #119 / PR #120 is merged and independently accepted COMPLETE. It adds loca
 
 Issue #121 / PR #122 merged the independently accepted Warm Editorial presentation at `main@e155d193`. Issue #123 / PR #124 then supplied partial F3 media evidence without proving live source acquisition; Issue #125 / PR #126 supplied and merged the accepted bounded correction at `main@f388e4a`.
 
+Issue #129 on `codex/129-creator-handoff-v1-2-rebaseline` is the current H0 docs-only closure candidate at `main@bb676a2`. Product Owner approved the exact Goal and eight defaults after the seven-file proposal review; ownership is now exactly those seven docs plus `GOAL.md`. The branch records v1.2 as active but does not claim H0 merged, H1 ready or implementation started.
+
 ## 5. Current Direction
 
-FAST-MVP v1.1 is complete for the fixed local single-user product. No milestone is active. Any cloud Provider, paid use, deployment, publication, multiple-task/user expansion or new Goal requires separate Product Owner authorization.
+FAST-MVP v1.1 remains complete for the fixed local single-user product. The active Creator Handoff v1.2 Goal sends exact generation instructions and narration/SRT to the Creator, who generates Scene videos manually in a subscription UI; exact clips then return for local composition and Final Review. `GOAL.md` is the execution truth and `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` records the approved underlying contract.
+
+The selected vertical design adds a Scene Generation Contract, an adjacent pre-generation Creator Handoff Package and an explicit Imported Generated Scene Clip boundary. It preserves the generic Artifact repository, `scene_clip` identity/version chain, Task selection/stale impact, GPT-SoVITS narration, FFmpeg composition behavior, Final Video decision and post-approval Publish Package. H3 requires a bounded public-contract expansion: an honest no-attempt creator-import Clip payload, matching Task/composition input support and a Final gate that proves all six selected Clips bind the same exact contract. F2A still-image output remains readable Preview/technical evidence and cannot satisfy that gate.
+
+The approved first import interaction is fixed: one operator-declared generated-clips directory at startup/configuration, exact `scene-1.mp4` through `scene-6.mp4`, a Review-page POST that preflights the whole set before import, and exact `scene-2-replacement.mp4` for re-import. The manual path bypasses Budget Authorization and instead uses non-monetary local readiness; external subscription cost is explicitly outside application control.
 
 ## 6. Authorization and Evidence Boundary
 
 Authorized now:
 
-- FAST-MVP planning/docs;
+- Issue #129 H0 truth-doc integration;
+- H1 planning/Task Contract only after H0 actually merges;
 - bounded maintenance of the merged F1 flow;
 - maintenance of the accepted fixed local Demo;
 - no-cost local validation and evidence replay.
 
 Not authorized now:
 
+- H1-H4 implementation or a Luna dispatch before the exact milestone Task Contract passes review;
 - cloud Provider selection, credentials or real calls;
 - any fee or budget increase;
 - deployment or external publication;

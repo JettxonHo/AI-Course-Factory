@@ -1,31 +1,32 @@
-# AI Course Factory FAST-MVP System Spec v1.1
+# AI Course Factory Creator Handoff System Spec v1.2
 
 ## 1. Status and Authority
 
 | Field | Value |
 | --- | --- |
-| Status | Approved FAST-MVP System Baseline |
-| Approval | Product Owner, 2026-08-13 |
+| Status | Approved Creator Handoff System Baseline |
+| Approval | Product Owner, 2026-08-14 |
 | Product Input | `docs/product/PRD.md` |
-| Accepted local baseline | `main@f388e4ac666e0302bef67796f88a9c32fdc9d1d1`; FAST-MVP v1.1 `GOAL_APPROVED` on 2026-08-14 |
-| Supersedes | System Spec v1.0 for daily development |
+| Planning baseline | `main@bb676a236a32eb9cc03ddca0e5bd71584791097c`; FAST-MVP v1.1 remains complete history |
+| Goal contract | `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` |
 
 This document defines the smallest stable system that can deliver the approved product job. Physical files, libraries and task sequencing belong in the Implementation Spec and `GOAL.md`.
 
 ## 2. Architecture Principle
 
-Build one local vertical product path. Reuse the existing Artifact, decision, workflow, budget, production, workspace and packaging capabilities behind one application-facing interface. Add a seam only when the MVP has a second real implementation or when it isolates an external side effect.
+Build one local vertical Creator Handoff path. Reuse the existing Artifact, Decision, Task media projection, narration, composition, Final Review and Publish Package capabilities. Add only the approved contract/package seam before manual generation and explicit imported Scene clip boundary afterward.
 
 ```text
 Creator
   <-> Local Web Workspace
         -> Course Factory Application
              -> Source and Planning
+             -> Scene Generation Contract
+             -> Creator Handoff Package
+                  -> manual Jimeng/Kling subscription UI (outside application)
+             -> Explicit Imported Scene Clips
              -> Artifact + Decision + Task State
-             -> Budget + Production Orchestrator
-                  -> Visual Adapter
-                  -> TTS Adapter
-                  -> FFmpeg Composer
+             -> TTS + FFmpeg Composer
              -> Final Review + Package Export
 ```
 
@@ -41,6 +42,11 @@ The UI calls only the Course Factory Application. It does not coordinate reposit
 | Task Snapshot | Application-owned current stage, selected exact references, pending action and recoverable failure. |
 | Provider Attempt | One external execution/cost record owned by the attempt ledger. |
 | Operator-declared visual import | Exact creator-supplied stills generated outside the application and converted locally; the import bridge records a zero-charge local-processing marker, not a cloud Provider call. |
+| Scene Generation Contract | Immutable provider-neutral Artifact that binds exact approved planning references to ordered per-Scene prompt, continuity, camera/action, duration and expected import identity. |
+| Preview Video | Technical/progress composition, including F2A still-image output; it is not v1.2 Final Video quality evidence. |
+| Creator Handoff Package | Pre-generation deterministic package of exact references, Scene instructions, narration, SRT/Timeline and provenance; distinct from the Final Publish Package. |
+| Imported Generated Scene Clip | Creator-supplied video committed as a discriminated `scene_clip` payload variant, bound to one exact Scene Generation Contract entry and containing no fabricated attempt/provider. |
+| Final Video | Composition of exact selected imported Scene Clips with application-owned narration/SRT/Timeline, subject to the existing exact Final Video decision. |
 | Scene | Smallest media production and retry unit. |
 | Scene media selection | Current selected Clip and Audio references for one ordered Scene. |
 | Delivery media selection | Current selected Subtitle, Master Audio, Video, Manifest or Package reference. |
@@ -53,6 +59,7 @@ Ownership remains separate:
 - Task state owns the current selection and stage, not Artifact payloads.
 - The attempt ledger owns Provider execution and charge history.
 - The Production Orchestrator owns execution order, not product approval.
+- Manual external generation is creator activity, not a Provider Attempt or application charge. Future application-controlled API adapters return to the existing Budget/Attempt ownership.
 
 ## 4. Deep Module Boundaries
 
@@ -63,14 +70,18 @@ Offers the task-level product operations needed by the workspace:
 - create/open the Demo task;
 - inspect the current stage, evidence, media and available actions;
 - advance deterministic stages;
-- submit Script, Storyboard, Budget and Final Video decisions;
+- submit Script, Storyboard and Final Video decisions; retain Budget decisions only for legacy Preview maintenance and future application-controlled paid APIs;
 - run authorized production;
 - retry or replace one Scene;
+- export the Creator Handoff Package and expose its exact readiness/provenance;
+- trigger import from the operator-declared generated-clips directory and show per-Scene import/current/stale state;
 - export the approved package.
 
 It coordinates existing modules and returns a stable view model. It must not expose repository mechanics or Provider SDK types to the UI.
 
 The F2.5 presentation keeps the workspace at exactly three server-rendered views and consumes the existing `ApplicationView` without a route or public-view-model expansion. A semantic Ground → Produce → Deliver track derives active/completed/upcoming state from the existing `stage` and `pending_action`. Start prioritizes the script and source evidence, Review prioritizes one decision zone plus consolidated production facts/storyboard, and Final pairs the playable 9:16 video with a desktop decision rail that becomes one column on mobile. Native details disclosure, local CSS and a self-hosted text favicon are presentation concerns; JavaScript, external assets, SPA/editor behavior and upload management remain out of scope.
+
+The approved v1.2 workspace adds only Handoff download, one Review-page full-set import/re-import trigger, readiness and product-quality review facts inside the existing three-view surface. The generated-clips directory is supplied at application startup/configuration, not through the POST. It does not authorize multipart upload, a generic file manager, platform automation, fourth page or visual redesign.
 
 ### Source and Planning
 
@@ -80,15 +91,33 @@ Acquires the supported public GitHub source at an exact commit and produces grou
 
 Persists immutable Versions, exact human decisions and the one-task current projection. The current projection may select one media result per Scene and singleton delivery results. Updating one Scene selection preserves the others and makes only its exact derived delivery selections stale.
 
+`scene_clip` keeps its existing Artifact type, per-Scene identity/version chain and Task-selection role. Its payload becomes a discriminated union: the legacy generated/Preview variant retains the current attempt/provider fields, while the creator-import variant binds exact Production Request and Scene Generation Contract References, `scene_id`, declared filename, creator provenance, normalized output, media type and duration, with no `attempt_id` or `provider`. Task selection and lineage validation must read both exact variants; compatibility does not make a Preview Clip eligible for v1.2 Final Review.
+
 ### Budget and Production Orchestrator
 
 Accepts an exact Production Request, matching Budget Authorization, explicit Scene scope and idempotency key. It checks/reserves an attempt before the Provider call, records the result or uncertain failure, commits valid media and composes the selected set. It never calls a paid Adapter without sufficient remaining authorization.
+
+This path remains authoritative for legacy Preview maintenance and future application-controlled paid API work. The v1.2 manual path does not enter Budget Review: manual Jimeng/Kling generation is not invoked by the Orchestrator, reserves no attempt and consumes no application Budget. Local TTS, handoff and import use non-monetary runtime/input preflight; the UI states that external subscription cost is not controlled by AI Course Factory. H2 must retain durable/idempotent local narration without fabricating Budget Authorization or weakening the paid-attempt contract; exact persistence wiring belongs to its later Task Contract.
+
+### Scene Generation Contract and Creator Handoff Package
+
+The Scene Generation Contract is an immutable Artifact derived from exact approved Script, Character, Storyboard, Timeline and Production Request references. Its ordered entries own provider-neutral generation instructions and expected import identity, not Provider SDK payloads.
+
+The Creator Handoff Package consumes that contract plus exact narration, canonical SRT/Timeline and source/provenance facts. It is an immutable pre-generation package Artifact written through Workspace, not a Decision and not a Publish Package. An explicit Storyboard `approve` is the approved v1.2 readiness gate.
+
+### Generated Scene Clip Import
+
+The import boundary receives one operator-declared generated-clips directory at application startup/configuration. A Review-page POST first preflights the complete exact set `scene-1.mp4` through `scene-6.mp4`, then imports/commits it as one bounded action; exact `scene-2-replacement.mp4` is the only first-slice re-import filename. The POST carries no path or multipart file. The boundary never scans Downloads/Desktop, infers `latest`, calls a platform API or manufactures Provider Attempts.
+
+Each imported Version uses the creator-import `scene_clip` payload variant. Its exact dependencies include the Production Request and Scene Generation Contract References. A full-set preflight failure creates no imported Clip, Task-selection or normalized-media side effect; a replacement failure preserves the prior selection.
+
+External native dialogue/audio/subtitles/effects may be stored as provenance or optional unselected facts. The canonical final mix continues to use exact AI Course Factory narration, Scene Audio/Master Audio and SRT unless a later Product Owner decision changes that contract.
 
 ### Provider and Composer Adapters
 
 - Visual Adapter: one Scene visual task -> normalized Clip result.
 - TTS Adapter: one Scene narration task -> normalized Audio result.
-- FFmpeg Composer: ordered selected media + Timeline -> Video, SRT and media facts.
+- FFmpeg Composer: ordered selected media + Timeline -> Video, SRT and media facts. H3 adds an imported-clip input/reference variant so creator imports never pass through `MediaGenerationResult` with fake attempt/provider fields.
 
 Provider-specific request/response objects stay inside the corresponding Adapter. Fake Adapters support offline development; exactly one real Adapter for each paid media role is sufficient for FAST-MVP.
 
@@ -98,7 +127,7 @@ The F2B local GPT-SoVITS adapter is a second bounded local implementation behind
 
 ### Packaging
 
-Consumes the exact approved Video and delivery evidence, then writes the local MP4/SRT/source/Manifest package. It does not regenerate media or publish externally.
+The Creator Handoff Package is produced before external Scene generation and cannot represent delivery completion. The existing Publish Package continues to consume the exact approved Final Video and delivery evidence, then writes local MP4/SRT/source/Manifest output. Neither package publishes externally.
 
 ## 5. Product State
 
@@ -106,8 +135,11 @@ Consumes the exact approved Video and delivery evidence, then writes the local M
 source
   -> script_review
   -> planning
-  -> budget_review
-  -> production
+  -> handoff_readiness
+  -> narration_and_handoff
+  -> external_generation_pending
+  -> scene_clip_import
+  -> final_composition
   -> final_review
   -> exported
 ```
@@ -119,20 +151,24 @@ Mandatory gates:
 | Gate | Exact target | Rule |
 | --- | --- | --- |
 | Script Review | Script Version | Approve/reject/revise; Hard Blocks prevent approve. |
-| Budget Review | Production Request + budget facts | Required before any paid call. |
+| Handoff Readiness | Exact approved Script/Storyboard/Scene Generation Contract + local preflight | Requires Storyboard approve and non-monetary runtime/input readiness; it is not Budget Authorization. |
+| Budget Review (legacy/future API only) | Production Request + budget facts | Required before an application-controlled paid call; not entered by the manual handoff path. |
 | Final Review | Video Version | Required before final export/completion. |
 
-Storyboard review is optional for FAST-MVP; approve or skip is recorded.
+Storyboard review was optional for FAST-MVP v1.1; approve or skip remains readable. The approved v1.2 Goal requires explicit Storyboard approval before Handoff export.
 
 ## 6. Essential System Invariants
 
 1. Source commit and factual teaching claim locators remain exact and inspectable.
 2. Cross-stage consumption uses exact committed references.
 3. Script and Final decisions bind the exact selected Version.
-4. Budget approval binds the exact Production Request, price snapshot, amount and attempt limit.
+4. When an application-controlled paid call exists, Budget approval binds the exact Production Request, price snapshot, amount and attempt limit; the manual v1.2 path creates no such authorization.
 5. The attempt is reserved before an external paid call; an uncertain result requires explicit recovery and cannot be blindly replayed.
 6. Replacing one Scene preserves unaffected selected Scene media and invalidates only exact downstream delivery results.
 7. Export uses the exact approved Video and produces a playable file plus required evidence.
+8. Manual external generation creates no Provider Attempt or application charge; future application-controlled API generation requires the existing Budget/Attempt gates.
+9. A Preview Video cannot satisfy the v1.2 Final Video quality gate; Final composition consumes exact selected Imported Generated Scene Clips plus canonical narration/SRT.
+10. Before v1.2 Final Review, the gate resolves all six selected Scene Clip Versions and requires the creator-import variant for each exact Scene, all bound to the same exact Scene Generation Contract. Legacy Preview payloads remain readable but ineligible.
 
 These are product invariants, not a requirement to build a general dependency graph, distributed transaction system or universal corruption detector.
 
@@ -154,15 +190,18 @@ For a known safe failure, the workspace may offer bounded retry. For an uncertai
 - Limit reads/writes to the configured source checkout and task workspace.
 - Validate user-provided URLs and workspace-relative paths at the real trust boundary.
 - Require an explicit visual import directory for F2A; accept no implicit Downloads/Desktop/latest-file inference and expose only safe input basenames in failures.
+- Require an explicit generated-clip import directory/file selection and exact manifest/Scene binding; do not scan common folders or infer a newest clip.
 - Require separate Product Owner approval for Provider selection, credentials, spend and deployment.
 
 ## 9. Verification by Risk
 
-- Product flow: browser-driven offline end-to-end, then one authorized real/local-media end-to-end using the accepted F2A visual assets and F2B local TTS.
+- Product flow: browser-driven Source-to-Handoff-to-import-to-Final path using creator-generated Scene videos and the accepted local TTS.
 - Money/external effects: authorization, cap, attempt reservation and uncertain-retry tests.
 - Data lineage: exact source/decision/media/export assertions.
 - Scene recovery: one retry/replace integration test proving unaffected media is retained.
-- F2A local visual import: six-image decode preflight, fixed playable conversion, visual-only replacement and restart/package replay evidence.
+- Preview path: retain F2A image/decode/FFmpeg checks as technical evidence without treating it as final-quality acceptance.
+- Handoff/import: deterministic handoff contents, explicit no-attempt manual provenance, exact Scene/file binding, one-Scene re-import and restart/package replay.
+- Human quality: full normal-speed watch/listen verdict for grounded content, narration naturalness/completeness, visual action/continuity and edit rhythm; FFprobe/ASR remain supporting checks only.
 - Persistence: one process-restart continuation test.
 - UI: primary-path and actionable-failure browser checks.
 
@@ -172,4 +211,6 @@ Concurrency races, mutation campaigns, legacy-schema matrices and malformed-data
 
 ## 10. Deferred Architecture
 
-Multi-user identity, distributed workers, multiple concurrent tasks, generic Artifact graph traversal, Provider routing/failover, plug-in marketplaces, cloud deployment and broad backward-compatibility frameworks are deferred until evidence shows the local MVP creates value.
+Jimeng/Kling API adapters, Provider routing/failover, native external track selection, multi-user identity, distributed workers, multiple concurrent tasks, generic Artifact graph traversal, plug-in marketplaces, cloud deployment and broad backward-compatibility frameworks remain deferred until separate decisions and product evidence justify them.
+
+This architecture is approved by the active v1.2 Goal. H0 changes documentation only; each H1-H4 interface, schema, migration or implementation still requires its own bounded Task Contract and independent review.
