@@ -8,11 +8,11 @@
 | Product direction | Accepted by Product Owner on 2026-08-14 |
 | Exact Goal approval | Product Owner, 2026-08-14 |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130) |
-| Planning Issue | #129 (closed); H1 implementation #131 / PR #132 plus correction #133 / PR #134 merged at `main@91b4512`; H2 Issue #135 is the active candidate |
-| Current H2 candidate | Issue #135 on `codex/135-creator-handoff-package`, based on `main@91b451225c40fd7fa884355ac7da6fa1e373238b` |
+| Planning Issue | #129 (closed); H1 implementation #131 / PR #132 plus correction #133 / PR #134 merged at `main@91b4512`; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` |
+| Current H3 candidate | Issue #137 on `codex/137-generated-scene-import`, based on `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629` |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
-This file records the approved contract behind the active `GOAL.md`. It does not by itself authorize H2-H4 implementation Task Contracts, and it does not reopen FAST-MVP v1.1.
+This file records the approved contract behind the active `GOAL.md`. H2 is complete through Issue #135 / PR #136 with accepted 444-test regression evidence; H3 is in progress only under Issue #137. H3.5 and H4 remain separately gated, and this file does not reopen FAST-MVP v1.1.
 
 ## 2. Approved Exact Goal
 
@@ -131,11 +131,21 @@ The composition path consumes the ordered selected Imported Generated Scene Clip
 
 **Exit:** package replay is byte-stable; manual generation creates no Provider Attempt or charge; package facts do not masquerade as Final delivery.
 
+H2 status: **COMPLETE** (Issue #135 / PR #136; `main@c4f2f5e`; accepted 444-test regression).
+
 ### H3 — Imported Scene clips and exact local composition
 
 **Outcome:** with one operator-declared directory, the Creator triggers full-set import of exact `scene-1.mp4` through `scene-6.mp4`; the system validates exact Scene/contract/timeline binding and composes them with canonical narration/SRT into a Final Video candidate. Exact `scene-2-replacement.mp4` supports one Scene re-import while preserving all unaffected media.
 
 **Exit:** imported clip provenance is visible; no implicit directory scan occurs; exact references drive composition and stale impact.
+
+H3 status: **IN PROGRESS** (Issue #137 candidate; independent review and merge remain pending).
+
+### H3.5 — Simplified-Chinese Creator workspace
+
+**Outcome:** separately redesign the three-view Creator workspace for the approved Simplified-Chinese product experience while preserving H3 lineage, Final gate and three-route boundaries.
+
+**Exit:** the separately approved workspace design and browser evidence pass; H3.5 does not authorize Provider/API, upload or H4 human-quality scope.
 
 ### H4 — Browser acceptance and product-quality gate
 
@@ -172,6 +182,6 @@ The Product Owner approved these defaults on 2026-08-14:
 
 ## 9. Authorization and Stop Conditions
 
-The Goal is approved and active. H0 is `COMPLETE`; H1 is `COMPLETE` through Issue #131 / PR #132 plus Issue #133 / PR #134 at `main@91b4512`. H2 is currently bounded by Issue #135 and remains an unmerged candidate; H3-H4 still require one bounded Issue/Task Contract each. No API call, credential, charge or deployment is authorized by this contract alone.
+The Goal is approved and active. H0 and H1 are complete; H2 is `COMPLETE` through Issue #135 / PR #136 at `main@c4f2f5e` with 444-test evidence. H3 is `IN PROGRESS` under Issue #137; H3.5 and H4 remain pending and each requires its own bounded Issue/Task Contract. No API call, credential, charge or deployment is authorized by this contract alone.
 
 Stop and return to Product Owner review before selecting a Jimeng/Kling API/model, using credentials, changing Budget/caps, replacing the canonical narration/SRT contract, adding a new Decision type, expanding beyond the fixed one-task Demo or weakening exact Artifact/Final approval invariants.

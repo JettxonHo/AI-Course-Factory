@@ -20,7 +20,13 @@
   </header>
 
   <p class="available-actions"><strong>Available actions:</strong> {% if view.available_actions %}{{ view.available_actions|join(", ") }}{% else %}None{% endif %}</p>
-  {% if view.visual_mode == "imported" %}<div class="callout provenance-callout"><strong>Source attribution:</strong> creator-supplied via ChatGPT Desktop ImageGen; generated outside application; model version not verified by application; no application Provider API call; external charge 0.</div>{% endif %}
+  {% if view.visual_mode == "imported" %}<div class="callout provenance-callout"><strong>Source attribution:</strong> creator-supplied via ChatGPT Desktop ImageGen; generated outside application; model version not verified by application; no application Provider API call; external charge 0.</div>{% elif view.visual_mode == "creator_import" %}<div class="callout provenance-callout"><strong>Source attribution:</strong> six creator-supplied MP4s were normalized locally to the fixed playable video contract; native audio, subtitles and effects remain provenance-only; no application Provider attempt or charge.</div>{% endif %}
+  {% if view.visual_mode == "creator_import" and view.imported_scene_facts %}
+  <section class="facts-section" aria-labelledby="creator-import-facts-title">
+    <div class="section-heading compact-heading"><div><p class="eyebrow">Creator import</p><h3 id="creator-import-facts-title">Current Scene Clip references</h3></div><p class="section-note">Exact committed basenames and Artifact Versions selected by this Final Video.</p></div>
+    <ul class="facts-list">{% for fact in view.imported_scene_facts %}<li>{{ fact }}</li>{% endfor %}</ul>
+  </section>
+  {% endif %}
   {% if view.tts_engine %}<div class="callout provenance-callout"><strong>Local narration:</strong> {{ view.tts_engine }} · {{ view.tts_reference_provenance }} · no application cloud/provider call · external charge {{ view.tts_external_charge_micros }} micros.</div>{% endif %}
   {% if view.failure_category %}<div class="notice notice-error" role="alert"><strong>Last safe failure · {{ view.failure_category }}</strong><p>{{ view.failure_message }}</p></div>{% endif %}
 
@@ -28,7 +34,7 @@
     <section class="media-stage" aria-labelledby="media-title">
       <div class="section-heading compact-heading"><div><p class="eyebrow">Playable evidence</p><h3 id="media-title">Vertical cut</h3></div>{% if view.video_reference %}<span class="status-label">Video v{{ view.video_reference.version }}</span>{% endif %}</div>
       {% if view.video_reference %}
-      <div class="player-wrap"><video controls preload="metadata" src="/media/video"><track kind="subtitles" srclang="zh" src="/media/subtitle" label="中文"></video><p class="media-caption">Video v{{ view.video_reference.version }} · {% if view.visual_mode == "imported" %}local imported visual evidence{% else %}local Fixture evidence{% endif %}</p></div>
+      <div class="player-wrap"><video controls preload="metadata" src="/media/video"><track kind="subtitles" srclang="zh" src="/media/subtitle" label="中文"></video><p class="media-caption">Video v{{ view.video_reference.version }} · {% if view.visual_mode in ("imported", "creator_import") %}local imported visual evidence{% else %}local Fixture evidence{% endif %}</p></div>
       {% else %}<div class="empty-state empty-state-inline"><h3>Video not ready</h3><p>Complete offline production before final review.</p></div>{% endif %}
 
       <section class="scene-board" aria-labelledby="scene-board-title">
@@ -39,8 +45,8 @@
             <span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span>
             <div class="scene-copy"><strong>{{ scene.scene_id }}</strong><p>{{ scene.narration }}</p></div>
             <span class="scene-status">{{ scene.status }}</span>
-            {% if not view.replacement_done and view.stage == "final_review" and view.pending_action in ("approve_final", "replace_scene") and (view.visual_mode != "imported" or scene.scene_id == "scene-2") %}
-            <form method="post" action="/final/action" class="inline-form"><input type="hidden" name="action" value="replace_scene"><input type="hidden" name="scene_id" value="{{ scene.scene_id }}"><button class="button button-tertiary" type="submit">{% if view.visual_mode == "imported" %}Replace scene-2 visual{% else %}Replace locally{% endif %}</button></form>
+            {% if not view.replacement_done and view.stage == "final_review" and view.pending_action in ("approve_final", "replace_scene") and (view.visual_mode not in ("imported", "creator_import") or scene.scene_id == "scene-2") %}
+            <form method="post" action="/final/action" class="inline-form"><input type="hidden" name="action" value="replace_scene"><input type="hidden" name="scene_id" value="{{ scene.scene_id }}"><button class="button button-tertiary" type="submit">{% if view.visual_mode in ("imported", "creator_import") %}Replace scene-2 visual{% else %}Replace locally{% endif %}</button></form>
             {% endif %}
           </li>
           {% endfor %}

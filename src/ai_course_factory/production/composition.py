@@ -22,6 +22,7 @@ from .adapters.ffmpeg_composer import _task_valid
 from .attempt import ProviderAttemptFailure, ProviderAttemptLedger, ProviderAttemptRecord
 from .budget import _validate_request
 from .model import (
+    CommittedMediaCompositionTask,
     MediaCompositionResult,
     MediaCompositionTask,
     MediaGenerationResult,
@@ -905,4 +906,181 @@ def compose_product_path(
     )
 
 
-__all__ = ["compose_product_path"]
+def _committed_reference(value: object, artifact_type: str) -> ArtifactReference:
+    return _reference(value, artifact_type)
+
+
+def _committed_context(
+    production_request_reference: object,
+    production_request_version: object,
+    task: object,
+) -> tuple[CommittedMediaCompositionTask, ArtifactReference, tuple[tuple[str, int, int, str], ...], tuple[ArtifactReference, ...], tuple[ArtifactReference, ...]]:
+    if type(task) is not CommittedMediaCompositionTask or not _safe_token(task.task_id) or not _safe_token(task.composition_id):
+        raise _InvalidContext
+    request_reference = _committed_reference(production_request_reference, "production_request")
+    if type(production_request_version) is not ArtifactVersion or not _same_reference(production_request_version.reference, request_reference):
+        raise _InvalidContext
+    try:
+        _validate_request(request_reference, production_request_version)
+    except Exception:
+        raise _InvalidContext from None
+    _committed_reference(task.timeline_reference, "timeline")
+    _workspace_reference(task.output_reference, task.task_id)
+    if type(task.scenes) is not tuple or len(task.scenes) != 6:
+        raise _InvalidContext
+    request = production_request_version.payload.get("production_request") if isinstance(production_request_version.payload, Mapping) else None
+    request_scenes = request.get("scenes") if isinstance(request, Mapping) else None
+    if type(request_scenes) is not tuple or len(request_scenes) != 6:
+        raise _InvalidContext
+    expected: list[tuple[str, int, int, str]] = []
+    clips: list[ArtifactReference] = []
+    audios: list[ArtifactReference] = []
+    contract_reference: ArtifactReference | None = None
+    previous_end = 0
+    for source, scene in zip(request_scenes, task.scenes, strict=True):
+        if type(scene.scene_id) is not str or not isinstance(source, Mapping) or scene.scene_id != source.get("scene_id"):
+            raise _InvalidContext
+        start = _milliseconds(source.get("start_seconds")); end = _milliseconds(source.get("end_seconds")); duration = _milliseconds(source.get("duration_seconds"))
+        if start != previous_end or end <= start or end - start != duration or scene.start_milliseconds != start or scene.end_milliseconds != end or scene.subtitle_text != source.get("narration"):
+            raise _InvalidContext
+        _committed_reference(scene.clip_reference, "scene_clip"); _committed_reference(scene.audio_reference, "scene_audio")
+        clips.append(scene.clip_reference); audios.append(scene.audio_reference)
+        expected.append((scene.scene_id, start, end, scene.subtitle_text)); previous_end = end
+    if previous_end != _milliseconds(request.get("duration_seconds")):
+        raise _InvalidContext
+    return task, request_reference, tuple(expected), tuple(clips), tuple(audios)
+
+
+def _committed_version(repository: object, reference: ArtifactReference) -> ArtifactVersion:
+    try:
+        version = repository.get(reference)
+    except Exception:
+        raise _ArtifactStorage from None
+    if type(version) is not ArtifactVersion or not _same_reference(version.reference, reference) or not isinstance(version.payload, Mapping):
+        raise _InvalidContext
+    return version
+
+
+def _committed_payload(repository: object, reference: ArtifactReference) -> Mapping[str, object]:
+    return _committed_version(repository, reference).payload
+
+
+def compose_committed_product_path(
+    composer: object,
+    repository: object,
+    production_request_reference: object,
+    production_request_version: object,
+    composition_task: object,
+    *,
+    artifact_identity: object,
+    composition_commit_id: object,
+    previous_result: ProductionCompositionResult | None = None,
+) -> ProductionCompositionResult | ProductionMediaFailure:
+    """Compose exact imported clips/local narration without a Provider ledger."""
+    if composer is None or repository is None or not callable(getattr(composer, "compose_committed", None)):
+        return _UNAVAILABLE
+    try:
+        task, request_reference, context_scenes, clip_refs, audio_refs = _committed_context(production_request_reference, production_request_version, composition_task)
+        _safe_token(artifact_identity); _safe_token(composition_commit_id)
+        contract_reference: ArtifactReference | None = None
+        handoff_references: list[ArtifactReference] = []
+        for index, scene in enumerate(task.scenes):
+            clip_version = _committed_version(repository, scene.clip_reference)
+            audio_version = _committed_version(repository, scene.audio_reference)
+            clip = clip_version.payload
+            audio = audio_version.payload
+            if (
+                clip.get("source_kind") != "creator_import"
+                or not _same_reference(clip.get("production_request_reference"), request_reference)
+                or clip.get("scene_id") != scene.scene_id
+                or clip.get("media_type") != "video/mp4"
+                or clip.get("duration_milliseconds") != scene.end_milliseconds - scene.start_milliseconds
+                or clip.get("output_reference") != _workspace_payload(scene.clip_output_reference)
+                or "attempt_id" in clip or "provider" in clip
+                or audio.get("source_kind") != "local_narration"
+                or not _same_reference(audio.get("production_request_reference"), request_reference)
+                or audio.get("scene_id") != scene.scene_id
+                or audio.get("media_type") != "audio/mp4"
+                or audio.get("duration_milliseconds") != scene.end_milliseconds - scene.start_milliseconds
+                or audio.get("output_reference") != _workspace_payload(scene.audio_output_reference)
+                or "attempt_id" in audio or "provider" in audio
+            ):
+                raise _InvalidContext
+            candidate_contract = clip.get("scene_generation_contract_reference")
+            if not isinstance(candidate_contract, ArtifactReference):
+                raise _InvalidContext
+            if clip_version.dependencies != (request_reference, candidate_contract):
+                raise _InvalidContext
+            if audio.get("scene_generation_contract_reference") != candidate_contract:
+                raise _InvalidContext
+            handoff_reference = audio.get("creator_handoff_package_reference")
+            if not isinstance(handoff_reference, ArtifactReference) or handoff_reference.artifact_type != "creator_handoff_package":
+                raise _InvalidContext
+            if audio_version.dependencies != (request_reference, candidate_contract, handoff_reference):
+                raise _InvalidContext
+            handoff_references.append(handoff_reference)
+            if contract_reference is None:
+                contract_reference = candidate_contract
+            elif not _same_reference(contract_reference, candidate_contract):
+                raise _InvalidContext
+        if contract_reference is None:
+            raise _InvalidContext
+        if len(set(handoff_references)) != 1:
+            raise _InvalidContext
+        try:
+            output = composer.compose_committed(task)
+        except Exception:
+            return _COMPOSITION_FAILED
+        if isinstance(output, ProductionMediaFailure):
+            return _composer_failure(output)
+        if type(output) is not MediaCompositionResult or output.output_reference != task.output_reference or output.result_code != "SUCCESS":
+            return _COMPOSITION_FAILED
+        if previous_result is not None:
+            if (
+                type(previous_result) is not ProductionCompositionResult
+                or previous_result.task_id != task.task_id
+                or previous_result.composition_id != task.composition_id
+                or not _same_reference(previous_result.production_request_reference, request_reference)
+                or not _same_reference(previous_result.timeline_reference, task.timeline_reference)
+                or type(previous_result.scene_clip_references) is not tuple
+                or type(previous_result.scene_audio_references) is not tuple
+                or len(previous_result.scene_clip_references) != 6
+                or len(previous_result.scene_audio_references) != 6
+            ):
+                raise _InvalidContext
+            prior_clips = previous_result.scene_clip_references
+            prior_audio = previous_result.scene_audio_references
+            prior_subtitle = previous_result.subtitle_reference
+            prior_master = previous_result.master_audio_reference
+            prior_video = previous_result.video_reference
+        else:
+            prior_clips = ()
+            prior_audio = ()
+            prior_subtitle = None
+            prior_master = None
+            prior_video = None
+        subtitle_candidate = _candidate("subtitle", str(artifact_identity), {"production_request_reference": request_reference, "timeline_reference": task.timeline_reference, "cues": tuple(MappingProxyType({"scene_id": scene_id, "start_milliseconds": start, "end_milliseconds": end, "text": text}) for scene_id, start, end, text in context_scenes)}, (request_reference, task.timeline_reference), f"{composition_commit_id}:subtitle", {"purpose": "production_composition_subtitle", "production_request_reference": request_reference, "timeline_reference": task.timeline_reference}, prior_subtitle)
+        subtitle_reference = prior_subtitle if _candidate_matches_existing(repository, subtitle_candidate, prior_subtitle) else _commit(repository, subtitle_candidate)
+        if isinstance(subtitle_reference, ProductionMediaFailure):
+            return subtitle_reference
+        master_candidate = _candidate("master_audio", str(artifact_identity), {"production_request_reference": request_reference, "timeline_reference": task.timeline_reference, "scene_audio_references": audio_refs, "duration_milliseconds": context_scenes[-1][2]}, (request_reference, task.timeline_reference, *audio_refs), f"{composition_commit_id}:master_audio", {"purpose": "production_composition_master_audio", "production_request_reference": request_reference, "timeline_reference": task.timeline_reference, "scene_audio_references": audio_refs}, prior_master)
+        master_reference = prior_master if _candidate_matches_existing(repository, master_candidate, prior_master) else _commit(repository, master_candidate)
+        if isinstance(master_reference, ProductionMediaFailure):
+            return master_reference
+        unchanged = previous_result is not None and clip_refs == prior_clips and audio_refs == prior_audio and subtitle_reference == prior_subtitle and master_reference == prior_master and task.output_reference == previous_result.output_reference
+        if unchanged:
+            return previous_result
+        video_candidate = _candidate("video", str(artifact_identity), {"production_request_reference": request_reference, "timeline_reference": task.timeline_reference, "composition_id": task.composition_id, "scene_ids": tuple(scene_id for scene_id, _start, _end, _text in context_scenes), "scene_clip_references": clip_refs, "subtitle_reference": subtitle_reference, "master_audio_reference": master_reference, "composer": output.composer, "output_reference": _workspace_payload(output.output_reference), "media_type": output.media_type, "duration_milliseconds": output.duration_milliseconds}, (request_reference, task.timeline_reference, *clip_refs, subtitle_reference, master_reference), f"{composition_commit_id}:video", {"purpose": "production_composition_video", "production_request_reference": request_reference, "timeline_reference": task.timeline_reference, "composition_id": task.composition_id}, prior_video)
+        video_reference = prior_video if _candidate_matches_existing(repository, video_candidate, prior_video) else _commit(repository, video_candidate)
+        if isinstance(video_reference, ProductionMediaFailure):
+            return video_reference
+        return ProductionCompositionResult(task.task_id, task.composition_id, request_reference, task.timeline_reference, clip_refs, audio_refs, subtitle_reference, master_reference, video_reference, output.output_reference, "SUCCESS")
+    except _ArtifactStorage:
+        return _COMMIT_FAILED
+    except _InvalidContext:
+        return _INVALID_CONTEXT
+    except Exception:
+        return _INVALID_CONTEXT
+
+
+__all__ = ["compose_product_path", "compose_committed_product_path"]

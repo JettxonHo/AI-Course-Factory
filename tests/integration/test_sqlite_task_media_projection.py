@@ -19,6 +19,38 @@ from tests.application.test_task_media_projection import _fixture, _media
 
 
 class SQLiteTaskMediaProjectionIntegrationTests(unittest.TestCase):
+    def test_batch_impact_is_additive_and_replays_after_sqlite_restart(self):
+        with TemporaryDirectory() as directory:
+            database = Path(directory) / "factory.sqlite3"
+            artifacts, request, timeline, scenes = _fixture()
+            refs = _media(artifacts, request, timeline, scenes)
+            repository = SQLiteTaskMediaRepository(database)
+            service = TaskMediaProjectionService(artifacts, repository)
+            self.assertEqual(service.create("batch-task", "batch-create", request).status, "success")
+            selections = tuple(
+                (scene["scene_id"], role, refs[(scene["scene_id"], role)])
+                for scene in scenes
+                for role in ("scene_clip", "scene_audio")
+            )
+            selected = service.select_batch(
+                "batch-task",
+                "batch-select",
+                1,
+                selections,
+                (("subtitle", refs["subtitle"]), ("master_audio", refs["master_audio"]), ("video", refs["video"])),
+            )
+            self.assertEqual(selected.status, "success")
+            self.assertEqual(type(selected.impact).__name__, "TaskMediaBatchImpact")
+            repository.close()
+
+            reopened = SQLiteTaskMediaRepository(database)
+            restored = reopened.get("batch-task")
+            self.assertEqual(restored.revision, 2)
+            replay = reopened.save(TaskMediaProjectionChange("batch-task", "batch-select", 1, selected.snapshot, selected.impact))
+            self.assertEqual(replay.snapshot, selected.snapshot)
+            self.assertEqual(type(replay.impact).__name__, "TaskMediaBatchImpact")
+            reopened.close()
+
     def test_coexists_with_planning_rows_and_survives_history_replay(self):
         with TemporaryDirectory() as directory:
             database = Path(directory) / "factory.sqlite3"

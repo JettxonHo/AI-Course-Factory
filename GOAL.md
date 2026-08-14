@@ -8,7 +8,7 @@
 | Approved by | Product Owner |
 | Approval date | 2026-08-14 |
 | H0 merged baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (Issue #129 / PR #130) |
-| Current task | Issue #135 H2 Creator Handoff Package on `codex/135-creator-handoff-package`; H1 Issue #133 / PR #134 is merged at `main@91b451225c40fd7fa884355ac7da6fa1e373238b` |
+| Current task | H3 Issue #137 Generated Scene Clip Import on `codex/137-generated-scene-import`; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629` |
 | Goal type | Local single-user Creator Handoff MVP |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
@@ -73,23 +73,31 @@ H1 implementation is bounded by the approved Issue #131 Task Contract and its Is
 
 ### H2 — Creator Handoff Package
 
-Status: **IN PROGRESS** (Issue #135 candidate; not merged)
+Status: **COMPLETE** (Issue #135 / PR #136; accepted 444-test regression)
 
 Outcome: export a deterministic handoff ZIP with exact references, generation guide, narration, SRT/Timeline, provenance and labelled optional reference stills, after non-monetary local readiness.
 
-Exit: package replay is byte-stable; local narration is durable/idempotent without fabricated monetary authorization; manual generation creates no Attempt or charge. The current candidate remains unmerged until independent review and the full regression.
+Exit: package replay is byte-stable; local narration is durable/idempotent without fabricated monetary authorization; manual generation creates no Attempt or charge. Issue #135 / PR #136 is accepted and merged at `main@c4f2f5e`; the 444-test regression is the recorded H2 evidence.
 
 ### H3 — Generated Scene Clip import and exact composition
 
-Status: **PENDING H2**
+Status: **IN PROGRESS** (Issue #137 candidate; independent review pending)
 
 Outcome: atomically import exact `scene-1.mp4` through `scene-6.mp4` from one configured directory, compose with canonical narration/SRT, and support exact `scene-2-replacement.mp4` while preserving unaffected media.
 
-Exit: creator-import payload/input/Final-gate compatibility is proven; no partial side effect occurs on failed preflight; restart and stale/recompose behavior remain exact.
+Exit: creator-import payload/input/Final-gate compatibility is proven; no partial side effect occurs on failed preflight; restart and stale/recompose behavior remain exact. H3 remains in progress until Issue #137 is independently reviewed and merged.
+
+### H3.5 — Simplified-Chinese Creator workspace
+
+Status: **PENDING H3**
+
+Outcome: redesign the three-view Creator workspace for the approved Simplified-Chinese product experience without changing H3 media lineage or Final-gate truth.
+
+Exit: the separately approved workspace design and browser evidence pass; H3.5 does not authorize Provider/API, upload or H4 human-quality scope.
 
 ### H4 — Browser and product-quality acceptance
 
-Status: **PENDING H3**
+Status: **PENDING H3.5**
 
 Outcome: one fresh three-view Source-to-Handoff-to-import-to-Final-to-Publish flow completes with restart/replay and a named human full-watch/listen verdict bound to the exact Final Video Version.
 
@@ -98,7 +106,7 @@ Exit: technical and product-quality gates pass; no Preview Video is accepted as 
 ## 7. Authorized Scope
 
 - H0 is complete at `main@d96b091` through Issue #129 / PR #130.
-- Implement and independently review the bounded H2 Issue #135 Task Contract after H1 is complete at `main@91b4512`.
+- Implement and independently review the bounded H3 Issue #137 Task Contract after H2 is complete at `main@c4f2f5e`.
 - Reuse the current live Source, Artifact repository, Script/Storyboard/Final decisions, Task media projection, local GPT-SoVITS narration, FFmpeg composition and Publish Package.
 - Change frontend only where a milestone needs contract review, handoff download, import readiness/action or final quality evidence; retain exactly three server-rendered views.
 - Update related Goal/Status facts inside the corresponding feature PR using actual, not anticipated, merge/runtime evidence.
@@ -107,7 +115,7 @@ Exit: technical and product-quality gates pass; no Preview Video is accepted as 
 
 - Jimeng/Kling API integration, Provider/model/credential selection, paid calls or cap changes.
 - Deployment, publication, multi-user/auth, multiple sources/tasks or sensitive data handling.
-- Fourth page, SPA, generic upload/file manager, professional editor or unrelated visual redesign.
+- Fourth page, SPA, generic upload/file manager, professional editor or unrelated visual redesign; the H3.5 workspace redesign remains separately gated.
 - Replacing exact narration/SRT with external native tracks.
 - Generic Provider/plugin framework, parallel workflow, Artifact graph rewrite or broad migration.
 - Treating manual subscription work as an application Provider Attempt or Budget-controlled spend.

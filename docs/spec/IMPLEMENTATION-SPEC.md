@@ -9,10 +9,10 @@
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130); FAST-MVP v1.1 remains complete history |
-| Current H2 baseline | `main@91b451225c40fd7fa884355ac7da6fa1e373238b`, branch `codex/135-creator-handoff-package` (Issue #135 candidate pending independent review/merge) |
+| Current H3 baseline | `main@c4f2f5e07839f9dee87e0c13cdfaf84500c3b629`, branch `codex/137-generated-scene-import` (Issue #137 candidate in progress) |
 | Goal contract | `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` |
 | Runtime | Python `>=3.12,<3.13` |
-| Authorization | H0 and H1 complete; Issue #131 / PR #132 plus Issue #133 / PR #134 merged at `main@91b4512`; H2 Issue #135 is the current bounded candidate, while H3-H4 require their own Task Contracts |
+| Authorization | H0/H1 complete; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` with 444-test evidence; H3 Issue #137 is the current bounded candidate, while H3.5/H4 require their own Task Contracts |
 
 Prefer connecting the existing implementation into a usable product over refactoring it. A task may change architecture only after it proves the vertical path cannot be completed inside the approved boundaries.
 
@@ -101,7 +101,7 @@ The first slice uses one operator-declared generated-clips directory supplied at
 
 ## 7. Approved Delivery Sequence
 
-The Goal is active. H0 and H1 are complete; Issue #131 / PR #132 plus Issue #133 / PR #134 are merged at `main@91b4512`. H2 is bounded by Issue #135; H3-H4 start only after the preceding milestone and their own bounded Task Contract.
+The Goal is active. H0 and H1 are complete; H2 Issue #135 / PR #136 is complete at `main@c4f2f5e` with accepted 444-test regression evidence. H3 is bounded by Issue #137; H3.5 and H4 start only after the preceding milestone and their own bounded Task Contract.
 
 ### H0 — Truth rebaseline
 
@@ -115,11 +115,17 @@ After explicit Storyboard approval, commit one immutable ordered contract from e
 
 Issue #135 adds `CreatorHandoffPackageBuilder` in `packaging/handoff.py` rather than a mode on `PublishPackageBuilder`. After non-monetary local runtime/input preflight, it writes an earlier deterministic package containing `generation-guide.md`, exact Contract/Timeline JSON, narration/Scene m4a files, canonical SRT, provenance, labelled optional stills and a normalized manifest. It commits one `creator_handoff_package` Artifact through the existing repository and Workspace; the manual path creates no Budget Authorization. The additive `LocalNarrationRenderer` seam keeps GPT-SoVITS `synthesize` compatibility while caching validated runtime facts for six local renders. H2 retry reuses immutable staged narration/package bytes and rejects changed exact inputs without a Version 2.
 
+H2 status: **COMPLETE** (Issue #135 / PR #136, `main@c4f2f5e`, accepted 444-test regression).
+
 ### H3 — Imported Scene clip composition
 
 Add one local imported-clip boundary behind the existing composition direction. It atomically preflights exact `scene-1.mp4` through `scene-6.mp4` from the configured directory, binds each clip to one Scene Generation Contract entry, validates/normalizes video and records creator-supplied provenance without an Attempt. Exact `scene-2-replacement.mp4` is the bounded re-import.
 
 H3 is a minimal public-contract expansion, not unchanged reuse: keep `artifact_type=scene_clip`, identity/version and Task selection, but add a discriminated creator-import payload with no attempt/provider and exact Production Request + Scene Generation Contract dependencies. Add an imported-clip composition input/reference variant rather than forging `MediaGenerationResult`. Task lineage accepts both exact legacy generated/Preview and creator-import variants. Before v1.2 Final Review, resolve all selected Clip Versions and require six creator-import variants bound to the same exact Scene Generation Contract. Scene Audio/Master Audio/Subtitle, one-Scene stale impact, the Final Video Decision record and Publish Package remain authoritative.
+
+### H3.5 — Simplified-Chinese Creator workspace
+
+Keep the three-view server-rendered boundary while separately redesigning the Creator workspace for the approved Simplified-Chinese product experience. H3.5 does not change H3 Artifact lineage, Final gate or media contract.
 
 ### H4 — Browser/product-quality acceptance
 
@@ -227,4 +233,4 @@ The accepted FAST-MVP Goal and PD-002 authorize the completed no-cost local Demo
 
 F3 acceptance does not authorize Provider credentials, fees, deployment, publication or a broader product scope.
 
-The approved v1.2 Goal does not authorize unbounded implementation. Issue #131 and bounded correction #133 are merged at `main@91b4512`; Issue #135 is the active H2 coding Task Contract and remains a candidate pending independent review and full regression. H3-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
+The approved v1.2 Goal does not authorize unbounded implementation. H2 Issue #135 / PR #136 is complete at `main@c4f2f5e`; Issue #137 is the active H3 coding Task Contract and remains in progress pending independent review and merge. H3.5 and H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.

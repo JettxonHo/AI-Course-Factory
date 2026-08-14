@@ -25,6 +25,10 @@ from .attempt import (
 from .sqlite_attempt import SQLiteProviderAttemptRepository
 from .interfaces import LocalNarrationRenderer, MediaComposer, VisualGenerator, VoiceGenerator
 from .model import (
+    CommittedMediaCompositionScene,
+    CommittedMediaCompositionTask,
+    CreatorImportedFinalCandidateGate,
+    CreatorImportedFinalCandidateGateResult,
     LocalNarrationPreflight,
     LocalNarrationResult,
     LocalNarrationTask,
@@ -37,6 +41,13 @@ from .model import (
     ProductionMediaFailure,
     VisualGenerationTask,
     VoiceSynthesisTask,
+)
+from .imported_clips import (
+    CreatorSceneClipImporter,
+    CreatorSceneClipImportFailure,
+    CreatorSceneClipImportSuccess,
+    CreatorSceneImportSpec,
+    ImportedSceneClip,
 )
 from .adapters import (
     DeterministicFakeVisualGenerator,
@@ -83,6 +94,10 @@ __all__ = [
     "ProviderAttemptReservation",
     "SQLiteProviderAttemptRepository",
     "MediaCompositionResult",
+    "CommittedMediaCompositionScene",
+    "CommittedMediaCompositionTask",
+    "CreatorImportedFinalCandidateGate",
+    "CreatorImportedFinalCandidateGateResult",
     "MediaCompositionScene",
     "MediaCompositionTask",
     "MediaComposer",
@@ -119,4 +134,9 @@ __all__ = [
     "GPTSoVITSVoiceGenerator",
     "GPTSoVITSSyntheticVoiceGenerator",
     "ProductionOrchestrator",
+    "CreatorSceneClipImporter",
+    "CreatorSceneClipImportFailure",
+    "CreatorSceneClipImportSuccess",
+    "CreatorSceneImportSpec",
+    "ImportedSceneClip",
 ]

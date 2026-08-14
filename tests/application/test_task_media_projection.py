@@ -12,6 +12,7 @@ from ai_course_factory.application import (
     TaskMediaRepository,
     TaskMediaRepositoryFailure,
     TaskMediaImpact,
+    TaskMediaBatchImpact,
     TaskMediaSnapshot,
     TaskSceneMediaSelection,
 )
@@ -120,6 +121,7 @@ class TaskMediaProjectionContractTests(unittest.TestCase):
             TaskDeliveryMediaSelection: ("role", "reference", "status"),
             TaskMediaSnapshot: ("task_id", "revision", "lifecycle_state", "production_request_reference", "timeline_reference", "scene_ids", "scene_selections", "delivery_selections", "last_command_id"),
             TaskMediaImpact: ("task_id", "role", "scene_id", "previous_reference", "replacement_reference", "direct", "transitive"),
+            TaskMediaBatchImpact: ("task_id", "operations", "discriminator"),
             TaskMediaOperationResult: ("status", "snapshot", "impact", "error_code", "error_message"),
             TaskMediaRepositoryFailure: ("code", "message"),
             TaskMediaProjectionChange: ("task_id", "command_id", "expected_revision", "snapshot", "impact"),
@@ -128,6 +130,43 @@ class TaskMediaProjectionContractTests(unittest.TestCase):
             self.assertEqual(tuple(field.name for field in fields(record)), names)
             self.assertTrue(record.__dataclass_params__.frozen)
         self.assertTrue(isinstance(__import__("ai_course_factory.application", fromlist=["InMemoryTaskMediaRepository"]).InMemoryTaskMediaRepository(), TaskMediaRepository))
+
+    def test_invalid_batch_is_never_partially_visible(self):
+        store, request, timeline, scenes = _fixture()
+        refs = _media(store, request, timeline, scenes)
+        service = TaskMediaProjectionService(store)
+        self.assertEqual(service.create("task-batch", "create-batch", request).status, "success")
+        selections = (
+            ("scene-2", "scene_clip", refs[("scene-2", "scene_clip")]),
+            ("scene-1", "scene_clip", ArtifactReference("scene_clip", "missing", 1)),
+        )
+
+        result = service.select_batch("task-batch", "batch-invalid", 1, selections, ())
+
+        self.assertEqual(result.status, "failure")
+        self.assertEqual(service.inspect("task-batch").snapshot.revision, 1)
+        self.assertEqual(service.inspect("task-batch").snapshot.scene_selections, ())
+
+    def test_initial_batch_requires_complete_scene_and_delivery_set_even_with_valid_references(self):
+        store, request, timeline, scenes = _fixture()
+        refs = _media(store, request, timeline, scenes)
+        service = TaskMediaProjectionService(store)
+        self.assertEqual(service.create("task-batch-incomplete", "create-batch", request).status, "success")
+
+        result = service.select_batch(
+            "task-batch-incomplete",
+            "batch-incomplete",
+            1,
+            (("scene-1", "scene_clip", refs[("scene-1", "scene_clip")]),),
+            (),
+        )
+
+        self.assertEqual(result.status, "failure")
+        self.assertEqual(result.error_code, "INVALID_MEDIA_BATCH")
+        inspected = service.inspect("task-batch-incomplete")
+        self.assertEqual(inspected.snapshot.revision, 1)
+        self.assertEqual(inspected.snapshot.scene_selections, ())
+        self.assertEqual(inspected.snapshot.delivery_selections, ())
 
     def test_forged_repository_success_and_failure_outcomes_are_rejected(self):
         store, request, timeline, scenes = _fixture()

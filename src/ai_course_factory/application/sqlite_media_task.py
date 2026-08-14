@@ -13,6 +13,7 @@ from .media_task import (
     InMemoryTaskMediaRepository,
     TaskDeliveryMediaSelection,
     TaskMediaImpact,
+    TaskMediaBatchImpact,
     TaskMediaOperationResult,
     TaskMediaProjectionChange,
     TaskMediaRepository,
@@ -126,7 +127,13 @@ def _snapshot_from(raw: Any) -> TaskMediaSnapshot:
     return snapshot
 
 
-def _impact_value(value: TaskMediaImpact) -> dict[str, Any]:
+def _impact_value(value: TaskMediaImpact | TaskMediaBatchImpact) -> dict[str, Any]:
+    if type(value) is TaskMediaBatchImpact:
+        return {
+            "discriminator": "batch",
+            "task_id": value.task_id,
+            "operations": [_impact_value(item) for item in value.operations],
+        }
     return {
         "task_id": value.task_id,
         "role": value.role,
@@ -138,10 +145,18 @@ def _impact_value(value: TaskMediaImpact) -> dict[str, Any]:
     }
 
 
-def _impact_from(raw: Any, snapshot: TaskMediaSnapshot) -> TaskMediaImpact | None:
+def _impact_from(raw: Any, snapshot: TaskMediaSnapshot) -> TaskMediaImpact | TaskMediaBatchImpact | None:
     if raw is None:
         return None
     value = _load_json(raw, "impact")
+    if type(value) is dict and value.get("discriminator") == "batch":
+        if set(value) != {"discriminator", "task_id", "operations"} or type(value["operations"]) is not list:
+            raise _StoredDataError("invalid batch impact")
+        operations = tuple(_impact_from(_json(item), snapshot) for item in value["operations"])
+        if any(type(item) is not TaskMediaImpact for item in operations):
+            raise _StoredDataError("invalid batch impact")
+        batch = TaskMediaBatchImpact(value["task_id"], operations)
+        return batch
     expected = {"task_id", "role", "scene_id", "previous_reference", "replacement_reference", "direct", "transitive"}
     if type(value) is not dict or set(value) != expected or type(value["direct"]) is not list or type(value["transitive"]) is not list:
         raise _StoredDataError("invalid impact")

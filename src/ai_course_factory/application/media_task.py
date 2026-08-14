@@ -69,6 +69,18 @@ class TaskMediaImpact:
     def __post_init__(self) -> None:
         object.__setattr__(self, "direct", tuple(self.direct))
         object.__setattr__(self, "transitive", tuple(self.transitive))
+
+
+@dataclass(frozen=True, slots=True)
+class TaskMediaBatchImpact:
+    """One durable projection change containing several exact selections."""
+
+    task_id: str
+    operations: tuple[TaskMediaImpact, ...]
+    discriminator: Literal["batch"] = "batch"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "operations", tuple(self.operations))
 @dataclass(frozen=True, slots=True)
 class TaskMediaOperationResult:
     status: Literal["success", "failure"]
@@ -86,7 +98,7 @@ class TaskMediaProjectionChange:
     command_id: str
     expected_revision: int | None
     snapshot: TaskMediaSnapshot
-    impact: TaskMediaImpact | None = None
+    impact: TaskMediaImpact | TaskMediaBatchImpact | None = None
 @runtime_checkable
 class TaskMediaRepository(Protocol):
     def save(self, change: TaskMediaProjectionChange) -> TaskMediaOperationResult: ...
@@ -135,6 +147,15 @@ def _same_selections(first: Any, second: Any) -> bool:
     return type(first) is tuple and type(second) is tuple and len(first) == len(second) and all(_same_selection(left, right) for left, right in zip(first, second))
 
 def _same_impact(first: Any, second: Any) -> bool:
+    if type(first) is TaskMediaBatchImpact or type(second) is TaskMediaBatchImpact:
+        return (
+            type(first) is TaskMediaBatchImpact and type(second) is TaskMediaBatchImpact
+            and first.task_id == second.task_id
+            and first.discriminator == second.discriminator
+            and type(first.operations) is tuple and type(second.operations) is tuple
+            and len(first.operations) == len(second.operations)
+            and all(_same_impact(left, right) for left, right in zip(first.operations, second.operations))
+        )
     if type(first) is not TaskMediaImpact or type(second) is not TaskMediaImpact:
         return first is second
     previous = first.previous_reference is None and second.previous_reference is None or _same_ref(first.previous_reference, second.previous_reference)
@@ -298,6 +319,24 @@ def _validate_impact(value: Any, snapshot: TaskMediaSnapshot) -> None:
             raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
         seen.add(key)
 
+
+def _validate_batch_impact(value: Any, snapshot: TaskMediaSnapshot) -> None:
+    if (
+        type(value) is not TaskMediaBatchImpact
+        or value.task_id != snapshot.task_id
+        or value.discriminator != "batch"
+        or type(value.operations) is not tuple
+        or not value.operations
+    ):
+        raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+    seen: set[tuple[str, str] | str] = set()
+    for operation in value.operations:
+        _validate_impact(operation, snapshot)
+        key: tuple[str, str] | str = (operation.scene_id, operation.role) if operation.role in _SCENE_ROLES else operation.role
+        if key in seen:
+            raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+        seen.add(key)
+
 def _validate_change(change: Any) -> None:
     if type(change) is not TaskMediaProjectionChange:
         raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
@@ -313,7 +352,10 @@ def _validate_change(change: Any) -> None:
     else:
         if change.snapshot.revision != change.expected_revision + 1 or change.impact is None:
             raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
-        _validate_impact(change.impact, change.snapshot)
+        if type(change.impact) is TaskMediaBatchImpact:
+            _validate_batch_impact(change.impact, change.snapshot)
+        else:
+            _validate_impact(change.impact, change.snapshot)
 
 def _validate_transition(current: TaskMediaSnapshot | None, change: TaskMediaProjectionChange) -> None:
     _validate_change(change)
@@ -325,6 +367,9 @@ def _validate_transition(current: TaskMediaSnapshot | None, change: TaskMediaPro
     impact = change.impact
     if impact is None or change.expected_revision != current.revision or change.snapshot.revision != current.revision + 1:
         raise _Invalid("TASK_MEDIA_REVISION_CONFLICT")
+    if type(impact) is TaskMediaBatchImpact:
+        _validate_batch_transition(current, change, impact)
+        return
     old_scene, old_delivery = _selected_maps(current); new_scene, new_delivery = _selected_maps(change.snapshot)
     key: tuple[str, str] | str = (impact.scene_id, impact.role) if impact.role in _SCENE_ROLES else impact.role
     old = old_scene.get(key) if isinstance(key, tuple) else old_delivery.get(key)
@@ -357,6 +402,79 @@ def _validate_transition(current: TaskMediaSnapshot | None, change: TaskMediaPro
             if not _same_selection(impacted, expected_stale):
                 raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
         elif not _same_selection(before, after):
+            raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+
+
+def _batch_selection_key(item: _MediaSelection) -> tuple[str, str] | str:
+    return (item.scene_id, item.role) if type(item) is TaskSceneMediaSelection else item.role
+
+
+def _validate_batch_transition(current: TaskMediaSnapshot, change: TaskMediaProjectionChange, impact: TaskMediaBatchImpact) -> None:
+    if impact.task_id != current.task_id or not impact.operations:
+        raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+    old_scene, old_delivery = _selected_maps(current)
+    new_scene, new_delivery = _selected_maps(change.snapshot)
+    old_keys = set(old_scene) | set(old_delivery)
+    new_keys = set(new_scene) | set(new_delivery)
+    operation_keys = {
+        (operation.scene_id, operation.role) if operation.role in _SCENE_ROLES else operation.role
+        for operation in impact.operations
+    }
+    if len(operation_keys) != len(impact.operations):
+        raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+    # Every operation must describe the exact current replacement in the
+    # resulting snapshot; batch initialization has no predecessor and is
+    # therefore validated by the artifact lineage checks in _prepare_batch.
+    operation_keys_in_order = [
+        (operation.scene_id, operation.role) if operation.role in _SCENE_ROLES else operation.role
+        for operation in impact.operations
+    ]
+    for operation_index, operation in enumerate(impact.operations):
+        key = (operation.scene_id, operation.role) if operation.role in _SCENE_ROLES else operation.role
+        old = old_scene.get(key) if isinstance(key, tuple) else old_delivery.get(key)
+        new = new_scene.get(key) if isinstance(key, tuple) else new_delivery.get(key)
+        if new is None or new.status != "current" or not _same_ref(new.reference, operation.replacement_reference):
+            raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+        if old is None:
+            if operation.previous_reference is not None:
+                raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+        elif operation.previous_reference != old.reference:
+            raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+        later_operation_keys = set(operation_keys_in_order[operation_index + 1:])
+        for item in (*operation.direct, *operation.transitive):
+            stale_key = _batch_selection_key(item)
+            before = old_scene.get(stale_key) if isinstance(stale_key, tuple) else old_delivery.get(stale_key)
+            after = new_scene.get(stale_key) if isinstance(stale_key, tuple) else new_delivery.get(stale_key)
+            superseded = stale_key in later_operation_keys
+            if before is None or after is None or before.status != "current":
+                raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+            if superseded:
+                # A later operation in the same atomic batch may immediately
+                # replace the stale downstream delivery (Scene-2 Clip + Video
+                # replacement).  Its final status/reference is validated by
+                # that later operation instead of requiring an intermediate
+                # stale row to remain visible.
+                later = next(
+                    candidate
+                    for candidate, candidate_key in zip(impact.operations[operation_index + 1:], operation_keys_in_order[operation_index + 1:])
+                    if candidate_key == stale_key
+                )
+                if not _same_ref(after.reference, later.replacement_reference):
+                    raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+                continue
+            if not _same_ref(before.reference, after.reference):
+                raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+            if after.status != "stale" or not _same_selection(item, after):
+                raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+    expected_keys = old_keys | operation_keys
+    if new_keys != expected_keys:
+        raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
+    for key in old_keys | new_keys:
+        if key in operation_keys:
+            continue
+        before = old_scene.get(key) if isinstance(key, tuple) else old_delivery.get(key)
+        after = new_scene.get(key) if isinstance(key, tuple) else new_delivery.get(key)
+        if not _same_selection(before, after):
             raise _Invalid("TASK_MEDIA_REPOSITORY_FAILED")
 
 def _impact_keys(snapshot: TaskMediaSnapshot, key: tuple[str, str] | str) -> tuple[tuple[Any, ...], tuple[Any, ...]]:
@@ -461,6 +579,105 @@ class TaskMediaProjectionService:
     def select_delivery(self, task_id: str, command_id: str, expected_revision: int, role: str, reference: ArtifactReference) -> TaskMediaOperationResult:
         return self._select(task_id, command_id, expected_revision, None, role, reference)
 
+    def select_batch(
+        self,
+        task_id: str,
+        command_id: str,
+        expected_revision: int,
+        selections: tuple[tuple[str, str, ArtifactReference], ...] = (),
+        delivery_selections: tuple[tuple[str, ArtifactReference], ...] = (),
+    ) -> TaskMediaOperationResult:
+        """Publish a complete set of Scene/delivery selections in one save."""
+        try:
+            _id(task_id, "INVALID_TASK_ID"); _id(command_id, "INVALID_COMMAND_ID")
+            if not _positive(expected_revision):
+                raise _Invalid("INVALID_EXPECTED_REVISION", "expected revision is invalid")
+            current = self._current(task_id)
+            if current.revision != expected_revision:
+                raise _Invalid("TASK_MEDIA_REVISION_CONFLICT", "task media revision is no longer current")
+            if type(selections) is not tuple or type(delivery_selections) is not tuple:
+                raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+            if not current.scene_selections and not current.delivery_selections:
+                expected_scene_keys = {
+                    (scene_id, role)
+                    for scene_id in current.scene_ids
+                    for role in _SCENE_ROLES
+                }
+                actual_scene_keys: list[tuple[str, str]] = []
+                for item in selections:
+                    if type(item) is not tuple or len(item) != 3:
+                        raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+                    scene_id, role, _reference = item
+                    if type(scene_id) is not str or type(role) is not str:
+                        raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+                    actual_scene_keys.append((scene_id, role))
+                actual_delivery_roles: list[str] = []
+                for item in delivery_selections:
+                    if type(item) is not tuple or len(item) != 2:
+                        raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+                    role, _reference = item
+                    if type(role) is not str:
+                        raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+                    actual_delivery_roles.append(role)
+                if (
+                    len(actual_scene_keys) != len(expected_scene_keys)
+                    or len(set(actual_scene_keys)) != len(actual_scene_keys)
+                    or set(actual_scene_keys) != expected_scene_keys
+                    or len(actual_delivery_roles) != 3
+                    or len(set(actual_delivery_roles)) != len(actual_delivery_roles)
+                    or set(actual_delivery_roles) != {"subtitle", "master_audio", "video"}
+                ):
+                    raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+            scene_map, delivery_map = _selected_maps(current)
+            operations: list[TaskMediaImpact] = []
+            for scene_id, role, reference in selections:
+                if type(scene_id) is not str or type(role) is not str:
+                    raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+                if role not in _SCENE_ROLES:
+                    raise _Invalid("INVALID_MEDIA_ROLE", "media role is invalid")
+                impact = self._prepare_batch_item(current, scene_map, delivery_map, scene_id, role, reference)
+                operations.append(impact)
+                scene_map[(scene_id, role)] = TaskSceneMediaSelection(scene_id, role, reference, "current")
+                for stale in (*impact.direct, *impact.transitive):
+                    key = _batch_selection_key(stale)
+                    if isinstance(key, tuple):
+                        scene_map[key] = TaskSceneMediaSelection(stale.scene_id, stale.role, stale.reference, "stale")
+                    else:
+                        delivery_map[key] = TaskDeliveryMediaSelection(stale.role, stale.reference, "stale")
+            for role, reference in delivery_selections:
+                if type(role) is not str or role not in _DELIVERY_ROLES:
+                    raise _Invalid("INVALID_MEDIA_ROLE", "media role is invalid")
+                impact = self._prepare_batch_item(current, scene_map, delivery_map, None, role, reference)
+                operations.append(impact)
+                delivery_map[role] = TaskDeliveryMediaSelection(role, reference, "current")
+                for stale in (*impact.direct, *impact.transitive):
+                    key = _batch_selection_key(stale)
+                    if isinstance(key, tuple):
+                        scene_map[key] = TaskSceneMediaSelection(stale.scene_id, stale.role, stale.reference, "stale")
+                    else:
+                        delivery_map[key] = TaskDeliveryMediaSelection(stale.role, stale.reference, "stale")
+            if not operations:
+                raise _Invalid("INVALID_MEDIA_BATCH", "complete media selections are required")
+            # Initial import may include all downstream roles.  A replacement
+            # carries only Scene 2 Clip + Video and stales exact dependencies.
+            direct_map: dict[tuple[str, str] | str, tuple[_MediaSelection, ...]] = {}
+            transitive_map: dict[tuple[str, str] | str, tuple[_MediaSelection, ...]] = {}
+            for operation in operations:
+                key = (operation.scene_id, operation.role) if operation.role in _SCENE_ROLES else operation.role
+                direct_map[key] = operation.direct
+                transitive_map[key] = operation.transitive
+            ordered_scene = tuple(scene_map[(sid, role)] for sid in current.scene_ids for role in _SCENE_ROLES if (sid, role) in scene_map)
+            ordered_delivery = tuple(delivery_map[role] for role in _DELIVERY_ROLES if role in delivery_map)
+            current_delivery = {item.role for item in ordered_delivery if item.status == "current"}
+            lifecycle = "packaged" if "publish_package" in current_delivery else "final_review_pending" if "video" in current_delivery else "producing"
+            snapshot = TaskMediaSnapshot(task_id, current.revision + 1, lifecycle, current.production_request_reference, current.timeline_reference, current.scene_ids, ordered_scene, ordered_delivery, command_id)
+            batch = TaskMediaBatchImpact(task_id, tuple(operations))
+            return self._save(TaskMediaProjectionChange(task_id, command_id, expected_revision, snapshot, batch))
+        except _Invalid as exc:
+            return _failure(exc.code, exc.message)
+        except Exception:
+            return _failure("TASK_MEDIA_REPOSITORY_FAILED")
+
     def _current(self, task_id: str) -> TaskMediaSnapshot:
         result = self._repository.get(task_id)
         if type(result) is TaskMediaRepositoryFailure:
@@ -543,10 +760,81 @@ class TaskMediaProjectionService:
         lifecycle = "packaged" if "publish_package" in current_delivery else "final_review_pending" if "video" in current_delivery else "producing"
         snapshot = TaskMediaSnapshot(base.task_id, base.revision + 1, lifecycle, base.production_request_reference, base.timeline_reference, base.scene_ids, ordered_scene, ordered_delivery, command_id)
         return impact, snapshot
+
+    def _prepare_batch_item(
+        self,
+        base: TaskMediaSnapshot,
+        scenes: dict[tuple[str, str], TaskSceneMediaSelection],
+        deliveries: dict[str, TaskDeliveryMediaSelection],
+        scene_id: str | None,
+        role: str,
+        reference: ArtifactReference,
+    ) -> TaskMediaImpact:
+        if role in _SCENE_ROLES:
+            if scene_id is None:
+                raise _Invalid("INVALID_SCENE_ID", "scene identity is required")
+            _id(scene_id, "INVALID_SCENE_ID", scene=True)
+            if scene_id not in base.scene_ids:
+                raise _Invalid("INVALID_SCENE_ID", "scene identity is not in the exact production order")
+            key: tuple[str, str] | str = (scene_id, role)
+        else:
+            if scene_id is not None:
+                raise _Invalid("INVALID_SCENE_ID", "delivery media has no scene identity")
+            key = role
+        _ref(reference, "INVALID_MEDIA_REFERENCE", role)
+        previous = scenes.get(key) if isinstance(key, tuple) else deliveries.get(key)
+        if previous is not None and _same_ref(previous.reference, reference):
+            raise _Invalid("TASK_MEDIA_SELECTION_UNCHANGED", "selected Artifact Reference is unchanged")
+        version = _version(self._artifacts, reference)
+        if previous is None:
+            if version.prior_reference is not None:
+                raise _Invalid("TASK_MEDIA_SELECTION_REVISION_MISMATCH", "initial selection must name no predecessor")
+        elif (previous.reference.artifact_type, previous.reference.identity) != (reference.artifact_type, reference.identity):
+            raise _Invalid("TASK_MEDIA_SELECTION_IDENTITY_MISMATCH", "replacement must keep Artifact identity")
+        elif not _same_ref(version.prior_reference, previous.reference):
+            raise _Invalid("TASK_MEDIA_SELECTION_REVISION_MISMATCH", "replacement must name the selected Reference as predecessor")
+        self._validate_selection(base, scene_id, role, reference, version, scenes, deliveries)
+        return self._impact(base, key, previous.reference if previous else None, reference, scenes, deliveries)
     def _validate_selection(self, snapshot: TaskMediaSnapshot, scene_id: str | None, role: str, reference: ArtifactReference, version: ArtifactVersion, scenes: dict[tuple[str, str], TaskSceneMediaSelection], deliveries: dict[str, TaskDeliveryMediaSelection]) -> None:
         request, timeline, scene_ids = snapshot.production_request_reference, snapshot.timeline_reference, snapshot.scene_ids
         payload = version.payload
         if role in _SCENE_ROLES:
+            if isinstance(payload, Mapping) and payload.get("source_kind") in {"creator_import", "local_narration"}:
+                expected_kind = "creator_import" if role == "scene_clip" else "local_narration"
+                expected_keys = (
+                    {"source_kind", "production_request_reference", "scene_generation_contract_reference", "scene_id", "declared_filename", "creator_provenance", "output_reference", "media_type", "duration_milliseconds"}
+                    if expected_kind == "creator_import" else
+                    {"source_kind", "production_request_reference", "scene_generation_contract_reference", "creator_handoff_package_reference", "scene_id", "output_reference", "media_type", "duration_milliseconds"}
+                )
+                expected_dependencies = (request, payload.get("scene_generation_contract_reference")) if expected_kind == "creator_import" else (request, payload.get("scene_generation_contract_reference"), payload.get("creator_handoff_package_reference"))
+                if set(payload) != expected_keys or payload.get("source_kind") != expected_kind or not _same_ref(payload.get("production_request_reference"), request) or payload.get("scene_id") != scene_id or not _same_refs(version.dependencies, expected_dependencies):
+                    raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
+                contract_reference = _ref(payload.get("scene_generation_contract_reference"), "TASK_MEDIA_LINEAGE_MISMATCH", "scene_generation_contract")
+                contract = _version(self._artifacts, contract_reference, "TASK_MEDIA_LINEAGE_MISMATCH")
+                contract_payload = contract.payload
+                entries = contract_payload.get("scene_generation_contract", {}).get("scenes") if isinstance(contract_payload, Mapping) and isinstance(contract_payload.get("scene_generation_contract"), Mapping) else None
+                entry = next((item for item in entries if isinstance(item, Mapping) and item.get("scene_id") == scene_id), None) if type(entries) is tuple else None
+                if not isinstance(entry, Mapping) or type(entry.get("duration_milliseconds")) is not int or entry.get("duration_milliseconds") != payload.get("duration_milliseconds"):
+                    raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
+                output = _mapping(payload["output_reference"], {"task_id", "area", "name"}, "TASK_MEDIA_LINEAGE_MISMATCH")
+                _text(output["task_id"], "TASK_MEDIA_LINEAGE_MISMATCH"); _text(output["area"], "TASK_MEDIA_LINEAGE_MISMATCH"); _text(output["name"], "TASK_MEDIA_LINEAGE_MISMATCH")
+                if type(payload.get("duration_milliseconds")) is not int or payload["duration_milliseconds"] <= 0 or payload.get("media_type") != ("video/mp4" if expected_kind == "creator_import" else "audio/mp4"):
+                    raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
+                if expected_kind == "creator_import":
+                    filename = payload.get("declared_filename")
+                    if filename != entry.get("expected_filename") and not (scene_id == "scene-2" and filename == "scene-2-replacement.mp4"):
+                        raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
+                    provenance = payload.get("creator_provenance")
+                    if not isinstance(provenance, Mapping) or provenance.get("supplied_by") != "creator" or provenance.get("generated_outside_application") is not True or provenance.get("application_provider_attempt") is not False or provenance.get("application_charge_micros") != 0:
+                        raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
+                else:
+                    handoff_reference = _ref(payload.get("creator_handoff_package_reference"), "TASK_MEDIA_LINEAGE_MISMATCH", "creator_handoff_package")
+                    handoff = _version(self._artifacts, handoff_reference, "TASK_MEDIA_LINEAGE_MISMATCH")
+                    handoff_payload = handoff.payload
+                    narration = handoff_payload.get("narration_references") if isinstance(handoff_payload, Mapping) else None
+                    if type(narration) is not tuple or not any(isinstance(item, Mapping) and item.get("task_id") == output["task_id"] and item.get("name") == output["name"] for item in narration):
+                        raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
+                return
             p = _mapping(payload, {"production_request_reference", "scene_id", "attempt_id", "provider", "output_reference", "media_type", "duration_milliseconds"}, "TASK_MEDIA_LINEAGE_MISMATCH")
             if not _same_ref(p["production_request_reference"], request) or p["scene_id"] != scene_id or not _same_refs(version.dependencies, (request,)):
                 raise _Invalid("TASK_MEDIA_LINEAGE_MISMATCH")
@@ -627,7 +915,7 @@ class TaskMediaProjectionService:
         except Exception:
             return _failure("TASK_MEDIA_REPOSITORY_FAILED")
 __all__ = [
-    "InMemoryTaskMediaRepository", "TaskDeliveryMediaSelection", "TaskMediaImpact", "TaskMediaOperationResult",
+    "InMemoryTaskMediaRepository", "TaskDeliveryMediaSelection", "TaskMediaImpact", "TaskMediaBatchImpact", "TaskMediaOperationResult",
     "TaskMediaProjectionChange", "TaskMediaProjectionService", "TaskMediaRepository", "TaskMediaRepositoryFailure",
     "TaskMediaSnapshot", "TaskSceneMediaSelection",
 ]
