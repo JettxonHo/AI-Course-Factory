@@ -13,6 +13,7 @@ from tests.source_fixture import (
     SUPPORTED_REPOSITORY_URL,
     FixtureSourceConnector,
 )
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 
 
 def _app(directory: str | Path, **kwargs: object) -> CourseFactoryApplication:
@@ -166,7 +167,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             self.assertEqual(rejected.view.script_reference.version, 2)
             self.assertEqual(rejected.view.pending_action, "approve_script")
 
-    def test_planning_persists_budget_review_and_exact_script_source(self) -> None:
+    def test_planning_pauses_for_explicit_storyboard_approval_and_exact_script_source(self) -> None:
         with TemporaryDirectory() as directory:
             app = _app(directory)
             app.create_or_open()
@@ -175,18 +176,15 @@ class CourseFactoryApplicationTests(unittest.TestCase):
             result = app.advance_planning()
 
             self.assertEqual(result.status, "success")
-            self.assertEqual(result.view.stage, "budget_review")
-            self.assertEqual(result.view.pending_action, "approve_budget")
+            self.assertEqual(result.view.stage, "planning")
+            self.assertEqual(result.view.pending_action, "approve_storyboard")
             self.assertEqual(result.view.source_commit, REAL_SHAPED_COMMIT)
-            self.assertIsNotNone(result.view.budget_maximum_amount_micros)
-            self.assertIsNotNone(result.view.budget_maximum_attempts)
+            self.assertIsNone(result.view.budget_maximum_amount_micros)
+            self.assertIsNone(result.view.budget_maximum_attempts)
 
     def test_budget_approval_is_explicit_before_offline_production(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
 
             result = app.submit_budget_decision("approve")
 
@@ -197,10 +195,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_explicit_zero_amount_fails_closed_without_budget_or_production_side_effect(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
 
             result = app.submit_budget_decision("approve", maximum_approved_amount_micros=0)
 
@@ -224,10 +219,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_explicit_zero_attempts_fails_closed_without_budget_or_production_side_effect(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
 
             result = app.submit_budget_decision("approve", maximum_attempts=0)
 
@@ -251,10 +243,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_offline_production_reaches_final_review_with_playable_video(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
 
             result = app.produce_offline()
@@ -267,10 +256,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_production_replay_and_restart_preserve_exact_delivery_references(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             first = app.produce_offline()
             video_reference = first.view.video_reference
@@ -291,10 +277,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_final_approval_moves_to_export_without_changing_video(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             produced = app.produce_offline()
             video_reference = produced.view.video_reference
@@ -308,10 +291,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_local_scene_replacement_revises_only_selected_scene_and_is_one_shot(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             produced = app.produce_offline()
             before = {scene.scene_id: scene.selected_clip_reference for scene in produced.view.scenes}
@@ -331,10 +311,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_replacement_keeps_original_provider_attempt_facts_unchanged(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             produced = app.produce_offline()
             before_count = produced.view.provider_attempt_count
@@ -352,10 +329,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_final_rejection_is_context_bound_and_blocks_export_after_replacement(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             app.produce_offline()
             app.replace_scene("scene-2")
@@ -373,10 +347,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_failed_local_media_uses_safe_category_and_preserves_production_action(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory, ffmpeg_executable="/missing/ffmpeg", ffprobe_executable="/missing/ffprobe")
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory, ffmpeg_executable="/missing/ffmpeg", ffprobe_executable="/missing/ffprobe"))
             app.submit_budget_decision("approve")
 
             result = app.produce_offline()
@@ -389,10 +360,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_replacement_survives_restart_with_rebuilt_video(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             app.produce_offline()
             replaced = app.replace_scene("scene-3")
@@ -410,10 +378,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_final_approved_video_exports_a_durable_package(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             app.produce_offline()
             app.replace_scene("scene-2")
@@ -428,10 +393,7 @@ class CourseFactoryApplicationTests(unittest.TestCase):
 
     def test_export_package_replays_after_restart_without_rebuilding(self) -> None:
         with TemporaryDirectory() as directory:
-            app = _app(directory)
-            app.create_or_open()
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            app = seed_legacy_budget_review(_app(directory))
             app.submit_budget_decision("approve")
             app.produce_offline()
             app.submit_final_decision("approve")

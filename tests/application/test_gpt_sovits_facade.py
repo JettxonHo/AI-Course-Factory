@@ -6,6 +6,7 @@ import unittest
 
 from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.production import GPTSoVITSConfiguration
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 from tests.source_fixture import FixtureSourceConnector, ensure_source
 
 
@@ -27,8 +28,7 @@ class GPTSoVITSFacadeTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector(), tts_configuration=_invalid_config())
             ensure_source(app)
-            app.submit_script_decision("approve")
-            app.advance_planning()
+            seed_legacy_budget_review(app)
             approved = app.submit_budget_decision("approve")
             self.assertEqual(approved.status, "success")
 

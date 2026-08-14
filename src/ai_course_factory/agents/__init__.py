@@ -15,6 +15,10 @@ from .production_agent import (
     ProductionAgentFailure,
     StoryboardPlanningConstraints,
 )
+from .scene_generation_contract import (
+    SceneGenerationContractFailure,
+    SceneGenerationContractPlanner,
+)
 from .runtime import (
     ContentModelRuntimeResult,
     ModelRuntimeFailure,
@@ -47,6 +51,8 @@ __all__ = [
     "ProductionAgentFailure",
     "ProductionModelRuntimeResult",
     "ProductionRequestModelRuntimeResult",
+    "SceneGenerationContractFailure",
+    "SceneGenerationContractPlanner",
     "StoryboardModelRuntimeResult",
     "StoryboardPlanningConstraints",
     "TimelineModelRuntimeResult",

@@ -28,8 +28,11 @@ from ai_course_factory.agents import (
     ModelRuntimeRequest,
     ModelRuntimeResult,
     ProductionAgent,
+    ProductionAgentFailure,
     ProductionModelRuntimeResult,
     ProductionRequestModelRuntimeResult,
+    SceneGenerationContractFailure,
+    SceneGenerationContractPlanner,
     StoryboardModelRuntimeResult,
     TimelineModelRuntimeResult,
 )
@@ -60,7 +63,6 @@ from ai_course_factory.production import (
     BudgetAuthorizationBoundary,
     BudgetDecisionOutcome,
     BudgetFailure,
-    BudgetModule,
     FFmpegFixtureVisualGenerator,
     FFmpegFixtureVoiceGenerator,
     FFmpegMediaComposer,
@@ -82,7 +84,6 @@ from ai_course_factory.production import (
     ProviderAttemptFailure,
     ProviderAttemptReservation,
     ProviderAttemptRecord,
-    RetryPolicy,
     SQLiteBudgetAuthorizationRepository,
     SQLiteProviderAttemptRepository,
     VisualGenerationTask,
@@ -127,6 +128,10 @@ def _script_decision_id(reference: ArtifactReference, action: str) -> str:
 
 def _final_decision_id(reference: ArtifactReference, action: str) -> str:
     return f"decision:final:v{reference.version}:{action}"
+
+
+def _storyboard_decision_id(reference: ArtifactReference, action: str) -> str:
+    return f"decision:storyboard:v{reference.version}:{action}"
 
 
 def _failure_category(code: str | None) -> str | None:
@@ -214,6 +219,23 @@ class PromptCard:
 
 
 @dataclass(frozen=True, slots=True)
+class GenerationEntryView:
+    """Small provider-neutral projection for one contract Scene entry."""
+
+    scene_id: str
+    duration_milliseconds: int
+    narration_identity: str
+    narration: str
+    visual_intent: str
+    character_action: str
+    continuity_notes: tuple[str, ...]
+    generation_prompt: str
+    camera_motion_instruction: str
+    negative_constraints: tuple[str, ...]
+    expected_filename: str
+
+
+@dataclass(frozen=True, slots=True)
 class ApplicationView:
     task_id: str
     stage: str
@@ -244,6 +266,12 @@ class ApplicationView:
     tts_engine: str | None = None
     tts_reference_provenance: str | None = None
     tts_external_charge_micros: int | None = None
+    storyboard_reference: ArtifactReference | None = None
+    scene_generation_contract_reference: ArtifactReference | None = None
+    generation_entries: tuple[GenerationEntryView, ...] = ()
+    timeline_reference: ArtifactReference | None = None
+    production_request_reference: ArtifactReference | None = None
+    storyboard_decision_context: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -696,7 +724,7 @@ class CourseFactoryApplication:
         state = self._load_state()
         if state is None:
             return self._failure("TASK_NOT_FOUND")
-        if state.stage != "planning":
+        if state.stage != "planning" or state.pending_action != "advance_planning":
             return self._failure("PLANNING_NOT_READY", state)
         try:
             script_reference = state.refs["script"]
@@ -706,34 +734,164 @@ class CourseFactoryApplication:
                 return self._failure("SCRIPT_APPROVAL_REQUIRED", state)
             runtime = _OfflineRuntime()
             production = ProductionAgent(runtime)
-            character_candidate = production.plan_character(script_reference, script, script_decision, constraints={"name": "小土豆", "design_version": "v1.0"}, character_identity="character:episode-1", character_commit_id="character-1")
+            revision_suffix = "" if script_reference.version == 1 else f":v{script_reference.version}"
+            character_candidate = production.plan_character(script_reference, script, script_decision, constraints={"name": "小土豆", "design_version": "v1.0"}, character_identity=f"character:episode-1{revision_suffix}", character_commit_id=f"character-{script_reference.version}")
             character_reference = self.artifacts.commit(character_candidate)
             character = self.artifacts.get(character_reference)
-            storyboard_candidate = production.plan_storyboard(script_reference, script, script_decision, character_reference, character, constraints={"aspect_ratio": "9:16"}, storyboard_identity="storyboard:episode-1", storyboard_commit_id="storyboard-1")
+            storyboard_candidate = production.plan_storyboard(script_reference, script, script_decision, character_reference, character, constraints={"aspect_ratio": "9:16"}, storyboard_identity=f"storyboard:episode-1{revision_suffix}", storyboard_commit_id=f"storyboard-{script_reference.version}")
             storyboard_reference = self.artifacts.commit(storyboard_candidate)
-            storyboard = self.artifacts.get(storyboard_reference)
-            storyboard_decision = StoryboardDecisionBoundary(self.storyboard_decisions).decide(storyboard_reference, storyboard, review_enabled=False, decision_id="decision:storyboard:skip", task_id=TASK_ID, thread_id=THREAD_ID, creator_id=CREATOR_ID, action="skip")
-            if not isinstance(storyboard_decision, StoryboardDecisionRecord):
-                return self._failure("STORYBOARD_DECISION_FAILED", state)
-            timeline_candidate = production.plan_timeline(script_reference, script, script_decision, character_reference, character, storyboard_reference, storyboard, storyboard_decision, timeline_identity="timeline:episode-1", timeline_commit_id="timeline-1")
-            timeline_reference = self.artifacts.commit(timeline_candidate)
-            timeline = self.artifacts.get(timeline_reference)
-            request_candidate = production.plan_request(script_reference, script, script_decision, character_reference, character, storyboard_reference, storyboard, storyboard_decision, timeline_reference, timeline, request_identity="production-request:episode-1", request_commit_id="production-request-1")
-            request_reference = self.artifacts.commit(request_candidate)
-            request = self.artifacts.get(request_reference)
-            price = self._price_snapshot(request_reference, request)
-            budget_candidate = BudgetModule.estimate(request_reference, request, price_snapshot=price, retry_policy=RetryPolicy(2), budget_identity="budget:episode-1", budget_commit_id="budget-1")
-            budget_reference = self.artifacts.commit(budget_candidate)
-            media = TaskMediaProjectionService(self.artifacts, self.media_repository)
-            created = media.create(TASK_ID, "media:create", request_reference)
-            if created.status != "success":
-                return self._failure(created.error_code or "MEDIA_TASK_CREATE_FAILED", state)
-            refs = {**state.refs, "character": character_reference, "storyboard": storyboard_reference, "timeline": timeline_reference, "production_request": request_reference, "production_budget": budget_reference}
-            updated = _State(TASK_ID, "budget_review", "approve_budget", refs, {**state.decision_ids, "storyboard": storyboard_decision.decision_id}, None, None, None, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
+            refs = {**state.refs, "character": character_reference, "storyboard": storyboard_reference}
+            updated = _State(TASK_ID, "planning", "approve_storyboard", refs, state.decision_ids, None, None, None, None, None, state.replacement_done, state.visual_mode, state.tts_mode)
             self._save_state(updated)
             return self._success(updated)
         except Exception:
             return self._failure("PLANNING_FAILED", state)
+
+    def submit_storyboard_decision(
+        self,
+        action: str,
+        *,
+        decision_context: str = "",
+        creator_id: str = CREATOR_ID,
+    ) -> ApplicationResult:
+        """Record the explicit Storyboard decision and, on approve, build H1 facts."""
+
+        state = self._load_state()
+        if state is None:
+            return self._failure("TASK_NOT_FOUND")
+        # A completed approval is a durable replay boundary.  Repeated POSTs,
+        # refreshes and process restarts return the same exact refs without
+        # invoking planners or committing another Version.
+        if state.stage == "handoff_readiness" and state.pending_action is None and action == "approve":
+            return self._success(state)
+        if state.stage != "planning" or state.pending_action != "approve_storyboard":
+            return self._failure("STORYBOARD_GATE_NOT_PENDING", state)
+        if action not in {"approve", "reject"}:
+            return self._failure("INVALID_DECISION_ACTION", state)
+        try:
+            storyboard_reference = state.refs["storyboard"]
+            script_reference = state.refs["script"]
+            character_reference = state.refs["character"]
+            revision_suffix = "" if script_reference.version == 1 else f":v{script_reference.version}"
+            script = self.artifacts.get(script_reference)
+            character = self.artifacts.get(character_reference)
+            storyboard = self.artifacts.get(storyboard_reference)
+            script_decision = self.script_decisions.get(state.decision_ids["script"])
+            if not isinstance(script_decision, ScriptDecisionRecord) or script_decision.action != "approve":
+                return self._failure("SCRIPT_APPROVAL_REQUIRED", state)
+            decision_id = _storyboard_decision_id(storyboard_reference, action)
+            decision = StoryboardDecisionBoundary(self.storyboard_decisions).decide(
+                storyboard_reference,
+                storyboard,
+                review_enabled=True,
+                decision_id=decision_id,
+                task_id=TASK_ID,
+                thread_id=THREAD_ID,
+                creator_id=creator_id,
+                action=action,
+                decision_context=decision_context,
+            )
+            if not isinstance(decision, StoryboardDecisionRecord):
+                return self._failure(getattr(decision, "code", "STORYBOARD_DECISION_FAILED"), state, getattr(decision, "message", None))
+            if action == "reject":
+                updated = _State(
+                    TASK_ID,
+                    "planning",
+                    "approve_storyboard",
+                    state.refs,
+                    {**state.decision_ids, "storyboard": decision.decision_id},
+                    state.authorization_id,
+                    state.composition,
+                    state.package_output,
+                    None,
+                    None,
+                    state.replacement_done,
+                    state.visual_mode,
+                    state.tts_mode,
+                )
+                self._save_state(updated)
+                return self._success(updated)
+
+            production = ProductionAgent(_OfflineRuntime())
+            timeline_candidate = production.plan_timeline(
+                script_reference,
+                script,
+                script_decision,
+                character_reference,
+                character,
+                storyboard_reference,
+                storyboard,
+                decision,
+                timeline_identity=f"timeline:episode-1{revision_suffix}",
+                timeline_commit_id=f"timeline-{script_reference.version}",
+            )
+            if isinstance(timeline_candidate, ProductionAgentFailure):
+                return self._failure(timeline_candidate.code, state, timeline_candidate.message)
+            timeline_reference = self.artifacts.commit(timeline_candidate)
+            timeline = self.artifacts.get(timeline_reference)
+            request_candidate = production.plan_request(
+                script_reference,
+                script,
+                script_decision,
+                character_reference,
+                character,
+                storyboard_reference,
+                storyboard,
+                decision,
+                timeline_reference,
+                timeline,
+                request_identity=f"production-request:episode-1{revision_suffix}",
+                request_commit_id=f"production-request-{script_reference.version}",
+            )
+            if isinstance(request_candidate, ProductionAgentFailure):
+                return self._failure(request_candidate.code, state, request_candidate.message)
+            request_reference = self.artifacts.commit(request_candidate)
+            request = self.artifacts.get(request_reference)
+            contract_candidate = SceneGenerationContractPlanner().plan(
+                script_reference,
+                script,
+                script_decision,
+                character_reference,
+                character,
+                storyboard_reference,
+                storyboard,
+                decision,
+                timeline_reference,
+                timeline,
+                request_reference,
+                request,
+                contract_identity=f"scene-generation-contract:episode-1{revision_suffix}",
+                contract_commit_id=f"scene-generation-contract-{script_reference.version}",
+            )
+            if isinstance(contract_candidate, SceneGenerationContractFailure):
+                return self._failure(contract_candidate.code, state, contract_candidate.message)
+            contract_reference = self.artifacts.commit(contract_candidate)
+            refs = {
+                **state.refs,
+                "storyboard": storyboard_reference,
+                "timeline": timeline_reference,
+                "production_request": request_reference,
+                "scene_generation_contract": contract_reference,
+            }
+            updated = _State(
+                TASK_ID,
+                "handoff_readiness",
+                None,
+                refs,
+                {**state.decision_ids, "storyboard": decision.decision_id},
+                None,
+                None,
+                None,
+                None,
+                None,
+                state.replacement_done,
+                state.visual_mode,
+                state.tts_mode,
+            )
+            self._save_state(updated)
+            return self._success(updated)
+        except Exception:
+            return self._failure("STORYBOARD_DECISION_FAILED", state)
 
     def submit_budget_decision(self, action: str = "approve", *, maximum_approved_amount_micros: int | None = None, maximum_attempts: int | None = None, decision_context: str = "") -> ApplicationResult:
         state = self._load_state()
@@ -1188,8 +1346,46 @@ class CourseFactoryApplication:
                     charged_amount = sum(item.charged_amount_micros for item in listed if type(item) is ProviderAttemptRecord)
             except Exception:
                 pass
+        storyboard_reference = state.refs.get("storyboard")
+        scene_generation_contract_reference = state.refs.get("scene_generation_contract")
+        timeline_reference = state.refs.get("timeline")
+        production_request_reference = state.refs.get("production_request")
+        storyboard_decision_context: str | None = None
+        storyboard_decision_id = state.decision_ids.get("storyboard")
+        if storyboard_decision_id:
+            try:
+                storyboard_decision = self.storyboard_decisions.get(storyboard_decision_id)
+                if isinstance(storyboard_decision, StoryboardDecisionRecord):
+                    storyboard_decision_context = storyboard_decision.decision_context or None
+            except Exception:
+                storyboard_decision_context = None
+        generation_entries: tuple[GenerationEntryView, ...] = ()
+        if scene_generation_contract_reference is not None:
+            try:
+                contract = self.artifacts.get(scene_generation_contract_reference)
+                raw_entries = contract.payload["scene_generation_contract"]["scenes"]
+                generation_entries = tuple(
+                    GenerationEntryView(
+                        entry["scene_id"],
+                        entry["duration_milliseconds"],
+                        entry["narration_identity"],
+                        entry["narration"],
+                        entry["visual_intent"],
+                        entry["character_action"],
+                        tuple(entry["continuity_notes"]),
+                        entry["generation_prompt"],
+                        entry["camera_motion_instruction"],
+                        tuple(entry["negative_constraints"]),
+                        entry["expected_filename"],
+                    )
+                    for entry in raw_entries
+                )
+            except Exception:
+                generation_entries = ()
         if state.stage == "script_review":
             available = ("approve_script", "revise_script", "reject_script")
+        elif state.stage == "planning" and state.pending_action == "approve_storyboard":
+            available = ("approve_storyboard", "reject_storyboard")
         elif state.pending_action == "export_package":
             available = ("export_package",)
         elif state.stage == "final_review":
@@ -1214,7 +1410,21 @@ class CourseFactoryApplication:
             GPT_SOVITS_PROVIDER if state.tts_mode == "gpt-sovits" else None,
             "locally generated Qwen3-TTS Serena synthetic reference" if state.tts_mode == "gpt-sovits" else None,
             0 if state.tts_mode == "gpt-sovits" else None,
+            storyboard_reference,
+            scene_generation_contract_reference,
+            generation_entries,
+            timeline_reference,
+            production_request_reference,
+            storyboard_decision_context,
         )
 
 
-__all__ = ["ApplicationDownload", "ApplicationResult", "ApplicationView", "CourseFactoryApplication", "PromptCard", "SceneView"]
+__all__ = [
+    "ApplicationDownload",
+    "ApplicationResult",
+    "ApplicationView",
+    "CourseFactoryApplication",
+    "GenerationEntryView",
+    "PromptCard",
+    "SceneView",
+]

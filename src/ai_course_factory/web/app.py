@@ -29,6 +29,8 @@ _FORM_ACTIONS = {
     "revise_script",
     "reject_script",
     "advance_planning",
+    "approve_storyboard",
+    "reject_storyboard",
     "approve_budget",
     "produce_offline",
     "approve_final",
@@ -278,7 +280,7 @@ def create_app(
     @app.post("/review/action", response_class=HTMLResponse, name="review_action")
     async def review_action(request: Request) -> Response:
         try:
-            values = _form_values(await request.body(), {"action"})
+            values = _form_values(await request.body(), {"action", "decision_context"})
             action = values.get("action")
             if action not in _FORM_ACTIONS:
                 raise _FormError
@@ -287,6 +289,11 @@ def create_app(
                 return _failure_page(templates, request, "review.html", current)
             if action == "advance_planning" and current.view.stage == "planning":
                 result = facade().advance_planning()
+            elif action in {"approve_storyboard", "reject_storyboard"} and current.view.stage == "planning" and current.view.pending_action == "approve_storyboard":
+                result = facade().submit_storyboard_decision(
+                    "approve" if action == "approve_storyboard" else "reject",
+                    decision_context=values.get("decision_context", ""),
+                )
             elif action == "approve_budget" and current.view.stage == "budget_review":
                 result = facade().submit_budget_decision("approve")
             elif action == "produce_offline" and current.view.stage == "production":

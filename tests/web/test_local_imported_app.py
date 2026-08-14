@@ -8,7 +8,9 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.web import create_app
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 from tests.source_fixture import SUPPORTED_REPOSITORY_URL, FixtureSourceConnector
 
 
@@ -48,6 +50,26 @@ def _post(client: TestClient, path: str, data: dict[str, str]):
     )
 
 
+def _legacy_client(data_dir: Path, imports: Path) -> TestClient:
+    seeded = CourseFactoryApplication(
+        data_dir,
+        source_connector=FixtureSourceConnector(),
+        visual_import_dir=imports,
+    )
+    if seeded.start_source(SUPPORTED_REPOSITORY_URL).status != "success":
+        raise AssertionError("source initialization failed")
+    seed_legacy_budget_review(seeded)
+    seeded.close()
+    return TestClient(
+        create_app(
+            data_dir,
+            source_connector=FixtureSourceConnector(),
+            visual_import_dir=imports,
+        ),
+        base_url="http://127.0.0.1",
+    )
+
+
 class LocalImportedWebTests(unittest.TestCase):
     def test_imported_mode_renders_prompt_cards_and_local_processing_label(self) -> None:
         with TemporaryDirectory() as directory:
@@ -56,7 +78,7 @@ class LocalImportedWebTests(unittest.TestCase):
             imports.mkdir()
             for index, colour in enumerate(("red", "blue", "green", "yellow", "purple", "orange"), start=1):
                 _write_png(imports / f"scene-{index}.png", colour)
-            client = TestClient(create_app(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports), base_url="http://127.0.0.1")
+            client = _legacy_client(root / "data", imports)
 
             started = _post(client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL})
             self.assertEqual(started.status_code, 303)
@@ -70,8 +92,6 @@ class LocalImportedWebTests(unittest.TestCase):
             self.assertIn("scene-2", start.text)
             self.assertNotEqual(start.text.find("scene-1"), start.text.find("scene-2"))
 
-            self.assertEqual(_post(client, "/start/script", {"action": "approve_script"}).status_code, 303)
-            self.assertEqual(_post(client, "/review/action", {"action": "advance_planning"}).status_code, 303)
             self.assertEqual(_post(client, "/review/action", {"action": "approve_budget"}).status_code, 303)
             review = client.get("/review")
             self.assertIn("Local imported visual run", review.text)
@@ -96,10 +116,7 @@ class LocalImportedWebTests(unittest.TestCase):
             root = Path(directory)
             imports = root / "desktop-assets"
             imports.mkdir()
-            client = TestClient(create_app(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=imports), base_url="http://127.0.0.1")
-            self.assertEqual(_post(client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL}).status_code, 303)
-            self.assertEqual(_post(client, "/start/script", {"action": "approve_script"}).status_code, 303)
-            self.assertEqual(_post(client, "/review/action", {"action": "advance_planning"}).status_code, 303)
+            client = _legacy_client(root / "data", imports)
             self.assertEqual(_post(client, "/review/action", {"action": "approve_budget"}).status_code, 303)
 
             failed = _post(client, "/review/action", {"action": "produce_offline"})

@@ -25,6 +25,7 @@ from ai_course_factory.production import (
     GPTSoVITSConfiguration,
     ProviderAttemptRecord,
 )
+from tests.legacy_v11_fixture import seed_legacy_budget_review
 from tests.source_fixture import FixtureSourceConnector, ensure_source
 
 
@@ -136,8 +137,7 @@ def _fixture_runtime(root: Path) -> tuple[GPTSoVITSConfiguration, Path, Path]:
 class GPTSoVITSLocalIntegrationTests(unittest.TestCase):
     def _advance_to_production(self, app: CourseFactoryApplication) -> None:
         self.assertEqual(ensure_source(app).status, "success")
-        self.assertEqual(app.submit_script_decision("approve").status, "success")
-        self.assertEqual(app.advance_planning().status, "success")
+        seed_legacy_budget_review(app)
         self.assertEqual(app.submit_budget_decision("approve").status, "success")
 
     def test_restart_without_explicit_runtime_does_not_silently_replay_as_fixture(self):

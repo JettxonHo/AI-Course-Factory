@@ -8,10 +8,10 @@
 | Approval | Product Owner, 2026-08-14 |
 | Product Contract | `docs/product/PRD.md` |
 | System Contract | `docs/spec/SYSTEM-SPEC.md` |
-| Planning baseline | `main@bb676a236a32eb9cc03ddca0e5bd71584791097c`; FAST-MVP v1.1 remains complete history |
+| Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130); FAST-MVP v1.1 remains complete history |
 | Goal contract | `docs/goals/CREATOR-HANDOFF-MVP-v1.2-PROPOSAL.md` |
 | Runtime | Python `>=3.12,<3.13` |
-| Authorization | H0 docs closure active in Issue #129; H1-H4 coding requires a bounded Task Contract per milestone |
+| Authorization | H0 complete; H1 implementation active under Issue #131; H2-H4 coding requires a bounded Task Contract per milestone |
 
 Prefer connecting the existing implementation into a usable product over refactoring it. A task may change architecture only after it proves the vertical path cannot be completed inside the approved boundaries.
 
@@ -45,7 +45,7 @@ No SPA, frontend build system, container platform or cloud deployment is require
 
 ## 3. Current Reusable Implementation
 
-At the current planning baseline `main@bb676a236a32eb9cc03ddca0e5bd71584791097c`, the repository already contains:
+At the current planning baseline `main@d96b091b5d6486129487f5b51b0bb1c43b64639b`, the repository already contains:
 
 - public GitHub acquisition, source normalization and grounded Knowledge/Script planning;
 - Character, Storyboard, Timeline, Production Request and Budget planning;
@@ -58,7 +58,7 @@ At the current planning baseline `main@bb676a236a32eb9cc03ddca0e5bd71584791097c`
 - Final Video Review plus deterministic local Publish Package/Manifest;
 - the durable F1 application facade and three-view loopback workspace, including one local Scene replacement and package export.
 
-F2.5 merged its presentation-only workspace through Issue #121 / PR #122 at `main@e155d193`. Issue #123 / PR #124 added a partial real local media/recovery record; Issue #125 corrected live GitHub acquisition and passed the 422-test regression. The resulting `main@bb676a2` proves the reusable local path, not creator-generated animated Scene quality, cloud Providers, deployment or adoption.
+F2.5 merged its presentation-only workspace through Issue #121 / PR #122 at `main@e155d193`. Issue #123 / PR #124 added a partial real local media/recovery record; Issue #125 corrected live GitHub acquisition and passed the 422-test regression. That historical F3 path proves the reusable local path, not creator-generated animated Scene quality, cloud Providers, deployment or adoption; H0 subsequently completed at `main@d96b091` through Issue #129 / PR #130.
 
 ## 4. Accepted Vertical Product Boundary
 
@@ -100,7 +100,7 @@ The first slice uses one operator-declared generated-clips directory supplied at
 
 ## 7. Approved Delivery Sequence
 
-The Goal is active. H0 is the current docs closure; H1-H4 start only after the preceding milestone and their own bounded Task Contract.
+The Goal is active. H0 is complete at `main@d96b091`; H1 is in progress under Issue #131; H2-H4 start only after the preceding milestone and their own bounded Task Contract.
 
 ### H0 — Truth rebaseline
 
@@ -226,4 +226,4 @@ The accepted FAST-MVP Goal and PD-002 authorize the completed no-cost local Demo
 
 F3 acceptance does not authorize Provider credentials, fees, deployment, publication or a broader product scope.
 
-The approved v1.2 Goal does not authorize unbounded implementation. The first H1 coding Task Contract is created only after H0 actually merges; H2-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
+The approved v1.2 Goal does not authorize unbounded implementation. Issue #131 is the approved first H1 coding Task Contract; H2-H4 remain separately gated, and all Provider/credential/fee/deployment boundaries remain unchanged.
