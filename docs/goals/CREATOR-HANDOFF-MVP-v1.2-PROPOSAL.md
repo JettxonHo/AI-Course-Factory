@@ -8,7 +8,8 @@
 | Product direction | Accepted by Product Owner on 2026-08-14 |
 | Exact Goal approval | Product Owner, 2026-08-14 |
 | Planning baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (H0 merged through Issue #129 / PR #130) |
-| Planning Issue | #129 (closed); H1 implementation Issue #131 |
+| Planning Issue | #129 (closed); H1 implementation #131 / PR #132 merged at `main@ce05e77`; bounded correction #133 pending independent review and merge |
+| Current H1 correction | Issue #133 on `codex/133-storyboard-approve-replay`, based on `main@ce05e778a63f35a3ffd1ff88d0295c2220cab1f4` |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
 
 This file records the approved contract behind the active `GOAL.md`. It does not by itself authorize H2-H4 implementation Task Contracts, and it does not reopen FAST-MVP v1.1.
@@ -122,7 +123,7 @@ The composition path consumes the ordered selected Imported Generated Scene Clip
 
 **Outcome:** the browser exposes the exact grounded Script/Storyboard and a human-reviewable ordered generation contract with prompt, continuity, camera/action, duration and filename for every Scene.
 
-**Exit:** exact lineage is committed after an explicit Storyboard `approve`; prompts contain no platform SDK payload.
+**Exit:** exact lineage is committed after an explicit Storyboard `approve`; prompts contain no platform SDK payload. Issue #131 / PR #132 provides the implementation; Issue #133 closes the repeated HTTP approval replay contract before H1 is complete.
 
 ### H2 — Creator Handoff Package
 
@@ -171,6 +172,6 @@ The Product Owner approved these defaults on 2026-08-14:
 
 ## 9. Authorization and Stop Conditions
 
-The Goal is approved and active. H0 is `COMPLETE` at `main@d96b091`; H1 is in progress under the approved Issue #131 Task Contract. H2-H4 still require one bounded Issue/Task Contract each; no API call, credential, charge or deployment is authorized by this contract alone.
+The Goal is approved and active. H0 is `COMPLETE` at `main@d96b091`; Issue #131 / PR #132 is merged at `main@ce05e77`, while H1 remains in progress under correction Issue #133 until its independent review and merge. H2-H4 still require one bounded Issue/Task Contract each; no API call, credential, charge or deployment is authorized by this contract alone.
 
 Stop and return to Product Owner review before selecting a Jimeng/Kling API/model, using credentials, changing Budget/caps, replacing the canonical narration/SRT contract, adding a new Decision type, expanding beyond the fixed one-task Demo or weakening exact Artifact/Final approval invariants.

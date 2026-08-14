@@ -289,9 +289,14 @@ def create_app(
                 return _failure_page(templates, request, "review.html", current)
             if action == "advance_planning" and current.view.stage == "planning":
                 result = facade().advance_planning()
-            elif action in {"approve_storyboard", "reject_storyboard"} and current.view.stage == "planning" and current.view.pending_action == "approve_storyboard":
+            elif action == "approve_storyboard" and (
+                current.view.stage == "planning" and current.view.pending_action == "approve_storyboard"
+                or current.view.stage == "handoff_readiness" and current.view.pending_action is None
+            ):
+                result = facade().submit_storyboard_decision("approve", decision_context=values.get("decision_context", ""))
+            elif action == "reject_storyboard" and current.view.stage == "planning" and current.view.pending_action == "approve_storyboard":
                 result = facade().submit_storyboard_decision(
-                    "approve" if action == "approve_storyboard" else "reject",
+                    "reject",
                     decision_context=values.get("decision_context", ""),
                 )
             elif action == "approve_budget" and current.view.stage == "budget_review":
