@@ -1,4 +1,4 @@
-# Goal: Deliver AI Course Factory Creator Handoff MVP v1.2
+# Goal: Deliver AI Course Factory Knowledge Video Editorial MVP v1.3
 
 ## 1. Approval and State
 
@@ -6,130 +6,127 @@
 | --- | --- |
 | Status | **APPROVED / ACTIVE** |
 | Approved by | Product Owner |
-| Approval date | 2026-08-14 |
-| H0 merged baseline | `main@d96b091b5d6486129487f5b51b0bb1c43b64639b` (Issue #129 / PR #130) |
-| Current task | H3.5 Issue #139 Simplified-Chinese Creator workspace on `codex/139-chinese-creator-workspace`; H3 Issue #137 / PR #138 is complete at `main@cbdd150c31c6bab289c634c40ffa2078d5081e53` |
-| Goal type | Local single-user Creator Handoff MVP |
-| Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED` history |
+| Approval date | 2026-08-24 |
+| Activation task | E0 Issue #143 on `codex/143-knowledge-video-editorial-rebaseline`; docs PR/merge pending |
+| Planning baseline | `main@d301efd8494029e8b8eae5001050974a67778937` |
+| Goal type | Local single-user Knowledge Video Editorial MVP |
+| Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED`; Creator Handoff v1.2 H0–H3.5 accepted foundation/history |
 
-FAST-MVP v1.1 and its accepted F1/F2A/F2B/F2.5/F3 evidence remain complete historical facts. v1.2 repositions the next product result; it does not reopen or relabel that acceptance.
+This Goal supersedes Creator Handoff v1.2 only as the active primary production path. It does not delete or relabel its accepted implementation, lineage, handoff, import, restart or UI evidence. Creator Handoff H4 remains **PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE**.
 
 ## 2. Exact Goal
 
-Deliver one local Creator Handoff flow that turns the supported public GitHub source into an exact, human-reviewable Scene Generation Contract and Creator Handoff Package; accepts creator-generated Scene videos from one operator-declared directory through an explicit browser import action; composes those clips with AI Course Factory's exact narration, SRT and Timeline; and produces a human-approved Final Video and traceable Publish Package.
+Deliver one local Knowledge Video Editorial flow that turns the supported exact public GitHub source into an approved grounded Script, one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
 
-Success requires a full human watch/listen judgment. Codec, FFprobe, ASR, screenshots and automated tests remain technical evidence; they cannot replace review of teaching fidelity, narration completeness/naturalness, visual continuity/action and edit rhythm at normal playback speed.
+Success is one intelligible, evidence-backed and well-paced local knowledge video. Codec, FFprobe, alignment metrics, screenshots and automated tests remain technical evidence; they cannot replace named-human review of teaching fidelity, narration completeness/naturalness, visual evidence/continuity and edit rhythm at normal playback speed.
 
-## 3. Approved Defaults
+## 3. Approved Primary Chain
 
-1. Require explicit Storyboard `approve` before the Creator Handoff Package; historical `skip` remains readable but is not v1.2-ready.
-2. Accept MP4 only in the first import slice.
-3. Freeze `scene-1.mp4` through `scene-6.mp4` and `scene-2-replacement.mp4`.
-4. Include labelled optional F2A reference stills in the Creator Handoff Package.
-5. Record external native audio/subtitle/effects as metadata/provenance only; they are not canonical selected tracks.
-6. Reuse Final Video Decision context/findings with a required human content/listening/continuity/rhythm checklist.
-7. Bypass Budget Authorization for the manual handoff/import path. External subscription cost is outside application control; Budget/Attempt remains for legacy Preview maintenance and future application-controlled paid APIs.
-8. Use one operator-declared generated-clips directory plus a Review-page POST trigger. No multipart/browser upload, generic file manager or Downloads/Desktop/latest scan is authorized.
+```text
+exact Source
+  -> approved grounded Script
+  -> one continuous Whole Narration
+  -> phrase-level millisecond Acoustic Alignment
+  -> human-approved Visual Edit Plan
+  -> deterministic A-roll / B-roll production
+  -> approved 15–20 second Sample Video
+  -> full local render
+  -> named-human Final Review
+  -> Publish Package
+```
+
+Acoustic Alignment is the sole continuous audiovisual clock. After one declared punctuation/whitespace normalization, ordered phrase text covers the approved narration character-for-character. Chinese defaults to 5–15 Han characters or an equivalent short phrase; intervals are nonnegative, strictly ordered, non-overlapping and continuous from millisecond `0` to exact audio duration under a declared pause-allocation policy. ASR may propose timestamp candidates but cannot replace approved Script text.
 
 ## 4. Canonical Product Boundary
 
-- **Scene Generation Contract** — one immutable provider-neutral Artifact bound to exact approved Script, Storyboard, Timeline and Production Request references, with ordered per-Scene prompt/continuity/camera/action/duration/import identity.
-- **Preview Video** — the historical F2A still-image composition and other technical/progress output; it cannot satisfy the v1.2 Final quality gate.
-- **Creator Handoff Package** — a deterministic pre-generation package containing exact references, per-Scene guide, exact narration, canonical SRT/Timeline, provenance and labelled optional reference stills. It is not the final Publish Package.
-- **Imported Generated Scene Clip** — one creator-supplied MP4 committed as an honest creator-import `scene_clip` variant, with no fabricated attempt/provider.
-- **Final Video** — local composition of six exact creator-import Scene Clips plus application-owned narration/SRT/Timeline, bound by the existing Final Video Decision.
+- **Whole Narration** — one continuous application-owned narration audio Artifact for the exact approved Script, generated once and replayed durably.
+- **Acoustic Alignment** — immutable ordered short-phrase millisecond intervals bound to exact approved narration text and Whole Narration; the sole audiovisual timing authority and canonical SRT timing source.
+- **Visual Edit Plan** — one human-reviewable immutable plan bound to exact Script, Whole Narration and Alignment. Every shot/range records A-roll/B-roll plus rationale, evidence/claim intent, assets/gaps, overlays, motion/camera and transition intent.
+- **A-roll Segment** — the Xiaotudou/IP presenter layer for hooks, transitions, emotion, physical action and low-information-density spoken delivery.
+- **B-roll Segment** — the knowledge/evidence layer for concepts, steps, comparisons, processes, charts, source evidence, screenshots and demonstrations. Claim-bearing or information-dense content defaults to evidence-bound B-roll unless an exception reason is recorded; decorative B-roll cannot satisfy coverage.
+- **Creator Static Asset** — an explicitly selected creator-supplied character, environment, prop, illustration, diagram or screenshot with exact provenance, no Provider Attempt and no application charge.
+- **Sample Video** — an exact 15–20 second deterministic render containing at least one A-roll segment, one B-roll segment, their transition and representative overlay/motion behavior. Exact human approval is required before full rendering.
+- **Final Video** — the complete deterministic render derived from the approved Alignment, Plan and selected assets, then bound to named-human Final Review.
+- **Publish Package** — post-approval delivery containing the exact Final Video/SRT plus Source, Script, Narration, Alignment, Plan, Sample, asset and Final Decision provenance.
 
-Manual Jimeng/Kling subscription work occurs outside the application. It creates no Provider Attempt, application credential use or application charge. Future application-controlled `JimengVideoAdapter`/`KlingVideoAdapter` work requires a separate Product Owner decision for Provider/model/credentials/price/cap and re-enters Budget/Attempt gates.
+## 5. Stable Ownership and Compatibility
 
-## 5. Stable Compatibility Contract
-
-- Keep `artifact_type=scene_clip`, existing per-Scene identity/version chains and Task selection/stale impact.
-- Add a discriminated creator-import payload containing at least `source_kind="creator_import"`, exact Production Request and Scene Generation Contract References, `scene_id`, declared filename, creator provenance, normalized output, media type and duration.
-- The creator-import payload has no `attempt_id` or `provider`; its exact dependencies include the Production Request and Scene Generation Contract.
-- Task lineage reads both legacy generated/Preview and creator-import payloads. Legacy facts remain readable but cannot satisfy v1.2 Final Review.
-- H3 adds an honest imported-clip composition input/reference variant instead of forging `MediaGenerationResult` fields.
-- Before v1.2 Final Review, resolve all six selected Scene Clip Versions and require creator-import variants for the exact ordered Scenes, all bound to the same exact Scene Generation Contract.
-- Exact narration audio, Scene/Master Audio, canonical SRT/Timeline, Final Video Decision and final Publish Package remain application-owned truth.
+- Keep exact public GitHub Source commit/blob/locators, grounded Knowledge and Script Decision semantics.
+- Keep immutable Artifact Versions/References, exact Decisions, Task selection, local Workspace and restart/replay ownership.
+- Keep Narration, Alignment and SRT application-owned. A renderer or external platform cannot replace these truths.
+- Keep exactly three lightweight local SSR/Jinja control views: Content & Audio; Visual Planning & Production; Final Review & Delivery.
+- Keep the existing Final Video Decision and Publish Package ownership, deepened only with exact editorial lineage through later bounded Tasks.
+- Keep v1.2 per-Scene narration, Scene Generation Contract, Creator Handoff Package and creator-import media readable as foundation/compatibility history. They cannot satisfy the v1.3 primary Sample/Final gates.
+- Preserve the protected H4 six-file dirty candidate and repo-external evidence for a later line-level reuse/compatibility/park disposition. Do not reset, clean, overwrite or cherry-pick it wholesale.
 
 ## 6. Milestones
 
-### H0 — Truth rebaseline
+### E0 — Truth rebaseline
 
-Status: **COMPLETE** (Issue #129 closed; PR #130 merged)
+Status: **IN PROGRESS / DOCS ONLY** (Issue #143; merge pending)
 
-Outcome: integrate D-008, this active Goal, canonical terms, approved defaults, stable ownership and verification boundaries without product code.
+Outcome: make this exact Goal the repository execution truth; record D-010, the narration-led editorial chain, A/B-roll semantics, continuous Alignment clock, v1.2/H4 disposition and implementation stop conditions in one nine-file authoritative docs PR.
 
-Exit: Issue #129's exact docs Diff merged through PR #130 at `main@d96b091`; H0 is complete and H1 was ready from that real baseline.
+Exit: the exact nine-doc Diff is independently reviewed and merged; Issue #143 closes with actual Git/GitHub facts. No feature code, dependency or runtime action belongs to E0.
 
-### H1 — Grounded Storyboard and Scene Generation Contract
+### E1 — Narrative clock
 
-Status: **COMPLETE** (Issue #131 / PR #132 plus bounded correction Issue #133 / PR #134 merged at `main@91b4512`)
+Status: **BLOCKED ON E0 MERGE; PLANNING ONLY AFTER E0**
 
-Outcome: from exact approved Source/Script/Storyboard/Timeline/Production Request references, commit one human-reviewable ordered Scene Generation Contract and expose it through the existing three-view workspace.
+Outcome: from the exact approved Script, produce one durable Whole Narration, one validated Acoustic Alignment and canonical SRT through the existing control surface.
 
-Exit: explicit Storyboard approval and exact lineage are durable; every Scene exposes its narration identity, visual intent/action, generation prompt, continuity, camera/motion, duration and fixed MP4 filename; restart reads the same contract without regeneration.
+Entry: after E0 merges, create one bounded E1 Issue/Task Contract with exact ownership, runtime/dependency evaluation, RED/focused/full gates, restart compatibility and exact Luna route. E1 coding/Luna dispatch remains unauthorized until that startup gate is independently approved.
 
-H1 implementation is bounded by the approved Issue #131 Task Contract and its Issue #133 HTTP replay correction, exact ownership, migration/restart evidence and focused/full verification. Issue #133 / PR #134 is independently reviewed and merged at `main@91b4512` with 433-test regression evidence.
+### E2 — Visual Edit Plan and asset readiness
 
-### H2 — Creator Handoff Package
+Status: **PENDING E1**
 
-Status: **COMPLETE** (Issue #135 / PR #136; accepted 444-test regression)
+Outcome: propose, inspect and approve one exact Visual Edit Plan with shot/range A/B rationale, evidence/claim coverage, creator static-asset manifest/gaps and overlay/motion intent.
 
-Outcome: export a deterministic handoff ZIP with exact references, generation guide, narration, SRT/Timeline, provenance and labelled optional reference stills, after non-monetary local readiness.
+### E3 — Deterministic Sample gate
 
-Exit: package replay is byte-stable; local narration is durable/idempotent without fabricated monetary authorization; manual generation creates no Attempt or charge. Issue #135 / PR #136 is accepted and merged at `main@c4f2f5e`; the 444-test regression is the recorded H2 evidence.
+Status: **PENDING E2**
 
-### H3 — Generated Scene Clip import and exact composition
+Outcome: evaluate HyperFrames or one justified equivalent against a small deterministic renderer seam, then render and approve one exact 15–20 second A-roll/B-roll Sample before full rendering.
 
-Status: **COMPLETE** (Issue #137 / PR #138 merged at `main@cbdd150c31c6bab289c634c40ffa2078d5081e53`; accepted 458-test regression)
+### E4 — Full render, Final Review and Publish
 
-Outcome: atomically import exact `scene-1.mp4` through `scene-6.mp4` from one configured directory, compose with canonical narration/SRT, and support exact `scene-2-replacement.mp4` while preserving unaffected media.
+Status: **PENDING E3**
 
-Exit: creator-import payload/input/Final-gate compatibility is proven; no partial side effect occurs on failed preflight; restart and stale/recompose behavior remain exact. Issue #137 is closed and PR #138 is merged; the merged candidate has accepted 458-test regression evidence.
-
-### H3.5 — Simplified-Chinese Creator workspace
-
-Status: **IN PROGRESS** (Issue #139 on `codex/139-chinese-creator-workspace`; independent review and merge remain pending)
-
-Outcome: redesign the three-view Creator workspace for the approved Simplified-Chinese product experience without changing H3 media lineage or Final-gate truth.
-
-Exit: the separately approved workspace design and browser evidence pass; H3.5 does not authorize Provider/API, upload or H4 human-quality scope.
-
-### H4 — Browser and product-quality acceptance
-
-Status: **PENDING H3.5**
-
-Outcome: one fresh three-view Source-to-Handoff-to-import-to-Final-to-Publish flow completes with restart/replay and a named human full-watch/listen verdict bound to the exact Final Video Version.
-
-Exit: technical and product-quality gates pass; no Preview Video is accepted as v1.2 Final quality.
+Outcome: render the complete video from approved exact inputs, complete named-human normal-speed review, export the traceable package and prove restart/replay.
 
 ## 7. Authorized Scope
 
-- H0 is complete at `main@d96b091` through Issue #129 / PR #130.
-- Implement and independently review the bounded H3.5 Issue #139 Task Contract after H3 is complete at `main@cbdd150c`.
-- Reuse the current live Source, Artifact repository, Script/Storyboard/Final decisions, Task media projection, local GPT-SoVITS narration, FFmpeg composition and Publish Package.
-- Change frontend only where a milestone needs contract review, handoff download, import readiness/action or final quality evidence; retain exactly three server-rendered views.
-- Update related Goal/Status facts inside the corresponding feature PR using actual, not anticipated, merge/runtime evidence.
+Current authorization is E0 only:
+
+- update the exact nine documentation files owned by Issue #143;
+- independently review the docs Diff and run ownership/authority/stale-wording/`git diff --check` gates;
+- commit, push, create one ready docs PR, merge after review and close Issue #143;
+- truthfully comment/close Issues #141/#142 as PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE while preserving their dirty branch and evidence.
+
+After E0 merge, authorization advances only to E1 planning and one Task Contract startup review. It does not directly authorize E1 code or Luna dispatch.
 
 ## 8. Explicit Non-goals
 
-- Jimeng/Kling API integration, Provider/model/credential selection, paid calls or cap changes.
-- Deployment, publication, multi-user/auth, multiple sources/tasks or sensitive data handling.
-- Fourth page, SPA, generic upload/file manager, professional editor or unrelated visual redesign; the H3.5 workspace redesign remains separately gated.
-- Replacing exact narration/SRT with external native tracks.
-- Generic Provider/plugin framework, parallel workflow, Artifact graph rewrite or broad migration.
-- Treating manual subscription work as an application Provider Attempt or Budget-controlled spend.
+- video-generation LLM/API in the MVP primary path;
+- automated Jimeng/Kling/Seedance operation, external six-MP4 generation/import or subscription-credit use;
+- generic Provider registry, ImageGeneration Provider/model/credential/fee/cap choice or paid call;
+- HyperFrames/alignment runtime installation during E0;
+- professional timeline editor, generic asset manager, dashboard, SPA, fourth view or frontend framework migration;
+- multiple users/sources/tasks, auth, deployment or publication;
+- broad Artifact/Decision/Workflow/schema rewrite;
+- treating ASR/alignment scores, codec checks or fixtures as named-human acceptance.
 
 ## 9. Agent and Review Rules
 
-- Main controller: configured `gpt-5.6-sol / xhigh`; owns investigation, contracts, dispatch and independent review.
-- Implementation: exact `luna-worker`, configured `gpt-5.6-luna / max`; no Terra/default fallback.
-- Each H1-H4 coding milestone requires its own bounded Issue/Task Contract and ownership. No parallel milestone coding is implied by Goal approval.
-- Run focused checks during implementation and the full regression once before each merge; Fake/technical evidence is not human product-quality acceptance.
-- Preserve unaffected work and stop on a real public-contract, Provider/fee, migration or scope conflict.
+- Main controller: configured `gpt-5.6-sol / xhigh`; owns investigation, Task Contracts, dispatch, actual Diff review and runtime/product evidence.
+- Implementation: exact `luna-worker`, configured `gpt-5.6-luna / max`; no Terra/default fallback and no self-approval.
+- Every E1–E4 implementation milestone requires one bounded Issue/Task Contract and independent startup approval before dispatch.
+- Use RED/focused iteration during implementation and one final full regression before merge. Fake/runtime/technical evidence remains separate from named-human product acceptance.
+- Stop for any Provider/model/credential/fee/cap, dependency/stack expansion, deployment/publication, broad public-contract rewrite or loss of protected H4 work.
 
 ## 10. Completion Definition
 
-Creator Handoff MVP v1.2 is complete only when H0-H4 are complete and one human-approved Final Video is built from six exact creator-import Scene Clips, application-owned narration/SRT/Timeline and exact source/planning lineage, then exported through the traceable Publish Package.
+Knowledge Video Editorial MVP v1.3 is complete only when E0–E4 are complete and one fresh browser-driven local run proves exact Source and approved Script lineage, one continuous Narration, validated continuous Acoustic Alignment/canonical SRT, an approved evidence-backed Visual Edit Plan, an approved A-roll/B-roll Sample, full deterministic rendering, restart/replay, named-human normal-speed findings bound to the exact Final Video and one traceable Publish Package.
 
-This Goal is local MVP evidence only. It does not establish cloud Provider execution, paid economics, deployment, publication, adoption or production operations.
+This Goal is local single-user MVP evidence only. It does not establish cloud Provider execution, paid economics, deployment, publication, adoption or production operations.

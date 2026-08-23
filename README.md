@@ -1,69 +1,50 @@
 # AI Course Factory
 
-AI Course Factory 是一个本地优先的 AI 教育短视频生产应用。它把公开 GitHub 仓库中的可追溯知识，转换为经过人工审核的脚本、生产计划、视频和可导出的发布包。
+AI Course Factory 是一个本地优先的知识视频制作应用。它把公开 GitHub 仓库中的可追溯知识，转成经过人工审核的脚本、音频、视觉编排、视频和可导出的发布包。
 
-当前代码已具备从 Source 到本地 Publish Package 的大部分离线后端能力；获批的 FAST-MVP 方向是把这些能力尽快接成可操作的本地产品：
+## 当前产品真相
+
+- FAST-MVP v1.1 是已完成的本地历史基线。
+- Creator Handoff MVP v1.2 已交付 H0–H3.5 的 Source、Script/Storyboard、Handoff、creator-import、确定性合成和三页中文工作台能力；H4 未完成。
+- Issue #141/#142 的 H4 候选保留了已独立通过的 Final checklist 与 source-grounded content correction，但外部六段视频生成/导入主路径已被 Product Owner **PARK**。
+- Knowledge Video Editorial MVP v1.3 exact Goal 已由 Product Owner 正式批准，状态为 **APPROVED / ACTIVE**。当前唯一 active milestone 是 Issue #143 的 E0 权威文档收口；feature implementation 与 E1 Luna/编码仍未授权。
+
+推荐的新主链候选是：
 
 ```text
-Public GitHub source
-  -> grounded Script + human review
-  -> approved Storyboard + Scene Generation Contract
-  -> deterministic Creator Handoff Package + local narration
-  -> manual external Scene generation (outside the application)
-  -> Visual/TTS or explicit Desktop ImageGen import + FFmpeg
-  -> final review + local export
+exact Source
+  -> approved grounded Script
+  -> one continuous Whole Narration
+  -> phrase-level millisecond Acoustic Alignment
+  -> human-approved Visual Edit Plan
+  -> deterministic A-roll / B-roll production
+  -> approved 15–20 second Sample Video
+  -> full local render
+  -> named-human Final Review
+  -> Publish Package
 ```
 
-本地 Web 工作台已完成 F1 facade、F2A Desktop ImageGen 外部图片导入、F2B 本地 GPT-SoVITS v2 TTS、F2.5 Warm Editorial 三页体验、H1 Scene Generation Contract、H2 Creator Handoff Package（Issue #135 / PR #136，444-test regression）和 H3 Creator MP4 导入/精确合成（Issue #137 / PR #138，`main@cbdd150c`，458-test regression）。当前 Issue #139 在 `codex/139-chinese-creator-workspace` 实现 H3.5 Guided Creator Workbench：三个 SSR 页面固定使用简体中文、保留现有路由/动作/媒体与证据事实；Jimeng/Kling 手工订阅生成不产生应用 Attempt 或 charge。H3.5 仍在进行，H4 人工 watch/listen 验收仍待后续里程碑。当前事实见 [docs/STATUS.md](docs/STATUS.md)，验收记录见 [F3 Acceptance Record](docs/acceptance/FAST-MVP-v1.1-F3-ACCEPTANCE.md)。
+MVP 不使用视频生成 LLM/API。Codex Desktop ImageGen 只在应用外提供 creator-supplied 静态角色、场景和道具；应用继续拥有 Narration、Alignment、SRT 和审核事实。HyperFrames 或等价确定性渲染 seam 仍需后续独立 Task Contract 论证，本规划任务不会安装或运行它。
 
-## 已验收的本地工作台
+正式合同见 [Knowledge Video Editorial MVP v1.3 Goal Contract](docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md) 与 [GOAL.md](GOAL.md)。Issue #143 正把已批准 Goal 与 D-010 转成一个九文件 E0 docs PR；在该 PR 合并前不得提前声明 E0 已完成。外部六 MP4 H4 路径继续 PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE。
 
-依赖安装后，可用明确的数据目录在 loopback 启动三页 server-rendered 工作台：
+## 当前可运行的已实现能力
+
+合并后的应用仍是三个本地 server-rendered 页面，可从明确的数据目录启动：
 
 ```bash
 PYTHONPATH=src uv run python -m ai_course_factory.web --data-dir ./var/ai-course-factory
 ```
 
-默认只绑定 `127.0.0.1:8000`。未配置 GPT-SoVITS 时工作台使用本地确定性 FFmpeg Fixture；配置 F2B 的显式 GPT-SoVITS 参数后，语音路径使用本地 GPT-SoVITS v2，不调用云端 Provider，视频、SRT 和最终 ZIP 只从当前 facade 状态提供。
+默认只绑定 `127.0.0.1:8000`。已实现的 v1.2 兼容路径仍支持显式 GPT-SoVITS、本地图片输入及 creator-generated MP4 目录，但这些能力不构成 v1.3 已实现证据，也不应在当前 PARK 状态下驱动 H4 外部视频生成。
 
-若使用 F2A 的 Creator-supplied Desktop ImageGen 图片，必须显式传入目录；应用只接受精确的 `scene-1.png` 至 `scene-6.png`，Scene 2 替换只接受 `scene-2-replacement.png`，不会猜测 Downloads、Desktop 或“最新文件”：
+### 历史/兼容性本地输入
 
-```bash
-PYTHONPATH=src uv run python -m ai_course_factory.web \
-  --data-dir ./var/ai-course-factory \
-  --visual-import-dir ./var/desktop-imagegen-assets
-```
+- F2A 图片输入只接受显式目录与固定 `scene-1.png` 至 `scene-6.png`。
+- H3 creator clip 输入只接受显式目录与固定 `scene-1.mp4` 至 `scene-6.mp4`，没有浏览器路径/上传或 Downloads/Desktop/latest 扫描。
+- F2B GPT-SoVITS 使用显式外部 Python 3.11、官方 repo/model/reference 配置；不读取云端凭据，外部调用费用为 0。
 
-Desktop ImageGen 生成发生在应用外；导入模式的本地处理费用为 0，仍须先通过现有 Budget approval。缺失或不可解码的文件会在任何 attempt、media 或 Artifact side effect 前一次性报告安全的文件名。
-
-H3 Creator MP4 导入同样只接受启动时显式配置的目录和精确文件名，不接受浏览器上传、路径表单或 Downloads/Desktop 扫描：
-
-```bash
-PYTHONPATH=src uv run python -m ai_course_factory.web \
-  --data-dir ./var/ai-course-factory \
-  --generated-clips-dir ./var/creator-generated-clips
-```
-
-应用会在一次 Review POST 中预检并归一化 `scene-1.mp4` 至 `scene-6.mp4`；视频输入固定为 H.264、540x960、yuv420p、24fps、精确 Timeline 时长。外部原生音频、字幕和效果只记录为 provenance，不会替代 H2 narration。
-
-配置 F2B 本地 GPT-SoVITS 时，必须显式提供外部 Python 3.11、官方仓库/commit、v2 推理脚本与配置、精确模型文件、Serena 参考音频和参考文本；应用不会扫描本机目录或使用云端凭据：
-
-```bash
-PYTHONPATH=src uv run python -m ai_course_factory.web \
-  --data-dir ./var/ai-course-factory \
-  --visual-import-dir ./var/desktop-imagegen-assets \
-  --tts-external-python /path/to/gpt-sovits/venv/bin/python \
-  --tts-repository-root /path/to/gpt-sovits/repo \
-  --tts-repository-commit d523079fc05d9a8028d6085bffe4a2757c32abb6 \
-  --tts-inference-script /path/to/gpt-sovits/repo/GPT_SoVITS/inference_cli.py \
-  --tts-config /path/to/gpt-sovits/repo/GPT_SoVITS/configs/tts_infer.yaml \
-  --tts-gpt-model /path/to/gpt-sovits/repo/GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s1bert25hz-5kh-longer-epoch=12-step=369668.ckpt \
-  --tts-sovits-model /path/to/gpt-sovits/repo/GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s2G2333k.pth \
-  --tts-reference-audio /path/to/synthetic-serena-reference_000.wav \
-  --tts-reference-transcript '你好，我是小土豆。今天我们一起认识人工智能。'
-```
-
-The external runtime, model cache and reference audio remain operator-owned files outside this repository; local GPT-SoVITS inference records zero external charge.
+这些是保留的实现事实，不是继续外部 clip 生产的授权。
 
 ## 开始之前
 
@@ -74,19 +55,22 @@ Codex 和开发者按以下顺序阅读：
 3. [docs/STATUS.md](docs/STATUS.md)
 4. [AGENTS.md](AGENTS.md)
 
-## 当前验证命令
+## 验证命令
+
+代码任务的完整回归命令仍为：
 
 ```bash
 PYTHONPATH=src uv run python -m unittest discover -s tests -v
 ```
 
-运行要求：Python 3.12。新增依赖只在当前纵向任务确有需要时加入。
+Issue #143 是纯文档 E0 权威化任务，不运行 full regression。它只要求 exact nine-doc ownership、Goal/authority/stale wording review 与 `git diff --check`。
 
 ## 权威文档
 
-- [PRD](docs/product/PRD.md)：产品必须做什么。
-- [System Spec](docs/spec/SYSTEM-SPEC.md)：系统必须保持什么行为和契约。
-- [Implementation Spec](docs/spec/IMPLEMENTATION-SPEC.md)：代码和运行时怎样实现这些契约。
-- [Development Workflow](docs/DEVELOPMENT-WORKFLOW.md)：Codex、Goal、Luna、Issue、PR 和验收怎样协作。
+- [PRD](docs/product/PRD.md)：产品价值、行为和验收候选。
+- [System Spec](docs/spec/SYSTEM-SPEC.md)：系统 ownership、事实与 gate 候选。
+- [Implementation Spec](docs/spec/IMPLEMENTATION-SPEC.md)：复用、物理方向和验证策略候选。
+- [Decision Log](docs/decision-log.md)：D-010 及保留的历史决策。
+- [Development Workflow](docs/DEVELOPMENT-WORKFLOW.md)：Goal、Luna、Issue、PR 和验收协作。
 
-历史 Phase 文档保留为决策与交付证据，但不再作为日常开发入口。
+历史 Phase 与 Creator Handoff 文档继续保留为实现和决策证据，不作为 v1.3 实施授权。
