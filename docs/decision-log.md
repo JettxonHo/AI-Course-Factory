@@ -430,3 +430,62 @@ H3 is complete at `main@cbdd150c` through Issue #137 / PR #138 with accepted 458
 ### Authorization Boundary
 
 D-009 records the approved presentation direction for Issue #139. It does not mark H3.5 complete, authorize H4 human-quality acceptance, or authorize Provider/API calls, credentials, fees, deployment or publication.
+
+## Decision D-010 — Rebaseline the primary path around a narration-led editorial spine
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted; exact v1.3 Goal approved and E0 activated on 2026-08-24 |
+| Decision Date | 2026-08-24 |
+| Decision Owner | Product Owner |
+| Applies To | Approved Knowledge Video Editorial MVP v1.3 and Issue #143 E0 authority integration |
+| Supersedes | D-008 only as the near-term primary production path; D-008/D-009 history and implementation evidence remain valid |
+
+### Context
+
+Creator Handoff v1.2 proved exact Source/Script lineage, local narration, a Scene Generation Contract, deterministic handoff files, creator-import lineage, local composition, restart/replay and a three-view Chinese workspace. Its H4 acceptance did not complete. Before external video credits were spent, product review found that the application still lacked a single narration clock and a human-reviewable editorial plan capable of controlling teaching evidence, A/B-roll choice and rhythm before full production.
+
+The Product Owner chose a narration-led editorial workflow and explicitly parked the six-external-MP4 path. The MVP should use Codex Desktop ImageGen for creator-supplied static assets and deterministic local rendering for motion, graphics, camera and timing. Jimeng, Kling and Seedance may later enhance exceptional shots, but they are not the primary dependency.
+
+### Decision
+
+1. Make the approved grounded Script feed one continuous Whole Narration.
+2. Make phrase-level millisecond Acoustic Alignment the sole continuous audiovisual timing authority and derive canonical SRT from it. After declared punctuation/whitespace normalization, its short phrase text covers exact approved narration character-for-character; non-overlapping intervals span `0` through exact audio duration under a declared pause-allocation policy. ASR may propose timestamps but cannot replace approved text.
+3. Require a human-reviewable Visual Edit Plan bound to exact Script, narration and alignment facts. Every shot/range owns an A/B-roll role and rationale, evidence intent, selected assets or gaps, overlays and deterministic motion/camera instructions. A-roll is the Xiaotudou/IP presenter layer for hooks/transitions/emotion/action/low-density delivery; B-roll is the content/evidence layer. Information-dense or claim-bearing content defaults to evidence-bound B-roll unless an exception reason is recorded.
+4. Keep static character/environment/prop/illustration/diagram/screenshot creation outside the application through Codex Desktop ImageGen for the MVP. Record creator-supplied provenance; create no application Provider Attempt, credential use or charge.
+5. Put HyperFrames, or one separately justified equivalent, behind a small deterministic rendering boundary. No renderer installation or selection is authorized by this documentation task.
+6. Require an exact 15–20 second Sample Video containing A-roll, B-roll, their transition and representative overlay/motion behavior, with approval before full rendering.
+7. Reuse exact Source/Script, Artifact/Decision, Workspace, Final Review and Publish Package ownership. Keep the existing three SSR/Jinja views as a Human-in-the-loop control plane with responsibilities: Content & Audio; Visual Planning & Production; Final Review & Delivery.
+8. Park manual Jimeng/Kling/Seedance six-clip generation/import as a future optional special-shot capability. Do not generate/import the seven H4 MP4 files or consume subscription credits for the proposed MVP.
+9. Preserve D-008/D-009, H0–H3.5 implementation and H4 evidence as historical/foundation facts. Creator Handoff v1.2 is not retroactively marked complete.
+
+### Rejected alternatives
+
+#### Keep six fixed Scenes as the editorial clock
+
+Rejected because separately rendered narration/visual clips and fixed ten-second slots create a competing clock and make phrase timing, evidence coverage and edit rhythm secondary.
+
+#### Continue manual external video generation as the primary path
+
+Rejected for the current MVP because it consumes scarce external iteration before the application has validated the narration, edit plan and sample. This does not remove the implemented import seam or prohibit a future special-shot enhancement.
+
+#### Outsource the complete edit and import one final MP4
+
+Rejected because the application would lose ownership of alignment, canonical SRT, edit lineage and the sample-before-full-render gate.
+
+#### Replace Jinja with a frontend editor stack
+
+Rejected because the product needs three review/control surfaces, not a professional timeline, asset manager, SPA or fourth page. React/Tailwind/shadcn references do not justify a stack rewrite.
+
+### Consequences
+
+- Whole Narration, Acoustic Alignment, Visual Edit Plan and Sample Video become the canonical v1.3 product facts.
+- Existing per-Scene narration, Scene Generation Contract, Creator Handoff Package and imported clip facts remain backward-readable compatibility/foundation evidence but are no longer the v1.3 primary Final gate.
+- Frontend design must follow the approved research sequence: 8–12 real references, 2–3 IA directions, Product Owner selection, `DESIGN.md`, implementation, then AI-Slop audit.
+- Later implementation requires bounded Task Contracts for alignment, whole narration, plan approval, renderer evaluation/sample and full acceptance. A general Provider registry, API integration or broad Artifact/Workflow rewrite is not implied.
+
+### Authorization boundary
+
+The Product Owner approved the exact v1.3 Goal and E0 activation on 2026-08-24. Issue #143 therefore owns one nine-file authoritative docs PR including `GOAL.md`. E0 may commit/push/review/merge those docs and truthfully park the superseded H4 Issues after merge. No Luna dispatch, feature code, UI change, dependency install, HyperFrames/alignment run, Provider/API/model/credential/fee/cap action, external clip generation/import, deployment or publication is authorized.
+
+Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE. Its exact six-file dirty candidate and repo-external evidence stay preserved for a later line-level salvage/compatibility review; E0 neither resets nor merges them. E1 becomes eligible for planning only after E0 actually merges and still requires an independently approved Task Contract before code or Luna dispatch.
