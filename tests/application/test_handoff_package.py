@@ -14,6 +14,7 @@ from ai_course_factory.persistence import WorkspaceFileReference
 from ai_course_factory.production import LocalNarrationPreflight, LocalNarrationResult
 
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
+from tests.legacy_v11_fixture import seed_legacy_script_review
 
 
 _PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")
@@ -45,6 +46,7 @@ def _ready_app(directory: str, still_dir: Path) -> tuple[CourseFactoryApplicatio
     renderer = _FakeNarrationRenderer(app.workspace)
     app.local_narration_renderer = renderer
     app.start_source(SUPPORTED_REPOSITORY_URL)
+    seed_legacy_script_review(app)
     app.submit_script_decision("approve")
     app.advance_planning()
     approved = app.submit_storyboard_decision("approve")

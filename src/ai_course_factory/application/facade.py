@@ -42,6 +42,10 @@ from ai_course_factory.artifacts import (
     ArtifactVersion,
     FinalVideoDecisionBoundary,
     SQLiteArtifactRepository,
+    CreatorScriptDecisionBoundary,
+    CreatorScriptDecisionFailure,
+    CreatorScriptDecisionRecord,
+    SQLiteCreatorScriptDecisionRepository,
     SQLiteFinalVideoDecisionRepository,
     SQLiteScriptDecisionRepository,
     SQLiteStoryboardDecisionRepository,
@@ -116,6 +120,14 @@ from .media_task import (
 )
 from .sqlite_media_task import SQLiteTaskMediaRepository
 from .script_review import ScriptReviewApplicationService
+from .script_package import (
+    CreatorScriptClaim,
+    CreatorScriptNarrationUnit,
+    CreatorScriptPackage,
+    CreatorScriptPackageApplicationService,
+    CreatorScriptPackageFailure,
+    CreatorScriptProvenance,
+)
 
 
 TASK_ID = "demo-episode-01"
@@ -233,6 +245,33 @@ class SceneView:
 
 
 @dataclass(frozen=True, slots=True)
+class CreatorScriptClaimView:
+    claim_id: str
+    statement: str
+    evidence_locators: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class CreatorScriptNarrationUnitView:
+    unit_id: str
+    text: str
+    claim_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class CreatorScriptProvenanceView:
+    creator_declared_name: str
+    creator_role: str
+    tool_name: str
+    tool_version: object = None
+    session: object = None
+    project: object = None
+    tool_version_present: bool = False
+    session_present: bool = False
+    project_present: bool = False
+
+
+@dataclass(frozen=True, slots=True)
 class PromptCard:
     """Frozen, copyable prompt guidance for one exact imported image."""
 
@@ -269,7 +308,7 @@ class ApplicationView:
     source_commit: str
     source_locator: str
     source_evidence: tuple[str, ...]
-    script_reference: ArtifactReference
+    script_reference: ArtifactReference | None
     scenes: tuple[SceneView, ...]
     budget_maximum_amount_micros: int | None = None
     budget_maximum_attempts: int | None = None
@@ -304,6 +343,14 @@ class ApplicationView:
     handoff_reference_still_facts: tuple[str, ...] = ()
     external_generation_notice: str | None = None
     imported_scene_facts: tuple[str, ...] = ()
+    creator_script_package_id: str | None = None
+    creator_script_revision_note: str | None = None
+    creator_script_claims: tuple[CreatorScriptClaimView, ...] = ()
+    creator_script_narration_units: tuple[CreatorScriptNarrationUnitView, ...] = ()
+    creator_script_provenance: CreatorScriptProvenanceView | None = None
+    creator_script_decision_id: str | None = None
+    creator_script_decision_action: str | None = None
+    creator_script_decision_context: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -542,6 +589,7 @@ class CourseFactoryApplication:
         source_connector: object | None = None,
         local_narration_renderer: LocalNarrationRenderer | None = None,
         generated_clips_directory: str | Path | None = None,
+        script_package_directory: str | Path | None = None,
     ) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -552,6 +600,7 @@ class CourseFactoryApplication:
         self._state_connection.execute("CREATE TABLE IF NOT EXISTS application_state (singleton INTEGER PRIMARY KEY CHECK(singleton=1), schema_version INTEGER NOT NULL, state_json TEXT NOT NULL)")
         self.artifacts = SQLiteArtifactRepository(self.database_path)
         self.script_decisions = SQLiteScriptDecisionRepository(self.database_path)
+        self.creator_script_decisions = SQLiteCreatorScriptDecisionRepository(self.database_path)
         self.storyboard_decisions = SQLiteStoryboardDecisionRepository(self.database_path)
         self.final_decisions = SQLiteFinalVideoDecisionRepository(self.database_path)
         self.budget_decisions = SQLiteBudgetAuthorizationRepository(self.database_path)
@@ -575,9 +624,13 @@ class CourseFactoryApplication:
             self.generated_clips_directory = Path(generated_clips_directory).expanduser().resolve() if generated_clips_directory is not None else None
         except (OSError, TypeError, ValueError):
             self.generated_clips_directory = Path("\0") if generated_clips_directory is not None else None
+        try:
+            self.script_package_directory = Path(script_package_directory).expanduser().resolve() if script_package_directory is not None else None
+        except (OSError, TypeError, ValueError):
+            self.script_package_directory = Path("\0") if script_package_directory is not None else None
 
     def close(self) -> None:
-        for value in (self.checkpoints, self.media_repository, self.attempts, self.budget_decisions, self.final_decisions, self.storyboard_decisions, self.script_decisions, self.artifacts):
+        for value in (self.checkpoints, self.media_repository, self.attempts, self.budget_decisions, self.final_decisions, self.storyboard_decisions, self.creator_script_decisions, self.script_decisions, self.artifacts):
             close = getattr(value, "close", None)
             if callable(close):
                 try:
@@ -642,6 +695,82 @@ class CourseFactoryApplication:
             return self._success(state)
         except Exception:
             return ApplicationResult("failure", None, "SOURCE_INITIALIZATION_FAILED", "The source could not be initialized safely; retry the source start.")
+
+    def import_creator_script_package(self) -> ApplicationResult:
+        """Explicitly import or re-import the fixed creator-script.json member."""
+
+        state = self._load_state()
+        if state is None or "source" not in state.refs:
+            return self._failure("TASK_NOT_FOUND")
+        if self.script_package_directory is None:
+            return self._failure("SCRIPT_PACKAGE_DIRECTORY_REQUIRED", state, persist_state=False)
+        source_reference = state.refs["source"]
+        try:
+            source_version = self.artifacts.get(source_reference)
+        except Exception:
+            return self._failure("SOURCE_REFERENCE_INVALID", state, persist_state=False)
+        current_reference = state.refs.get("script")
+        if current_reference is None and (state.stage != "script_review" or state.pending_action != "import_creator_script"):
+            return self._failure("CREATOR_SCRIPT_SOURCE_ONLY_GATE_REQUIRED", state, "Creator Script Package import is only available from the source-only intake state.", persist_state=False)
+        current_version = None
+        if current_reference is not None:
+            try:
+                current_version = self.artifacts.get(current_reference)
+            except Exception:
+                return self._failure("SCRIPT_REFERENCE_INVALID", state, persist_state=False)
+            if not isinstance(current_version, ArtifactVersion) or not isinstance(current_version.payload, Mapping) or not isinstance(current_version.payload.get("script_package"), Mapping):
+                return self._failure("CREATOR_SCRIPT_LEGACY_SCRIPT_CONFLICT", state, "The selected legacy Script cannot be replaced by a Creator Script Package.", persist_state=False)
+        service = CreatorScriptPackageApplicationService(self.artifacts)
+        result = service.import_package(
+            self.script_package_directory,
+            source_reference=source_reference,
+            source_version=source_version,
+            script_reference=current_reference,
+            script_version=current_version,
+        )
+        if result.failure is not None:
+            return self._failure(result.failure.code, state, result.failure.message, persist_state=False)
+        package = result.package
+        if package is None:
+            return self._failure("PACKAGE_VALIDATION_FAILED", state, persist_state=False)
+        if current_version is not None:
+            existing_package = current_version.payload.get("script_package") if isinstance(current_version.payload, Mapping) else None
+            if isinstance(existing_package, Mapping):
+                existing_id = existing_package.get("script_package_id")
+                if existing_id != package.script_package_id:
+                    return self._failure("SCRIPT_PACKAGE_ID_CONFLICT", state, persist_state=False)
+                if existing_package == package.payload:
+                    return self._success(state)
+        candidate = result.candidate
+        if candidate is None:
+            return self._failure("SCRIPT_PACKAGE_IMPORT_FAILED", state, persist_state=False)
+        try:
+            reference = self.artifacts.commit(candidate)
+            refs = {**state.refs, "script": reference}
+            decision_ids = dict(state.decision_ids)
+            decision_ids.pop("creator_script", None)
+            updated = _State(
+                TASK_ID,
+                "script_review",
+                "approve_script",
+                refs,
+                decision_ids,
+                state.authorization_id,
+                state.composition,
+                state.package_output,
+                None,
+                None,
+                state.replacement_done,
+                state.visual_mode,
+                state.tts_mode,
+                state.handoff_package_output,
+                state.handoff_narration_references,
+                state.handoff_reference_still_facts,
+            )
+            self._save_state(updated)
+            return self._success(updated)
+        except Exception:
+            return self._failure("SCRIPT_PACKAGE_IMPORT_FAILED", state, persist_state=False)
 
     def read_output(self, kind: str) -> ApplicationDownload | None:
         """Read one current video, subtitle, or exported package by role."""
@@ -717,6 +846,15 @@ class CourseFactoryApplication:
         state = self._load_state()
         if state is None:
             return self._failure("TASK_NOT_FOUND")
+        current_script_reference = state.refs.get("script")
+        current_script = None
+        if current_script_reference is not None:
+            try:
+                current_script = self.artifacts.get(current_script_reference)
+            except Exception:
+                return self._failure("SCRIPT_REFERENCE_INVALID", state, persist_state=False)
+        if isinstance(current_script, ArtifactVersion) and isinstance(current_script.payload, Mapping) and "script_package" in current_script.payload:
+            return self._submit_creator_script_decision(state, action, decision_context=decision_context, creator_id=creator_id, script_reference=current_script_reference, script=current_script)
         if state.stage != "script_review" or state.pending_action != "approve_script":
             return self._failure("GATE_NOT_PENDING", state)
         if action not in {"approve", "revise", "reject"}:
@@ -771,10 +909,108 @@ class CourseFactoryApplication:
         except Exception:
             return self._failure("SCRIPT_REVISION_FAILED", state)
 
+    def _submit_creator_script_decision(
+        self,
+        state: _State,
+        action: str,
+        *,
+        decision_context: str,
+        creator_id: str,
+        script_reference: ArtifactReference | None,
+        script: ArtifactVersion,
+    ) -> ApplicationResult:
+        if script_reference is None:
+            return self._failure("SCRIPT_REFERENCE_INVALID", state, persist_state=False)
+        package = script.payload.get("script_package") if isinstance(script.payload, Mapping) else None
+        source_reference = state.refs.get("source")
+        if not isinstance(package, Mapping) or source_reference is None:
+            return self._failure("CREATOR_SCRIPT_LINEAGE_INVALID", state, persist_state=False)
+        existing_id = state.decision_ids.get("creator_script")
+        if existing_id:
+            existing = self.creator_script_decisions.get(existing_id)
+            if isinstance(existing, CreatorScriptDecisionRecord):
+                if action == existing.action and decision_context == existing.decision_context:
+                    return self._success(state)
+                return self._failure("CREATOR_SCRIPT_DECISION_CONFLICT", state, persist_state=False)
+        if state.stage != "script_review" or state.pending_action != "approve_script":
+            return self._failure("GATE_NOT_PENDING", state, persist_state=False)
+        if action not in {"approve", "reject"}:
+            return self._failure("INVALID_DECISION_ACTION", state, persist_state=False)
+        if action == "reject" and not decision_context.strip():
+            return self._failure("INVALID_DECISION_CONTEXT", state, persist_state=False)
+        decision_id = f"decision:creator-script:v{script_reference.version}"
+        decision = CreatorScriptDecisionBoundary(self.creator_script_decisions).decide(
+            script_reference,
+            script,
+            source_reference=source_reference,
+            decision_id=decision_id,
+            task_id=TASK_ID,
+            thread_id=_script_thread(script_reference),
+            creator_id=creator_id,
+            action=action,
+            decision_context=decision_context,
+        )
+        if isinstance(decision, CreatorScriptDecisionFailure):
+            code = "CREATOR_SCRIPT_DECISION_CONFLICT" if decision.code == "DECISION_CONFLICT" else decision.code
+            return self._failure(code, state, decision.message, persist_state=False)
+        decision_ids = {**state.decision_ids, "creator_script": decision.decision_id}
+        if action == "approve":
+            updated = _State(
+                TASK_ID,
+                "planning",
+                None,
+                state.refs,
+                decision_ids,
+                state.authorization_id,
+                state.composition,
+                state.package_output,
+                None,
+                None,
+                state.replacement_done,
+                state.visual_mode,
+                state.tts_mode,
+                state.handoff_package_output,
+                state.handoff_narration_references,
+                state.handoff_reference_still_facts,
+            )
+        else:
+            updated = _State(
+                TASK_ID,
+                "script_review",
+                "import_creator_script",
+                state.refs,
+                decision_ids,
+                state.authorization_id,
+                state.composition,
+                state.package_output,
+                None,
+                None,
+                state.replacement_done,
+                state.visual_mode,
+                state.tts_mode,
+                state.handoff_package_output,
+                state.handoff_narration_references,
+                state.handoff_reference_still_facts,
+            )
+        try:
+            self._save_state(updated)
+        except Exception:
+            # The durable Creator Decision remains replayable; state transition
+            # retry is intentionally not duplicated through the repository.
+            return self._failure("APPLICATION_STATE_SAVE_FAILED", state, persist_state=False)
+        return self._success(updated)
+
     def advance_planning(self) -> ApplicationResult:
         state = self._load_state()
         if state is None:
             return self._failure("TASK_NOT_FOUND")
+        if state.refs.get("script") is not None:
+            try:
+                candidate_script = self.artifacts.get(state.refs["script"])
+                if isinstance(candidate_script.payload, Mapping) and "script_package" in candidate_script.payload:
+                    return self._failure("CREATOR_SCRIPT_PLANNING_FORBIDDEN", state, persist_state=False)
+            except Exception:
+                return self._failure("SCRIPT_REFERENCE_INVALID", state, persist_state=False)
         if state.stage != "planning" or state.pending_action != "advance_planning":
             return self._failure("PLANNING_NOT_READY", state)
         try:
@@ -1374,26 +1610,8 @@ class CourseFactoryApplication:
         source_candidate = SourceRecordBuilder().build(material, identity="source:microsoft-ai-for-beginners", commit_id="source:episode-1")
         if not hasattr(source_candidate, "artifact_type"):
             raise RuntimeError("source record could not be built")
-        prepared_workspace = self.workspace.prepare(TASK_ID)
-        if not hasattr(prepared_workspace, "task_id"):
-            raise RuntimeError("offline workspace could not be prepared")
         source_reference = self.artifacts.commit(source_candidate)
-        source = self.artifacts.get(source_reference)
-        runtime = _OfflineRuntime()
-        knowledge_candidate = KnowledgeAgent(runtime).invoke(source_reference, source, context=KnowledgeTaskContext("AI-For-Beginners", "Lesson 1", "English", "adult AI beginners"), identity="knowledge:episode-1", commit_id="knowledge:episode-1", knowledge_boundary="traceable-source-only")
-        knowledge_reference = self.artifacts.commit(knowledge_candidate)
-        knowledge = self.artifacts.get(knowledge_reference)
-        context = ContentTaskContext("adult AI beginners", "小土豆学 AI", 1, "AI不是魔法", "Simplified Chinese", "Explain why AI is not magic.")
-        template = EpisodeTemplateConstraint(6, 60, "9:16")
-        plans = ContentAgent(runtime).plan(knowledge_reference, knowledge, context=context, template=template, course_identity="course-plan:episode-1", episode_identity="episode-plan:episode-1", course_commit_id="course-plan:episode-1", episode_commit_id="episode-plan:episode-1")
-        course_reference = self.artifacts.commit(plans.course)
-        episode_reference = self.artifacts.commit(plans.episode)
-        script_candidate = ContentAgent(runtime).script(knowledge_reference, knowledge, course_reference, self.artifacts.get(course_reference), episode_reference, self.artifacts.get(episode_reference), context=context, template=template, script_identity="script:episode-1", script_commit_id="script:episode-1")
-        script_reference = self.artifacts.commit(script_candidate)
-        started = ScriptReviewApplicationService(self.artifacts, ScriptDecisionBoundary(self.script_decisions), ScriptReviewWorkflow(self.artifacts, self.checkpoints)).start(TASK_ID, _script_thread(script_reference), script_reference)
-        if started.status == "failure":
-            raise RuntimeError
-        state = _State(TASK_ID, "script_review", "approve_script", {"source": source_reference, "knowledge": knowledge_reference, "course_plan": course_reference, "episode_plan": episode_reference, "script": script_reference}, {}, None, None, None, None, None, False, "imported" if self.visual_import_dir is not None else "fixture", "gpt-sovits" if self.tts_configuration is not None else "fixture")
+        state = _State(TASK_ID, "script_review", "import_creator_script", {"source": source_reference}, {}, None, None, None, None, None, False, "imported" if self.visual_import_dir is not None else "fixture", "gpt-sovits" if self.tts_configuration is not None else "fixture")
         self._save_state(state)
         return state
 
@@ -1670,9 +1888,45 @@ class CourseFactoryApplication:
         if state is None:
             return None
         source = self.artifacts.get(state.refs["source"])
-        script = self.artifacts.get(state.refs["script"])
         source_units = source.payload["units"]
-        script_scenes = script.payload["scenes"]
+        script_reference = state.refs.get("script")
+        script: ArtifactVersion | None = None
+        if script_reference is not None:
+            script = self.artifacts.get(script_reference)
+        creator_package: Mapping[str, Any] | None = None
+        creator_package_id: str | None = None
+        creator_revision_note: str | None = None
+        creator_claim_views: tuple[CreatorScriptClaimView, ...] = ()
+        creator_unit_views: tuple[CreatorScriptNarrationUnitView, ...] = ()
+        creator_provenance_view: CreatorScriptProvenanceView | None = None
+        if isinstance(script, ArtifactVersion) and isinstance(script.payload, Mapping) and isinstance(script.payload.get("script_package"), Mapping):
+            creator_package = script.payload["script_package"]
+            creator_package_id = creator_package.get("script_package_id") if isinstance(creator_package.get("script_package_id"), str) else None
+            creator_revision_note = creator_package.get("revision_note") if isinstance(creator_package.get("revision_note"), str) else None
+            raw_claims = creator_package.get("claims")
+            if isinstance(raw_claims, (tuple, list)):
+                creator_claim_views = tuple(
+                    CreatorScriptClaimView(item["claim_id"], item["statement"], tuple(item["evidence_locators"]))
+                    for item in raw_claims if isinstance(item, Mapping) and isinstance(item.get("claim_id"), str) and isinstance(item.get("statement"), str) and isinstance(item.get("evidence_locators"), (tuple, list))
+                )
+            raw_units = creator_package.get("narration_units")
+            if isinstance(raw_units, (tuple, list)):
+                creator_unit_views = tuple(
+                    CreatorScriptNarrationUnitView(item["unit_id"], item["text"], tuple(item["claim_ids"]))
+                    for item in raw_units if isinstance(item, Mapping) and isinstance(item.get("unit_id"), str) and isinstance(item.get("text"), str) and isinstance(item.get("claim_ids"), (tuple, list))
+                )
+            raw_provenance = creator_package.get("creator_provenance")
+            if isinstance(raw_provenance, Mapping) and all(isinstance(raw_provenance.get(name), str) for name in ("creator_declared_name", "creator_role", "tool_name")):
+                creator_provenance_view = CreatorScriptProvenanceView(
+                    raw_provenance["creator_declared_name"], raw_provenance["creator_role"], raw_provenance["tool_name"],
+                    raw_provenance.get("tool_version"), raw_provenance.get("session"), raw_provenance.get("project"),
+                    "tool_version" in raw_provenance, "session" in raw_provenance, "project" in raw_provenance,
+                )
+            script_scenes = tuple({"scene_id": unit.unit_id, "narration": unit.text, "teaching_intent": ""} for unit in creator_unit_views)
+        elif isinstance(script, ArtifactVersion) and isinstance(script.payload, Mapping):
+            script_scenes = script.payload.get("scenes", ())
+        else:
+            script_scenes = ()
         production_scenes = None
         if "production_request" in state.refs:
             try:
@@ -1787,7 +2041,21 @@ class CourseFactoryApplication:
                 view_tts_reference = handoff_narration_metadata["reference_provenance"]
             if type(handoff_narration_metadata.get("external_charge_micros")) is int:
                 view_tts_charge = handoff_narration_metadata["external_charge_micros"]
-        if state.stage == "script_review":
+        creator_decision: CreatorScriptDecisionRecord | None = None
+        creator_decision_id = state.decision_ids.get("creator_script")
+        if creator_decision_id:
+            try:
+                loaded = self.creator_script_decisions.get(creator_decision_id)
+                if isinstance(loaded, CreatorScriptDecisionRecord):
+                    creator_decision = loaded
+            except Exception:
+                creator_decision = None
+        is_creator_script = creator_package is not None
+        if state.stage == "script_review" and state.pending_action == "import_creator_script":
+            available = ("import_creator_script",)
+        elif state.stage == "script_review" and is_creator_script:
+            available = ("approve_script", "reject_script")
+        elif state.stage == "script_review":
             available = ("approve_script", "revise_script", "reject_script")
         elif state.stage == "planning" and state.pending_action == "approve_storyboard":
             available = ("approve_storyboard", "reject_storyboard")
@@ -1805,6 +2073,8 @@ class CourseFactoryApplication:
             available = ("export_package",)
         elif state.stage == "final_review":
             available = ("approve_final", "reject_final") if state.replacement_done else ("approve_final", "reject_final", "replace_scene")
+        elif is_creator_script and state.stage == "planning":
+            available = ()
         else:
             available = {"planning": ("advance_planning",), "budget_review": ("approve_budget",), "production": ("produce_offline",), "exported": (), "rejected": ()}.get(state.stage, ())
         local_label = (
@@ -1817,7 +2087,7 @@ class CourseFactoryApplication:
         prompt_cards = _prompt_cards(script_scenes, production_scenes) if state.visual_mode == "imported" else ()
         return ApplicationView(
             TASK_ID, state.stage, state.pending_action, source.payload["commit_sha"], source_units[0]["locator"],
-            tuple(unit["locator"] for unit in source_units), state.refs["script"], scenes, budget_amount,
+            tuple(unit["locator"] for unit in source_units), script_reference, scenes, budget_amount,
             budget_attempts, state.authorization_id is not None, selected_delivery.get("video"),
             selected_delivery.get("subtitle"), state.refs.get("package"), state.package_output,
             state.failure_category, state.failure_message, tuple(available), True, state.replacement_done,
@@ -1837,6 +2107,14 @@ class CourseFactoryApplication:
             handoff_reference_still_facts,
             "External Jimeng/Kling subscription generation is outside AI Course Factory; no application Attempt or charge is created.",
             imported_scene_facts,
+            creator_package_id,
+            creator_revision_note,
+            creator_claim_views,
+            creator_unit_views,
+            creator_provenance_view,
+            creator_decision.decision_id if creator_decision else None,
+            creator_decision.action if creator_decision else None,
+            creator_decision.decision_context if creator_decision else None,
         )
 
 
@@ -1844,6 +2122,9 @@ __all__ = [
     "ApplicationDownload",
     "ApplicationResult",
     "ApplicationView",
+    "CreatorScriptClaimView",
+    "CreatorScriptNarrationUnitView",
+    "CreatorScriptProvenanceView",
     "CourseFactoryApplication",
     "GenerationEntryView",
     "PromptCard",

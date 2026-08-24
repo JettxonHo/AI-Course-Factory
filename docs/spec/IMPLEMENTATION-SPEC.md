@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 DOCS ONLY IN PROGRESS; FEATURE IMPLEMENTATION UNAUTHORIZED** |
+| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 COMPLETE; S1 CREATOR SCRIPT PACKAGE IN PROGRESS** |
 | Product direction | Creator-authored Script Package direction approved by Product Owner, 2026-08-24 |
 | Exact amended Goal | Approved by Product Owner, 2026-08-24 |
 | Product contract | docs/product/PRD.md |
 | System contract | docs/spec/SYSTEM-SPEC.md |
-| Planning baseline | main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307 |
-| Planning Issue | #148, docs-only |
+| Planning baseline | main@597f3a03e582cbccc099ad0810e17b0262a80d51 |
+| Planning Issue | #150, bounded S1 implementation |
 | Runtime baseline | Python >=3.12,<3.13; existing external GPT-SoVITS Python 3.11 boundary |
 
-No source, UI, test, dependency or runtime change is authorized by S0.
+S0 documentation authority is merged. Issue #150 authorizes only its exact 34-path source/UI/test implementation slice; E1/E2, Provider/model/credential/fee/deploy and broad repository/schema changes remain unauthorized.
 
 ## 2. Current implementation audit
 
@@ -33,7 +33,7 @@ No source, UI, test, dependency or runtime change is authorized by S0.
 
 The current merged code does not implement Creator-authored Script Package intake, Whole Narration, phrase-level alignment, Visual Edit Plan, Sample approval or deterministic editorial rendering. Dirty/rejected candidates do not change that fact.
 
-E0 is complete through Issue #143 / PR #144. The Product Owner approved the Creator-authored Script Package amended exact Goal, eight defaults and S0 docs-only activation. Issue #148 owns the exact ten-doc authority integration; no S1/E1 code, Luna dispatch or dirty-candidate integration is authorized before S0 merge and a separately approved Task Contract.
+E0 is complete through Issue #143 / PR #144 and S0 is complete through Issue #148 / PR #149. Issue #150 owns the exact bounded S1 Creator Script Package intake/review implementation; no E1/E2 code, Provider work or dirty-candidate integration is authorized.
 
 ## 3. Recommended physical direction
 
@@ -68,7 +68,7 @@ The UI does not see renderer component trees, alignment-library objects, Provide
 
 Approved MVP default is one operator-configured directory and one fixed `creator-script.json`, triggered by an explicit same-origin Start-page POST. No browser path, multipart upload, textarea authoring, file manager or common-folder scan is required.
 
-A later S1 Task Contract should add one adjacent bounded importer/service, not a Provider or generic registry. Before any Workspace, Artifact or state write it must:
+Issue #150 adds one adjacent bounded importer/service, not a Provider or generic registry. Before any Workspace, Artifact or state write it must:
 
 - open only the fixed regular non-symlink file under the configured root;
 - enforce bounded bytes, UTF-8 JSON, no duplicate object keys, exact schema/version and the closed eight-field top-level set;
@@ -204,13 +204,13 @@ Integrated the narration-led editorial Goal and honestly parked Issues #141/#142
 
 ### S0 — Script-input truth rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** through Issue #148; amended exact Goal and defaults approved.
+Status: **COMPLETE** at `main@597f3a03e582cbccc099ad0810e17b0262a80d51`; Issue #148 CLOSED, PR #149 MERGED.
 
-The exact ten-doc candidate records Creator-authored Script Package ownership, intake semantics, options and stop conditions and writes the amended `GOAL.md` **APPROVED / ACTIVE** with S0 **IN PROGRESS**. Only its actual merge permits S0 **COMPLETE** and S1 planning; no status-only PR.
+The merged exact ten-doc authority set records Creator-authored Script Package ownership, intake semantics, options and stop conditions and writes the amended `GOAL.md` **APPROVED / ACTIVE** with S0 **COMPLETE**. Issue #150 is the active bounded implementation task.
 
 ### S1 — Creator Script Package intake
 
-Only after S0 merge and an independently approved S1 Task Contract: implement explicit intake/re-import, exact Source membership preflight, immutable Script Versioning, exact human approve/reject Decision and restart/idempotency evidence.
+Issue #150 implements explicit intake/re-import, exact Source membership preflight, immutable Script Versioning, exact human approve/reject Decision and restart/idempotency evidence under its exact 34-path ownership.
 
 ### E1 — Narrative clock
 
@@ -245,15 +245,16 @@ Do not cherry-pick or merge the candidate wholesale before that review.
 
 ## 12. Verification strategy
 
-### Docs-only Issue #148
+### Issue #150 focused implementation
 
-- exact ten-file ownership including `GOAL.md`;
-- exact amended Goal/eight-default/S0-in-progress truth;
-- E0-complete and S1/E1-implementation-unauthorized status consistency;
+- exact 34-path ownership: 8 runtime, 20 tests/fixtures and 6 truth docs;
+- exact amended Goal/eight-default/S0-complete/S1-in-progress truth;
+- E0-complete and S1-in-progress status consistency, with E1/E2 still unauthorized;
 - Creator-package/source-membership/human-semantic-Decision wording consistency;
 - stale H3.5/H4 wording scan;
-- git diff --check;
-- no tests/full regression.
+- focused S1 package/decision/facade/web and modified compatibility checks;
+- controller-owned fresh repo-external local smoke, browser evidence for the three views and full regression once before merge;
+- compileall, git diff --check, exact ownership and prohibited-boundary scans.
 
 ### Later code tasks
 
@@ -287,4 +288,4 @@ No video-generation LLM/API, credential, fee/cap, subscription-credit use, deplo
 - loss/overwrite of the protected H4 candidate;
 - weakening Source/Script/Alignment/Sample/Final exact gates.
 
-Issue #148 plans the Script-input amendment only and does not dispatch Luna. After approval/merge of a future authoritative Goal amendment, proceed first to one S1 Task Contract; E1 remains paused until an exact approved Script exists through that path.
+Issue #150 uses the exact approved Luna route for bounded RED/focused implementation only. E1 remains paused until an exact approved Script exists through this path; final full regression, fresh smoke, browser evidence and merge are controller-owned.

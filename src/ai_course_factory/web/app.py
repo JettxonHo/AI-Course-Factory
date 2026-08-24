@@ -183,6 +183,7 @@ def create_app(
     source_connector: object | None = None,
     visual_import_dir: str | Path | None = None,
     generated_clips_directory: str | Path | None = None,
+    script_package_directory: str | Path | None = None,
     tts_configuration: GPTSoVITSConfiguration | None = None,
     local_narration_renderer: LocalNarrationRenderer | None = None,
 ) -> FastAPI:
@@ -197,14 +198,12 @@ def create_app(
             close()
 
     app = FastAPI(title="AI Course Factory Offline Workspace", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
-    # Construct lazily in the serving thread.  SQLite repositories intentionally
-    # belong to one app thread, while TestClient and Uvicorn may start serving
-    # on a different thread from the caller that built the ASGI app.
     app.state.course_factory = application
     app.state.course_factory_data_dir = configured_dir
     app.state.course_factory_source_connector = source_connector
     app.state.course_factory_visual_import_dir = visual_import_dir if visual_import_dir is not None else os.environ.get("AI_COURSE_FACTORY_VISUAL_IMPORT_DIR")
     app.state.course_factory_generated_clips_directory = generated_clips_directory
+    app.state.course_factory_script_package_directory = script_package_directory
     app.state.course_factory_tts_configuration = tts_configuration
     app.state.course_factory_local_narration_renderer = local_narration_renderer
     app.state.templates = templates
@@ -232,6 +231,7 @@ def create_app(
                 source_connector=app.state.course_factory_source_connector,
                 visual_import_dir=app.state.course_factory_visual_import_dir,
                 generated_clips_directory=app.state.course_factory_generated_clips_directory,
+                script_package_directory=app.state.course_factory_script_package_directory,
                 tts_configuration=app.state.course_factory_tts_configuration,
                 local_narration_renderer=app.state.course_factory_local_narration_renderer,
             )
@@ -281,7 +281,11 @@ def create_app(
             action = values.get("action")
             if action not in {"approve_script", "revise_script", "reject_script"}:
                 raise _FormError
-            facade().create_or_open()
+            current = facade().create_or_open()
+            if current.status != "success" or current.view is None:
+                return _failure_page(templates, request, "start.html", current)
+            if current.view.creator_script_package_id is not None and action == "revise_script":
+                return _failure_page(templates, request, "start.html", ApplicationResult("failure", current.view, "CREATOR_SCRIPT_REVISE_FORBIDDEN", "Creator Script revision happens outside the application; import a revised package."))
             normalized_action = {"approve_script": "approve", "revise_script": "revise", "reject_script": "reject"}[action]
             result = facade().submit_script_decision(normalized_action, decision_context=values.get("decision_context", ""))
         except _FormError:
@@ -290,9 +294,26 @@ def create_app(
             return _failure_page(templates, request, "start.html", None)
         if result.status != "success":
             return _failure_page(templates, request, "start.html", result)
+        if result.view is not None and (result.view.creator_script_package_id is not None or result.view.script_reference is None):
+            return RedirectResponse("/", status_code=303)
         if result.view is not None and result.view.stage == "script_review":
             return RedirectResponse("/", status_code=303)
         return RedirectResponse("/review", status_code=303)
+
+    @app.post("/start/script-package", response_class=HTMLResponse, name="script_package_import")
+    async def script_package_import(request: Request) -> Response:
+        try:
+            raw = await request.body()
+            if raw:
+                raise _FormError
+            result = facade().import_creator_script_package()
+        except _FormError:
+            return _failure_page(templates, request, "start.html", ApplicationResult("failure", None, "INVALID_SCRIPT_PACKAGE_FORM", "Creator Script intake accepts an empty form only."))
+        except Exception:
+            return _failure_page(templates, request, "start.html", None)
+        if result.status != "success":
+            return _failure_page(templates, request, "start.html", result)
+        return RedirectResponse("/", status_code=303)
 
     @app.get("/review", response_class=HTMLResponse, name="review")
     async def review_view(request: Request) -> Response:
@@ -302,6 +323,8 @@ def create_app(
             result = None
         if result is None or result.status != "success":
             return _failure_page(templates, request, "review.html", result)
+        if result.view is not None and (result.view.creator_script_package_id is not None or result.view.script_reference is None):
+            return RedirectResponse("/", status_code=303)
         return templates.TemplateResponse(request, "review.html", {"request": request, "view": result.view, "message": None})
 
     @app.post("/review/action", response_class=HTMLResponse, name="review_action")
@@ -314,6 +337,8 @@ def create_app(
             current = facade().inspect()
             if current.status != "success" or current.view is None:
                 return _failure_page(templates, request, "review.html", current)
+            if current.view.creator_script_package_id is not None:
+                return _failure_page(templates, request, "review.html", ApplicationResult("failure", current.view, "CREATOR_SCRIPT_REVIEW_UNAVAILABLE", "Creator Script review is available on the Start view only."))
             if action == "advance_planning" and current.view.stage == "planning":
                 result = facade().advance_planning()
             elif action == "approve_storyboard" and (
@@ -364,6 +389,8 @@ def create_app(
             result = None
         if result is None or result.status != "success":
             return _failure_page(templates, request, "final.html", result)
+        if result.view is not None and (result.view.creator_script_package_id is not None or result.view.script_reference is None):
+            return RedirectResponse("/", status_code=303)
         return templates.TemplateResponse(request, "final.html", {"request": request, "view": result.view, "message": None})
 
     @app.post("/final/action", response_class=HTMLResponse, name="final_action")
@@ -413,6 +440,7 @@ def main() -> None:
     parser.add_argument("--data-dir", required=True, help="explicit durable local data directory")
     parser.add_argument("--visual-import-dir", required=False, help="explicit directory containing scene-1.png through scene-6.png")
     parser.add_argument("--generated-clips-dir", required=False, help="explicit directory containing scene-1.mp4 through scene-6.mp4")
+    parser.add_argument("--script-package-dir", required=False, help="explicit directory containing creator-script.json")
     parser.add_argument("--tts-external-python", required=False)
     parser.add_argument("--tts-repository-root", required=False)
     parser.add_argument("--tts-repository-commit", required=False)
@@ -446,7 +474,7 @@ def main() -> None:
             reference_transcript=args.tts_reference_transcript,
             model_identifier=args.tts_model_identifier,
         )
-    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir, generated_clips_directory=args.generated_clips_dir, tts_configuration=tts_configuration), host="127.0.0.1", port=args.port, log_level="info")
+    uvicorn.run(create_app(args.data_dir, visual_import_dir=args.visual_import_dir, generated_clips_directory=args.generated_clips_dir, script_package_directory=args.script_package_dir, tts_configuration=tts_configuration), host="127.0.0.1", port=args.port, log_level="info")
 
 
 if __name__ == "__main__":  # pragma: no cover

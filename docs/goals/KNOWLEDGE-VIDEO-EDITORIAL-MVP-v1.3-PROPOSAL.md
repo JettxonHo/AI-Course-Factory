@@ -4,23 +4,23 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 DOCS ONLY IN PROGRESS; FEATURE IMPLEMENTATION UNAUTHORIZED** |
+| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 COMPLETE; S1 CREATOR SCRIPT PACKAGE IN PROGRESS** |
 | Product direction | Approved by Product Owner on 2026-08-24 |
 | Exact Goal | Approved by Product Owner on 2026-08-24 |
 | E0 evidence | Issue #143 CLOSED; PR #144 MERGED; main@47ac1e3 |
-| Script-input authority integration | Issue #148; exact amended Goal/defaults approved; S0 docs PR/merge pending |
-| Baseline | `main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307` |
+| Script-input authority integration | Issue #148 / PR #149 merged; S1 Issue #150 implementation in progress |
+| Baseline | `main@597f3a03e582cbccc099ad0810e17b0262a80d51` |
 | Preserves | FAST-MVP v1.1 completed history; Creator Handoff v1.2 implementation/evidence; protected H4/#142 candidate |
 
-This contract records the approved amended exact v1.3 Goal, the completed E0 baseline and the S0 docs-only authority integration now in progress. The Creator-authored Script Package contract and eight approved defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
+This contract records the approved amended exact v1.3 Goal, the completed E0 baseline and the merged S0 authority integration. The Creator-authored Script Package contract and eight approved defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
 
-Transition authority is explicit: `GOAL.md` now records the approved Creator-authored Script Package amendment and S0 **IN PROGRESS / DOCS ONLY**. There is no active feature implementation milestone. The former in-application Script-authoring path and paused E1 candidate remain unauthorized; Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
+Transition authority is explicit: `GOAL.md` records S0 **COMPLETE** and S1 **IN PROGRESS** through Issue #150. The former in-application Script-authoring path and paused E1 candidate remain unauthorized; Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
 
 ## 2. Approved amended exact Goal
 
 > Deliver one local Knowledge Video Editorial flow that acquires the supported exact public GitHub source; accepts a Creator-authored Script Package whose ordered narration units bind exact source locators and claim evidence; commits and human-approves one immutable Script Version; produces one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
 
-The Product Owner explicitly approved this exact amended wording, all eight Script-input defaults and S0 docs-only activation on 2026-08-24. Approval activates the amended Goal and S0 governance work; it does not authorize S1/E1 feature code or Luna dispatch.
+The Product Owner explicitly approved this exact amended wording and all eight Script-input defaults on 2026-08-24. S0 docs authority is merged through PR #149; Issue #150 is the separately approved S1 feature slice and does not authorize E1/E2 or Provider/model/credential/fee/deploy work.
 
 ## 3. Why the rebaseline is needed
 
@@ -131,15 +131,15 @@ Recorded D-010, preserved v1.1/v1.2 history and parked H4 external clips without
 
 ### S0 — Creator Script input rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** through Issue #148; amended exact Goal and defaults approved.
+Status: **COMPLETE** at `main@597f3a03e582cbccc099ad0810e17b0262a80d51`; Issue #148 CLOSED, PR #149 MERGED.
 
-Define the Creator-authored Script Package, single evidence ownership, exact Source shape, canonical logical equivalence, locked package ID, explicit intake/re-import, immutable Script Version and human semantic Decision ownership. This exact ten-doc candidate writes `GOAL.md` as **APPROVED / ACTIVE** while S0 remains **IN PROGRESS** until merge.
+Define the Creator-authored Script Package, single evidence ownership, exact Source shape, canonical logical equivalence, locked package ID, explicit intake/re-import, immutable Script Version and human semantic Decision ownership. The exact ten-doc authority set is merged and records `GOAL.md` as **APPROVED / ACTIVE**.
 
-Issue #148 owns exactly ten docs including `GOAL.md`. One docs PR integrates the approved amended Goal/defaults with S0 **IN PROGRESS**. Only the actual merge makes S0 **COMPLETE** and permits S1 planning; no status-only PR.
+Issue #148 owned exactly ten docs including `GOAL.md`; PR #149 merged them. S1 planning and implementation proceed only through the independently approved Issue #150 contract; no status-only PR.
 
 ### S1 — Creator Script Package intake
 
-After S0 merge and one independently approved Task Contract, implement the smallest explicit intake/re-import vertical. E1 remains paused until S1 produces one exact approved Script.
+Issue #150 implements the smallest explicit intake/re-import vertical. E1 remains paused until S1 produces one exact approved Script.
 
 ### E1 — Narrative clock
 
@@ -184,7 +184,7 @@ No reset, cleanup, overwrite, implicit merge or H4 completion claim is permitted
 
 ## 12. Authorization and stop conditions
 
-This approved amended Goal does not authorize feature implementation. Stop before S1/E1 coding or Luna dispatch until S0 is actually merged and one bounded S1 Task Contract startup gate is independently approved.
+S1 Issue #150 authorizes only its exact 34-path implementation and exact Luna route. Stop before E1/E2 coding, Provider/model/credential/fee/deploy, generic repository/schema changes or protected-candidate reuse.
 
 Later Task Contracts must independently validate:
 
@@ -198,4 +198,4 @@ Return to Product Owner review for a general Provider registry, cloud image/vide
 
 ## 13. Docs-first candidate boundary
 
-The current Issue #148 candidate owns exactly ten documentation files including `GOAL.md`. No tests or full regression are required; `git diff --check`, authority/schema/default wording checks and exact ownership are sufficient. It records the approved amended Goal and S0 **IN PROGRESS**, but must not prewrite S0 completion, PR merge or Issue closure.
+Issue #150 owns exactly 34 paths and requires RED/focused/compatibility checks, compileall, diff-check and exact ownership review. Final full regression, fresh smoke, browser evidence and merge/Issue-close facts remain controller-owned and pending.

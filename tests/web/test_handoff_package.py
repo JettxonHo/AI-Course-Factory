@@ -7,10 +7,12 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.persistence import FilesystemWorkspace
 from ai_course_factory.production import LocalNarrationPreflight, LocalNarrationResult
 from ai_course_factory.web import create_app
 
+from tests.legacy_v11_fixture import seed_legacy_script_review
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
 
 
@@ -37,6 +39,10 @@ class HandoffPackageWebTests(unittest.TestCase):
             still_dir = Path(stills)
             for index in range(1, 7):
                 (still_dir / f"scene-{index}.png").write_bytes(_PNG)
+            seed_app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector())
+            self.assertEqual(seed_app.start_source(SUPPORTED_REPOSITORY_URL).status, "success")
+            seed_legacy_script_review(seed_app)
+            seed_app.close()
             renderer = _FakeNarrationRenderer(FilesystemWorkspace(Path(directory) / "workspace"))
             client = TestClient(create_app(Path(directory), source_connector=FixtureSourceConnector(), visual_import_dir=still_dir, local_narration_renderer=renderer), base_url="http://127.0.0.1")
             headers = {"Origin": "http://127.0.0.1"}

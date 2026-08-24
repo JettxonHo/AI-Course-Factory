@@ -9,11 +9,18 @@ from fastapi.testclient import TestClient
 
 from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.web import create_app
-from tests.legacy_v11_fixture import seed_legacy_budget_review
+from tests.legacy_v11_fixture import seed_legacy_budget_review, seed_legacy_script_review
 from tests.source_fixture import SUPPORTED_REPOSITORY_URL, FixtureSourceConnector
 
 
 def _client(directory: str, *, source_started: bool = True) -> TestClient:
+    if source_started:
+        app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector())
+        if app.start_source(SUPPORTED_REPOSITORY_URL).status != "success":
+            raise AssertionError("source initialization failed")
+        seed_legacy_script_review(app)
+        app.close()
+        return TestClient(create_app(Path(directory), source_connector=FixtureSourceConnector()), base_url="http://127.0.0.1")
     client = TestClient(
         create_app(Path(directory), source_connector=FixtureSourceConnector()),
         base_url="http://127.0.0.1",
@@ -99,7 +106,8 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             self.assertIn(SUPPORTED_REPOSITORY_URL, start.text)
             self.assertIn("0123456789abcdef0123456789abcdef01234567", start.text)
             self.assertIn("lessons/1-Intro/README.md", start.text)
-            self.assertIn("script:episode-1 v1", start.text)
+            self.assertIn("Creator-authored Script Package", start.text)
+            self.assertIn("import_creator_script", start.text)
             self.assertEqual(len(connector.calls), 1)
 
     def test_warm_editorial_workspace_surfaces_stage_track_and_next_action(self) -> None:
@@ -395,9 +403,8 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
 
     def test_browser_process_reconstruction_keeps_the_current_gate(self) -> None:
         with TemporaryDirectory() as directory:
-            first_app = create_app(Path(directory), source_connector=FixtureSourceConnector())
-            first_client = TestClient(first_app, base_url="http://127.0.0.1")
-            _post(first_client, "/start/source", {"repository_url": SUPPORTED_REPOSITORY_URL})
+            first_client = _client(directory)
+            first_app = first_client.app
             _post(first_client, "/start/script", {"action": "approve_script"})
             first_app.state.course_factory.close()
 
