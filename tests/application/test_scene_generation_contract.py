@@ -8,6 +8,7 @@ import unittest
 from ai_course_factory.application import CourseFactoryApplication
 
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
+from tests.legacy_v11_fixture import seed_legacy_script_review
 
 
 def _app(directory: str | Path) -> CourseFactoryApplication:
@@ -15,6 +16,7 @@ def _app(directory: str | Path) -> CourseFactoryApplication:
     started = app.start_source(SUPPORTED_REPOSITORY_URL)
     if started.status != "success":
         raise AssertionError(started.error_message)
+    seed_legacy_script_review(app)
     return app
 
 

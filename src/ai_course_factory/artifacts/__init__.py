@@ -21,6 +21,13 @@ from .script_decision import (
     ScriptGateFinding,
 )
 from .sqlite_script_decision import SQLiteScriptDecisionRepository
+from .creator_script_decision import (
+    CreatorScriptDecisionBoundary,
+    CreatorScriptDecisionFailure,
+    CreatorScriptDecisionRecord,
+    CreatorScriptDecisionRepository,
+)
+from .sqlite_creator_script_decision import SQLiteCreatorScriptDecisionRepository
 from .storyboard_decision import (
     StoryboardDecisionBoundary,
     StoryboardDecisionFailure,
@@ -62,6 +69,11 @@ __all__ = [
     "StoryboardDecisionRepository",
     "SQLiteArtifactRepository",
     "SQLiteScriptDecisionRepository",
+    "CreatorScriptDecisionBoundary",
+    "CreatorScriptDecisionFailure",
+    "CreatorScriptDecisionRecord",
+    "CreatorScriptDecisionRepository",
+    "SQLiteCreatorScriptDecisionRepository",
     "SQLiteStoryboardDecisionRepository",
     "FinalVideoDecisionBoundary",
     "FinalVideoDecisionFailure",

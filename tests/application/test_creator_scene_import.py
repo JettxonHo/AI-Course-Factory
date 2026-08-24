@@ -12,6 +12,7 @@ from ai_course_factory.artifacts import ArtifactReference, ArtifactVersion
 from ai_course_factory.production import CreatorImportedFinalCandidateGate, CreatorImportedFinalCandidateGateResult, ProductionMediaFailure
 
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
+from tests.legacy_v11_fixture import seed_legacy_script_review
 from tests.integration.test_handoff_package import _FFmpegNarrationRenderer, _PNG
 
 
@@ -110,6 +111,7 @@ class CreatorSceneImportApplicationTests(unittest.TestCase):
             )
             app.local_narration_renderer = _FFmpegNarrationRenderer(app.workspace, ffmpeg, ffprobe)
             app.start_source(SUPPORTED_REPOSITORY_URL)
+            seed_legacy_script_review(app)
             app.submit_script_decision("approve")
             app.advance_planning()
             app.submit_storyboard_decision("approve")
@@ -177,6 +179,7 @@ class CreatorSceneImportApplicationTests(unittest.TestCase):
             app = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), generated_clips_directory=clips, visual_import_dir=stills)
             app.local_narration_renderer = _FFmpegNarrationRenderer(app.workspace, ffmpeg, ffprobe)
             self.assertEqual(app.start_source(SUPPORTED_REPOSITORY_URL).status, "success")
+            seed_legacy_script_review(app)
             self.assertEqual(app.submit_script_decision("approve").status, "success")
             self.assertEqual(app.advance_planning().status, "success")
             self.assertEqual(app.submit_storyboard_decision("approve").status, "success")

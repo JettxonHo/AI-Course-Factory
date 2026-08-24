@@ -10,8 +10,10 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.web import create_app
 from tests.integration.test_handoff_package import _FFmpegNarrationRenderer, _PNG
+from tests.legacy_v11_fixture import seed_legacy_script_review
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
 
 
@@ -63,6 +65,10 @@ class CreatorSceneImportWebTests(unittest.TestCase):
                     check=False,
                 )
                 self.assertEqual(completed.returncode, 0, completed.stderr.decode("utf-8", "replace"))
+            seed_app = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector())
+            self.assertEqual(seed_app.start_source(SUPPORTED_REPOSITORY_URL).status, "success")
+            seed_legacy_script_review(seed_app)
+            seed_app.close()
             app = create_app(root / "data", source_connector=FixtureSourceConnector(), visual_import_dir=stills, generated_clips_directory=clips)
             client = TestClient(app, base_url="http://127.0.0.1")
             # The app creates the facade lazily; inject the deterministic local

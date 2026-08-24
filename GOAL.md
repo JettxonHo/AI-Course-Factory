@@ -7,8 +7,8 @@
 | Status | **APPROVED / ACTIVE** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-24 |
-| Activation task | S0 Issue #148 on `codex/148-creator-script-package-docs`; docs PR/merge pending |
-| Planning baseline | `main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307` |
+| Activation task | S0 Issue #148 / PR #149 merged; S1 Issue #150 on `codex/150-creator-script-package-intake` |
+| Planning baseline | `main@597f3a03e582cbccc099ad0810e17b0262a80d51` |
 | Goal type | Local single-user Knowledge Video Editorial MVP |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED`; Creator Handoff v1.2 H0–H3.5 accepted foundation/history |
 
@@ -72,19 +72,19 @@ Outcome: established the narration-led editorial chain, A/B-roll semantics, cont
 
 ### S0 — Creator Script input rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** through Issue #148; docs PR/merge pending.
+Status: **COMPLETE** at `main@597f3a03e582cbccc099ad0810e17b0262a80d51`; Issue #148 CLOSED, PR #149 MERGED.
 
 Outcome: make this amended exact Goal, D-011, Creator-authored Script Package schema/lineage/intake semantics and the approved defaults below the repository execution truth in one exact ten-file docs change.
 
-Exit: the exact ten-doc Diff is independently reviewed and merged; Issue #148 closes with actual Git/GitHub facts. No feature code, UI, test, dependency, Luna or runtime action belongs to S0.
+Exit: the exact ten-doc Diff was independently reviewed and merged; Issue #148 is closed with actual Git/GitHub facts. S1 owns the next bounded feature slice.
 
 ### S1 — Creator Script Package intake
 
-Status: **BLOCKED ON S0 MERGE; PLANNING ONLY AFTER S0**.
+Status: **IN PROGRESS** through Issue #150; bounded implementation candidate on `codex/150-creator-script-package-intake`.
 
 Outcome: explicitly intake/re-import one fixed `creator-script.json`, validate exact Source membership, commit/select immutable Script Versions and record exact human approve/reject Decisions with restart/idempotency evidence.
 
-Entry: after S0 merges, create one bounded S1 Issue/Task Contract with exact ownership, RED/focused/full gates, compatibility and exact Luna route. S1 coding/Luna dispatch remains unauthorized until that startup gate is independently approved.
+Entry: S0 merged through PR #149; Issue #150 is the independently approved bounded S1 Task Contract with exact ownership, RED/focused/full gates, compatibility and exact Luna route. Final merge/closure evidence remains pending.
 
 ### E1 — Narrative clock
 
@@ -125,13 +125,13 @@ Outcome: render the complete video from approved exact inputs, complete named-hu
 
 ## 8. Authorized Scope
 
-Current authorization is S0 only:
+Current authorization is S1 Issue #150 only:
 
-- update the exact ten documentation files owned by Issue #148, including this `GOAL.md`;
-- independently review the docs Diff and run ownership/authority/stale-wording/`git diff --check` gates;
-- commit, push, create one ready docs PR, merge after review and close Issue #148.
+- implement the exact 34 paths owned by Issue #150;
+- run RED/focused/compatibility checks, compileall, diff-check and exact ownership review;
+- keep Provider/model/credential/fee/deploy, E1/E2, generic repository/schema changes and protected candidates out of scope.
 
-After S0 merge, authorization advances only to S1 planning and one Task Contract startup review. It does not directly authorize S1/E1 code or Luna dispatch.
+S1 implementation does not authorize E1/E2, Provider/model/credential/fee/deploy, or protected-candidate reuse; the main controller owns final full regression and merge gates.
 
 ## 9. Explicit Non-goals
 

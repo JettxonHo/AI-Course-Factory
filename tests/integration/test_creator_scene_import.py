@@ -9,6 +9,7 @@ import unittest
 from ai_course_factory.application import CourseFactoryApplication
 from tests.integration.test_handoff_package import _FFmpegNarrationRenderer, _PNG
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
+from tests.legacy_v11_fixture import seed_legacy_script_review
 
 
 class CreatorSceneImportRestartIntegrationTests(unittest.TestCase):
@@ -31,8 +32,10 @@ class CreatorSceneImportRestartIntegrationTests(unittest.TestCase):
                 self.assertEqual(completed.returncode, 0, completed.stderr.decode("utf-8", "replace"))
             first = CourseFactoryApplication(root / "data", source_connector=FixtureSourceConnector(), generated_clips_directory=clips, visual_import_dir=stills)
             first.local_narration_renderer = _FFmpegNarrationRenderer(first.workspace, ffmpeg, ffprobe)
+            started = first.start_source(SUPPORTED_REPOSITORY_URL)
+            self.assertEqual(started.status, "success", started.error_message)
+            seed_legacy_script_review(first)
             for result in (
-                first.start_source(SUPPORTED_REPOSITORY_URL),
                 first.submit_script_decision("approve"),
                 first.advance_planning(),
                 first.submit_storyboard_decision("approve"),

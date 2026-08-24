@@ -8,24 +8,24 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.web import create_app
+from tests.legacy_v11_fixture import seed_legacy_script_review
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
 
 
+def _legacy_app(directory: str):
+    seed_app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector())
+    started = seed_app.start_source(SUPPORTED_REPOSITORY_URL)
+    if started.status != "success":
+        raise AssertionError(started.error_message)
+    seed_legacy_script_review(seed_app)
+    seed_app.close()
+    return create_app(Path(directory), source_connector=FixtureSourceConnector())
+
+
 def _client(directory: str) -> TestClient:
-    client = TestClient(
-        create_app(Path(directory), source_connector=FixtureSourceConnector()),
-        base_url="http://127.0.0.1",
-    )
-    started = client.post(
-        "/start/source",
-        data={"repository_url": SUPPORTED_REPOSITORY_URL},
-        headers={"Origin": "http://127.0.0.1"},
-        follow_redirects=False,
-    )
-    if started.status_code != 303:
-        raise AssertionError(started.text)
-    return client
+    return TestClient(_legacy_app(directory), base_url="http://127.0.0.1")
 
 
 def _post(client: TestClient, path: str, data: dict[str, str]):
@@ -89,7 +89,7 @@ class SceneGenerationContractWebTests(unittest.TestCase):
 
     def test_repeated_storyboard_approval_post_replays_after_restart_without_new_versions(self):
         with TemporaryDirectory() as directory:
-            first_app = create_app(Path(directory), source_connector=FixtureSourceConnector())
+            first_app = _legacy_app(directory)
             first_client = TestClient(first_app, base_url="http://127.0.0.1")
             started = _post(
                 first_client,

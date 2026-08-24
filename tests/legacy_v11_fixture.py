@@ -8,11 +8,14 @@ production legacy API or assigning a Scene Generation Contract to v1.1 data.
 
 from __future__ import annotations
 
-from ai_course_factory.agents import ProductionAgent
+from ai_course_factory.agents import ContentAgent, ContentTaskContext, EpisodeTemplateConstraint, KnowledgeAgent, KnowledgeTaskContext, ProductionAgent
 from ai_course_factory.application.facade import CREATOR_ID, TASK_ID, THREAD_ID, _OfflineRuntime, _State
 from ai_course_factory.artifacts import ScriptDecisionRecord, StoryboardDecisionBoundary, StoryboardDecisionRecord
 from ai_course_factory.application.media_task import TaskMediaProjectionService
+from ai_course_factory.application.script_review import ScriptReviewApplicationService
+from ai_course_factory.artifacts import ScriptDecisionBoundary
 from ai_course_factory.production import BudgetModule, RetryPolicy
+from ai_course_factory.workflow import ScriptReviewWorkflow
 
 
 def seed_legacy_budget_review(app):
@@ -21,6 +24,8 @@ def seed_legacy_budget_review(app):
     opened = app.create_or_open()
     if opened.status == "source_required":
         raise AssertionError("source must be initialized before seeding")
+    if "script" not in (app._load_state().refs if app._load_state() is not None else {}):
+        seed_legacy_script_review(app)
     if app.submit_script_decision("approve").status != "success":
         raise AssertionError("Script approval failed")
     planning = app.advance_planning()
@@ -122,4 +127,53 @@ def seed_legacy_budget_review(app):
     restored = app._load_state()
     if restored is None or restored.stage != "budget_review" or restored.pending_action != "approve_budget" or "scene_generation_contract" in restored.refs:
         raise AssertionError("legacy v1.1 budget checkpoint did not persist as schema-1 state")
+    return app
+
+
+def seed_legacy_script_review(app):
+    """Build the historical v1.1 Script lineage explicitly for compatibility tests."""
+
+    state = app._load_state()
+    if state is None or "source" not in state.refs:
+        raise AssertionError("source must be initialized before seeding legacy Script")
+    if "script" in state.refs:
+        return app
+    prepared = app.workspace.prepare(TASK_ID)
+    if not hasattr(prepared, "task_id"):
+        raise AssertionError("legacy workspace could not be prepared")
+    source_reference = state.refs["source"]
+    source = app.artifacts.get(source_reference)
+    runtime = _OfflineRuntime()
+    knowledge_candidate = KnowledgeAgent(runtime).invoke(
+        source_reference, source,
+        context=KnowledgeTaskContext("AI-For-Beginners", "Lesson 1", "English", "adult AI beginners"),
+        identity="knowledge:episode-1", commit_id="knowledge:episode-1", knowledge_boundary="traceable-source-only",
+    )
+    knowledge_reference = app.artifacts.commit(knowledge_candidate)
+    knowledge = app.artifacts.get(knowledge_reference)
+    context = ContentTaskContext("adult AI beginners", "小土豆学 AI", 1, "AI不是魔法", "Simplified Chinese", "Explain why AI is not magic.")
+    template = EpisodeTemplateConstraint(6, 60, "9:16")
+    plans = ContentAgent(runtime).plan(
+        knowledge_reference, knowledge, context=context, template=template,
+        course_identity="course-plan:episode-1", episode_identity="episode-plan:episode-1",
+        course_commit_id="course-plan:episode-1", episode_commit_id="episode-plan:episode-1",
+    )
+    course_reference = app.artifacts.commit(plans.course)
+    episode_reference = app.artifacts.commit(plans.episode)
+    script_candidate = ContentAgent(runtime).script(
+        knowledge_reference, knowledge, course_reference, app.artifacts.get(course_reference),
+        episode_reference, app.artifacts.get(episode_reference), context=context, template=template,
+        script_identity="script:episode-1", script_commit_id="script:episode-1",
+    )
+    script_reference = app.artifacts.commit(script_candidate)
+    result = ScriptReviewApplicationService(
+        app.artifacts, ScriptDecisionBoundary(app.script_decisions), ScriptReviewWorkflow(app.artifacts, app.checkpoints)
+    ).start(TASK_ID, f"{THREAD_ID}-v{script_reference.version}", script_reference)
+    if result.status == "failure":
+        raise AssertionError(result.error_message)
+    app._save_state(_State(
+        TASK_ID, "script_review", "approve_script",
+        {"source": source_reference, "knowledge": knowledge_reference, "course_plan": course_reference, "episode_plan": episode_reference, "script": script_reference},
+        {}, None, None, None, None, None, state.replacement_done, state.visual_mode, state.tts_mode,
+    ))
     return app

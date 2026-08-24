@@ -18,9 +18,9 @@ Read in this order:
 
 - **FAST-MVP v1.1** — completed historical family with accepted local Source-to-Publish evidence.
 - **Creator Handoff MVP v1.2** — H0–H3.5 are implemented/accepted foundation capabilities; H4 never completed. The six-external-MP4 generation/import acceptance path is PARKED by D-010, while its exact lineage, handoff, import and restart behavior remain reusable evidence.
-- **Knowledge Video Editorial MVP v1.3** — E0 is complete at `main@47ac1e3` through Issue #143 / PR #144. The Product Owner approved the Creator-authored Script Package amended exact Goal, eight defaults and S0 docs-only activation. Issue #148 is integrating that authority; no feature implementation milestone is active.
+- **Knowledge Video Editorial MVP v1.3** — E0 is complete through Issue #143 / PR #144; S0 is complete at `main@597f3a03e582cbccc099ad0810e17b0262a80d51` through Issue #148 / PR #149. Issue #150 is the active bounded S1 Creator Script Package intake/review implementation.
 
-`GOAL.md` now records the approved amended v1.3 execution truth with S0 **IN PROGRESS / DOCS ONLY**. It does not authorize S1/E1 implementation or the older `_OfflineRuntime` Script-authoring path. Creator Handoff H4 stays PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
+`GOAL.md` records S0 **COMPLETE** and S1 **IN PROGRESS** through Issue #150. S1 does not authorize E1/E2, Provider/model/credential/fee/deploy, or the older `_OfflineRuntime` Script-authoring path. Creator Handoff H4 stays PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
 
 ## 3. Approved primary direction
 
@@ -28,7 +28,7 @@ The approved amended chain is Source → explicit Creator-authored Script Packag
 
 The current Goal contract remains in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md). The approved Script-input amendment, alternatives and defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
 
-The approved contract freezes one evidence owner (top-level claims), a package-owned ordered file projection derived from GitHub SourceRecord units without changing SourceRecord, one canonical JSON-value rule and one `script_package_id` lineage. Every Script Version persistently owns the complete canonical package; changed imports require a new Decision. The #148 S0 contract owns exactly ten docs including `GOAL.md`; only the merged authoritative docs PR permits S1 planning.
+The approved contract freezes one evidence owner (top-level claims), a package-owned ordered file projection derived from GitHub SourceRecord units without changing SourceRecord, one canonical JSON-value rule and one `script_package_id` lineage. Every Script Version persistently owns the complete canonical package; changed imports require a new Decision. S1 Issue #150 owns the exact 34-path implementation slice; the main controller owns final full regression and merge gates.
 
 ## 4. Conflict rule
 

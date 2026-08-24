@@ -57,8 +57,8 @@
       <h2>脚本阅读</h2>
       <p>先核对每个场景的讲述，再决定是否进入制作与回导。</p>
       <p class="rail-kicker">当前状态</p>
-      <strong class="status-chip">{% if view.stage == "script_review" %}待确认脚本{% elif view.stage == "planning" %}脚本已通过{% else %}内容已完成{% endif %}</strong>
-      <a class="rail-link" href="/review">查看制作与回导</a>
+      <strong class="status-chip">{% if view.pending_action == "import_creator_script" %}等待导入{% elif view.stage == "script_review" %}待确认脚本{% elif view.stage == "planning" %}脚本已通过{% else %}内容已完成{% endif %}</strong>
+      {% if view.script_reference and not view.creator_script_package_id %}<a class="rail-link" href="/review">查看制作与回导</a>{% endif %}
     </aside>
 
     <div class="work-column">
@@ -67,10 +67,37 @@
         <div>
           <p class="eyebrow">当前任务</p>
           <h2 id="task-title">小土豆学 AI · 第 01 集</h2>
-          <p class="stage-context">脚本版本：{{ view.script_reference.identity }} v{{ view.script_reference.version }}</p>
+          {% if view.script_reference %}<p class="stage-context">脚本版本：{{ view.script_reference.identity }} v{{ view.script_reference.version }}</p>{% else %}<p class="stage-context">当前尚未导入 Creator-authored Script Package。</p>{% endif %}
         </div>
       </header>
 
+      {% if not view.script_reference %}
+      <article class="script-reader" aria-labelledby="script-reader-title">
+        <div class="section-heading"><div><p class="eyebrow">输入准备</p><h3 id="script-reader-title">Creator-authored Script Package</h3></div><span class="status-label">等待固定文件</span></div>
+        <p>应用只读取已配置目录中的固定 <code>creator-script.json</code>，不会扫描路径、上传文件或代写脚本。</p>
+      </article>
+      {% elif view.creator_script_package_id %}
+      <article class="script-reader" aria-labelledby="script-reader-title">
+        <div class="section-heading"><div><p class="eyebrow">主要阅读区</p><h3 id="script-reader-title">Creator Script · {{ view.creator_script_package_id }}</h3></div><span class="status-label">{{ view.creator_script_narration_units|length }} 段旁白</span></div>
+        {% if view.creator_script_provenance %}<p class="decision-copy">创作者声明：{{ view.creator_script_provenance.creator_declared_name }} · {{ view.creator_script_provenance.creator_role }} · {{ view.creator_script_provenance.tool_name }}（未验证身份）</p>{% endif %}
+        {% if view.creator_script_claims %}
+        <section class="claim-evidence" aria-labelledby="claim-evidence-title">
+          <div class="section-heading compact-heading"><div><p class="eyebrow">事实依据</p><h4 id="claim-evidence-title">声明与来源依据</h4></div><span class="status-label">{{ view.creator_script_claims|length }} 条声明</span></div>
+          <ol class="claim-list">
+            {% for claim in view.creator_script_claims %}
+            <li>
+              <div class="claim-copy"><strong>{{ claim.claim_id }}</strong><p>{{ claim.statement }}</p></div>
+              <ul class="evidence-list">
+                {% for locator in claim.evidence_locators %}<li><code>{{ locator }}</code></li>{% endfor %}
+              </ul>
+            </li>
+            {% endfor %}
+          </ol>
+        </section>
+        {% endif %}
+        <ol class="scene-list script-scenes">{% for unit in view.creator_script_narration_units %}<li><span class="scene-number" aria-hidden="true">{{ "%02d"|format(loop.index) }}</span><div class="scene-copy"><strong>{{ unit.unit_id }}</strong><p>{{ unit.text }}</p></div><span class="scene-status">已绑定依据</span></li>{% endfor %}</ol>
+      </article>
+      {% else %}
       <article class="script-reader" aria-labelledby="script-reader-title">
         <div class="section-heading">
           <div>
@@ -89,6 +116,7 @@
           {% endfor %}
         </ol>
       </article>
+      {% endif %}
 
     </article>
 
@@ -96,10 +124,20 @@
 
     <aside class="context-rail" data-workbench-slot="action" aria-label="脚本状态与下一步">
       <p class="eyebrow">当前状态</p>
-      <h3>{% if view.stage == "script_review" %}待确认脚本{% elif view.stage == "planning" %}脚本已通过{% else %}内容已完成{% endif %}</h3>
-      <p class="decision-copy">{% if view.stage == "script_review" %}确认这份有来源依据的脚本后，才能生成分镜方案。{% elif view.stage == "planning" %}脚本事实已保留，下一步进入制作与回导。{% else %}当前任务的脚本和来源依据仍可查阅。{% endif %}</p>
+      <h3>{% if view.pending_action == "import_creator_script" %}等待导入 Creator Package{% elif view.stage == "script_review" %}待确认脚本{% elif view.stage == "planning" %}脚本已通过{% else %}内容已完成{% endif %}</h3>
+      <p class="decision-copy">{% if view.pending_action == "import_creator_script" %}从配置目录读取固定 creator-script.json，完成结构与来源绑定校验。{% elif view.stage == "script_review" %}确认这份有来源依据的脚本后，才能进入后续阶段。{% elif view.stage == "planning" %}脚本事实已保留，下一步等待后续已批准的 E1。{% else %}当前任务的脚本和来源依据仍可查阅。{% endif %}</p>
 
-      {% if view.stage == "script_review" %}
+      {% if view.pending_action == "import_creator_script" %}
+      <form class="rail-form" method="post" action="/start/script-package">
+        <button class="button button-primary" type="submit">导入 / 重新导入 Creator Package</button>
+      </form>
+      {% elif view.stage == "script_review" and view.creator_script_package_id %}
+      <form class="rail-form" method="post" action="/start/script">
+        <button class="button button-primary" type="submit" name="action" value="approve_script">通过 Creator Script</button>
+        <div class="secondary-actions"><button class="button button-tertiary" type="submit" name="action" value="reject_script">退回 Creator Script</button></div>
+        <label class="field" for="script-context">退回说明<textarea id="script-context" name="decision_context" rows="3" maxlength="128" placeholder="退回时填写；通过时可留空。"></textarea></label>
+      </form>
+      {% elif view.stage == "script_review" %}
       <form class="rail-form" method="post" action="/start/script">
         <button class="button button-primary" type="submit" name="action" value="approve_script">通过脚本</button>
         <div class="secondary-actions">
@@ -110,10 +148,10 @@
           <textarea id="script-context" name="decision_context" rows="3" maxlength="128" placeholder="修改或退回时填写；通过时可留空。"></textarea>
         </label>
       </form>
-      {% elif view.stage == "planning" %}
+      {% elif view.stage == "planning" and not view.creator_script_package_id %}
       <a class="button button-primary" href="/review">前往制作</a>
       {% else %}
-      <a class="button button-primary" href="/review">前往制作</a>
+      <span class="status-label">当前阶段没有可执行动作</span>
       {% endif %}
 
     </aside>

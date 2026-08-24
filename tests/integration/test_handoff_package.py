@@ -20,6 +20,7 @@ from ai_course_factory.production import (
 )
 
 from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
+from tests.legacy_v11_fixture import seed_legacy_script_review
 
 
 _PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")
@@ -54,6 +55,7 @@ class HandoffPackageIntegrationTests(unittest.TestCase):
             renderer = _FFmpegNarrationRenderer(app.workspace, ffmpeg, ffprobe)
             app.local_narration_renderer = renderer
             app.start_source(SUPPORTED_REPOSITORY_URL)
+            seed_legacy_script_review(app)
             app.submit_script_decision("approve")
             app.advance_planning()
             app.submit_storyboard_decision("approve")

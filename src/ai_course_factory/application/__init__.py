@@ -32,6 +32,20 @@ from .media_task import (
 )
 from .sqlite_media_task import SQLiteTaskMediaRepository
 from .facade import ApplicationDownload, ApplicationResult, ApplicationView, CourseFactoryApplication, GenerationEntryView, PromptCard, SceneView
+from .script_package import (
+    CreatorScriptClaim,
+    CreatorScriptNarrationUnit,
+    CreatorScriptPackage,
+    CreatorScriptPackageApplicationService,
+    CreatorScriptPackageFailure,
+    CreatorScriptPackageResult,
+    CreatorScriptProvenance,
+    MAX_PACKAGE_BYTES,
+    PACKAGE_FILENAME,
+    PACKAGE_SCHEMA,
+    PACKAGE_VERSION,
+    parse_creator_script_package,
+)
 
 __all__ = [
     "InMemoryTaskRepository",
@@ -67,4 +81,16 @@ __all__ = [
     "GenerationEntryView",
     "PromptCard",
     "SceneView",
+    "CreatorScriptClaim",
+    "CreatorScriptNarrationUnit",
+    "CreatorScriptPackage",
+    "CreatorScriptPackageApplicationService",
+    "CreatorScriptPackageFailure",
+    "CreatorScriptPackageResult",
+    "CreatorScriptProvenance",
+    "MAX_PACKAGE_BYTES",
+    "PACKAGE_FILENAME",
+    "PACKAGE_SCHEMA",
+    "PACKAGE_VERSION",
+    "parse_creator_script_package",
 ]
