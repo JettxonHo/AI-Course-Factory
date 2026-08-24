@@ -7,13 +7,14 @@ AI Course Factory 是一个本地优先的知识视频制作应用。它把公�
 - FAST-MVP v1.1 是已完成的本地历史基线。
 - Creator Handoff MVP v1.2 已交付 H0–H3.5 的 Source、Script/Storyboard、Handoff、creator-import、确定性合成和三页中文工作台能力；H4 未完成。
 - Issue #141/#142 的 H4 候选保留了已独立通过的 Final checklist 与 source-grounded content correction，但外部六段视频生成/导入主路径已被 Product Owner **PARK**。
-- Knowledge Video Editorial MVP v1.3 exact Goal 已由 Product Owner 正式批准，状态为 **APPROVED / ACTIVE**。当前唯一 active milestone 是 Issue #143 的 E0 权威文档收口；feature implementation 与 E1 Luna/编码仍未授权。
+- Knowledge Video Editorial MVP v1.3 的 E0 已通过 Issue #143 / PR #144 合并到 `main@47ac1e3`。Product Owner 已批准 Creator-authored Script Package amended exact Goal、八项默认值与 S0 docs-only 激活；Issue #148 正在完成 S0 权威文档集成，当前没有 active feature implementation milestone。
 
-推荐的新主链候选是：
+批准的新主链是：
 
 ```text
 exact Source
-  -> approved grounded Script
+  -> explicit Creator-authored Script Package intake
+  -> exact human-approved Script Version
   -> one continuous Whole Narration
   -> phrase-level millisecond Acoustic Alignment
   -> human-approved Visual Edit Plan
@@ -26,7 +27,9 @@ exact Source
 
 MVP 不使用视频生成 LLM/API。Codex Desktop ImageGen 只在应用外提供 creator-supplied 静态角色、场景和道具；应用继续拥有 Narration、Alignment、SRT 和审核事实。HyperFrames 或等价确定性渲染 seam 仍需后续独立 Task Contract 论证，本规划任务不会安装或运行它。
 
-正式合同见 [Knowledge Video Editorial MVP v1.3 Goal Contract](docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md) 与 [GOAL.md](GOAL.md)。Issue #143 正把已批准 Goal 与 D-010 转成一个九文件 E0 docs PR；在该 PR 合并前不得提前声明 E0 已完成。外部六 MP4 H4 路径继续 PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE。
+现行已批准合同见 [Knowledge Video Editorial MVP v1.3 Goal Contract](docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md)、[Creator-authored Script Package 重基线](docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md) 与 [GOAL.md](GOAL.md)。Issue #148 只激活 S0 docs-only 集成；S1/E1 实现仍未授权。外部六 MP4 H4 路径继续 PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE。
+
+候选 schema v1 以 top-level claims 独占 evidence locator，narration units 只引用 claim IDs；package repository URL/identity/commit 与 GitHub SourceRecord 字段相等，`files[{path, blob_sha}]` 则是从 units 首次出现顺序派生的 package-owned unique projection，不改 SourceRecord shape。首个 accepted package 锁定稳定 `script_package_id`，完整 canonical package 持久绑定在 Script Version 中；Creator 信息只作为 declared provenance，不是认证身份。
 
 ## 当前可运行的已实现能力
 
@@ -63,14 +66,14 @@ Codex 和开发者按以下顺序阅读：
 PYTHONPATH=src uv run python -m unittest discover -s tests -v
 ```
 
-Issue #143 是纯文档 E0 权威化任务，不运行 full regression。它只要求 exact nine-doc ownership、Goal/authority/stale wording review 与 `git diff --check`。
+Issue #148 是纯文档 Script-input 权威集成，不运行 full regression。它只要求 exact ten-doc ownership、authority/stale wording review、approved Goal/default truth 与 `git diff --check`；合并前 S0 保持 IN PROGRESS。
 
 ## 权威文档
 
 - [PRD](docs/product/PRD.md)：产品价值、行为和验收候选。
 - [System Spec](docs/spec/SYSTEM-SPEC.md)：系统 ownership、事实与 gate 候选。
 - [Implementation Spec](docs/spec/IMPLEMENTATION-SPEC.md)：复用、物理方向和验证策略候选。
-- [Decision Log](docs/decision-log.md)：D-010 及保留的历史决策。
+- [Decision Log](docs/decision-log.md)：D-010、D-011 及保留的历史决策。
 - [Development Workflow](docs/DEVELOPMENT-WORKFLOW.md)：Goal、Luna、Issue、PR 和验收协作。
 
 历史 Phase 与 Creator Handoff 文档继续保留为实现和决策证据，不作为 v1.3 实施授权。

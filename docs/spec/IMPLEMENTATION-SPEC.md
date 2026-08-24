@@ -4,34 +4,36 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **APPROVED / ACTIVE GOAL — E0 DOCS ONLY; FEATURE IMPLEMENTATION UNAUTHORIZED** |
-| Product direction | Approved by Product Owner, 2026-08-24 |
-| Exact Goal | Approved by Product Owner on 2026-08-24 |
+| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 DOCS ONLY IN PROGRESS; FEATURE IMPLEMENTATION UNAUTHORIZED** |
+| Product direction | Creator-authored Script Package direction approved by Product Owner, 2026-08-24 |
+| Exact amended Goal | Approved by Product Owner, 2026-08-24 |
 | Product contract | docs/product/PRD.md |
 | System contract | docs/spec/SYSTEM-SPEC.md |
-| Planning baseline | main@d301efd8494029e8b8eae5001050974a67778937 |
-| Planning Issue | #143, docs-only |
+| Planning baseline | main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307 |
+| Planning Issue | #148, docs-only |
 | Runtime baseline | Python >=3.12,<3.13; existing external GPT-SoVITS Python 3.11 boundary |
 
-No source, UI, test, dependency or runtime change is authorized by this candidate.
+No source, UI, test, dependency or runtime change is authorized by S0.
 
 ## 2. Current implementation audit
 
 | Current implementation | Proposed treatment |
 | --- | --- |
-| GitHub Source connector, Knowledge claims and Script decisions | Reuse directly. |
-| Protected H4 exact-source Script/Storyboard correction | Preserve untouched; later line-level disposition may reuse Source/Script content. |
+| GitHub Source connector and normalized Source Record | Reuse exact identity/commit/blob/unit/locator facts. |
+| `_OfflineRuntime` Script author/reviser | Keep only as historical/test compatibility; do not use as the v1.3 primary authoring path. |
+| Script Artifact/Decision repositories | Reuse immutable Version, prior reference and exact approve/reject semantics. |
+| Protected H4 and rejected #145/#146/#147 candidates | Preserve untouched; do not copy/cherry-pick/merge as Script input. |
 | Six per-Scene narration files | Keep readable for v1.2; do not relabel as Whole Narration. |
-| Six fixed ten-second Timeline entries | Keep historical; Acoustic Alignment becomes the proposed time authority. |
+| Six fixed ten-second Timeline entries | Keep historical; Acoustic Alignment is the approved time authority. |
 | Scene Generation Contract/Handoff Package | Keep reusable lineage/content evidence; no longer primary production plan/package. |
 | Creator MP4 importer and committed composition | Keep compatibility/future special-shot seam; park as primary Goal. |
 | Artifact/Decision/Task/Workspace repositories | Reuse and deepen only as exact vertical tasks require. |
 | Final Decision/Publish Package | Reuse with new exact editorial lineage. |
 | Three Simplified-Chinese Jinja views | Reuse as control surfaces with changed responsibilities, not new routes. |
 
-The current code does not implement Whole Narration, phrase-level alignment, Visual Edit Plan, Sample approval or deterministic editorial rendering. Documentation must not imply otherwise.
+The current merged code does not implement Creator-authored Script Package intake, Whole Narration, phrase-level alignment, Visual Edit Plan, Sample approval or deterministic editorial rendering. Dirty/rejected candidates do not change that fact.
 
-`GOAL.md` now records v1.3 as APPROVED / ACTIVE and E0 as docs-only IN PROGRESS. Creator Handoff H4 stays PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE. No E1 code or Luna dispatch is authorized before E0 merge and a separately approved E1 Task Contract.
+E0 is complete through Issue #143 / PR #144. The Product Owner approved the Creator-authored Script Package amended exact Goal, eight defaults and S0 docs-only activation. Issue #148 owns the exact ten-doc authority integration; no S1/E1 code, Luna dispatch or dirty-candidate integration is authorized before S0 merge and a separately approved Task Contract.
 
 ## 3. Recommended physical direction
 
@@ -41,6 +43,7 @@ Prefer a small editorial spine over reinterpretation of Scene/Attempt-shaped con
 web
   -> application facade
        -> current source/script services
+       -> bounded creator-script-package intake
        -> whole-narration boundary
        -> acoustic-alignment boundary
        -> visual-edit-plan service
@@ -49,7 +52,7 @@ web
   -> current repositories + workspace
 ~~~
 
-Later Task Contracts choose whether narration/alignment/plan/render live by deepening existing production/packaging modules or one cohesive editorial module. E0 does not freeze directories, class names or public method signatures.
+Later Task Contracts choose whether narration/alignment/plan/render live by deepening existing production/packaging modules or one cohesive editorial module. Issue #148 freezes product semantics, not private class names or public method signatures.
 
 Dependency direction remains:
 
@@ -60,6 +63,25 @@ local adapters -> explicit external runtimes/tools
 ~~~
 
 The UI does not see renderer component trees, alignment-library objects, Provider SDK types or repository mechanics.
+
+### Creator Script Package intake boundary
+
+Approved MVP default is one operator-configured directory and one fixed `creator-script.json`, triggered by an explicit same-origin Start-page POST. No browser path, multipart upload, textarea authoring, file manager or common-folder scan is required.
+
+A later S1 Task Contract should add one adjacent bounded importer/service, not a Provider or generic registry. Before any Workspace, Artifact or state write it must:
+
+- open only the fixed regular non-symlink file under the configured root;
+- enforce bounded bytes, UTF-8 JSON, no duplicate object keys, exact schema/version and the closed eight-field top-level set;
+- require current `SourceRecord.source_kind=github`; compare package repository URL/identity/commit to the corresponding record fields; derive ordered-unique package `source.files[{path, blob_sha}]` from `SourceRecord.units` in first-occurrence order, rejecting one path with different blobs and without changing SourceRecord shape;
+- require ordered top-level claims with exact `{claim_id, statement, evidence_locators}` as the sole evidence owner, with every locator byte-for-byte present in `SourceRecord.units[].locator`;
+- require ordered narration units with exact `{unit_id, text, claim_ids}`, at least one resolvable claim per unit and no unit-level locators;
+- require creator-declared provenance (`creator_declared_name`, `creator_role`, `tool_name`; optional `tool_version`, `session`, `project`) without authentication claims;
+- reject raw prompts, secrets, runtime configuration and implicit/latest references;
+- produce one complete immutable Script candidate or a safe failure with no partial Version/state visibility.
+
+Canonical logical equivalence is parsed JSON-value equality: whitespace and object-key order do not participate; array order and every accepted field/nested value do. The accepted Script Artifact payload/provenance persistently contains the complete validated package under exact `script_package`; its public narration/claims/source/provenance projections read from that binding. The first accepted package locks the Task/Source lineage to its stable `script_package_id`. Same ID/same canonical value returns the exact current Script ref and Decision with zero commit. Same ID/changed value commits/selects the next Version with `prior_reference`; the old Decision remains historical, the new Version is unapproved and E1 remains closed. Only invalid, foreign Source/locator or different-ID conflict preserves prior Script selection and Decision unchanged. Restart comparison uses committed `script_package`, not a reconstructed subset; inspection requires no configured directory, while new intake/re-import does.
+
+Validation proves shape, identity, locator membership and reference completeness. It does not infer whether a claim is true, whether a locator supports the narration, or whether teaching quality is good. v1.3 exposes only exact approve/reject; reject requires bounded context and external revision/re-import. Historical revise remains readable but cannot invoke `_OfflineRuntime` or qualify the current v1.3 Script.
 
 ## 4. Whole Narration implementation boundary
 
@@ -172,17 +194,27 @@ Route names may remain for compatibility; presentation labels and permitted acti
 
 Component libraries do not replace this design gate. Agent’s Design is for handoff after selection.
 
-## 10. Proposed delivery sequence
+## 10. Approved delivery sequence
 
 ### E0 — Truth rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** through Issue #143; PR/merge pending.
+Status: **COMPLETE** at `main@47ac1e3`; Issue #143 CLOSED, PR #144 MERGED.
 
-Integrate the approved exact Goal across GOAL/STATUS/Specs/Decision Log in one nine-doc PR; park Issues #141/#142 with an explicit not-complete disposition after merge; preserve their Diff/evidence.
+Integrated the narration-led editorial Goal and honestly parked Issues #141/#142 without marking H4 complete.
+
+### S0 — Script-input truth rebaseline
+
+Status: **IN PROGRESS / DOCS ONLY** through Issue #148; amended exact Goal and defaults approved.
+
+The exact ten-doc candidate records Creator-authored Script Package ownership, intake semantics, options and stop conditions and writes the amended `GOAL.md` **APPROVED / ACTIVE** with S0 **IN PROGRESS**. Only its actual merge permits S0 **COMPLETE** and S1 planning; no status-only PR.
+
+### S1 — Creator Script Package intake
+
+Only after S0 merge and an independently approved S1 Task Contract: implement explicit intake/re-import, exact Source membership preflight, immutable Script Versioning, exact human approve/reject Decision and restart/idempotency evidence.
 
 ### E1 — Narrative clock
 
-One Issue/PR for Whole Narration + Acoustic Alignment + canonical SRT through the existing control surface. Use exact Luna only after Task Contract approval. Run a real local narration/alignment smoke separate from fakes.
+Consume only the exact human-approved imported Script. One Issue/PR owns Whole Narration + Acoustic Alignment + canonical SRT through the existing control surface. E1 does not write or revise Script. Use exact Luna only after Task Contract approval and run real local narration/alignment smoke separate from fakes.
 
 ### E2 — Visual Edit Plan and asset readiness
 
@@ -200,11 +232,11 @@ Full render from approved inputs, restart/replay, named-human product review and
 
 The dirty branch codex/141-creator-handoff-h4-acceptance remains at d301efd with six files and Diff SHA f6b6d331a26f5a426566f04c978d1dd3684615cffb0a808f13fbaf145f803171.
 
-Issue #143 uses a clean separate worktree. No file from the dirty branch is copied into this candidate.
+Issue #148 uses a clean separate worktree. No file from protected/rejected dirty branches is copied into this candidate.
 
-After Goal approval, the main controller performs a line-level disposition:
+Any future salvage requires a separate line-level disposition:
 
-- source-grounded Script/Knowledge improvements: likely reusable;
+- source-grounded Script/Knowledge experiments: preserved evidence, not the v1.3 primary author/reviser;
 - Final nonempty findings and replay behavior: likely reusable;
 - Scene-specific camera/Handoff/import behavior and tests: compatibility or parked;
 - external six-MP4 H4 execution: parked.
@@ -213,11 +245,12 @@ Do not cherry-pick or merge the candidate wholesale before that review.
 
 ## 12. Verification strategy
 
-### Docs-only Issue #143
+### Docs-only Issue #148
 
-- exact nine-file ownership;
-- GOAL.md exact approved v1.3 Goal plus E0-only authorization;
-- status-language consistency;
+- exact ten-file ownership including `GOAL.md`;
+- exact amended Goal/eight-default/S0-in-progress truth;
+- E0-complete and S1/E1-implementation-unauthorized status consistency;
+- Creator-package/source-membership/human-semantic-Decision wording consistency;
 - stale H3.5/H4 wording scan;
 - git diff --check;
 - no tests/full regression.
@@ -246,7 +279,7 @@ Risk-specific evidence:
 
 No video-generation LLM/API, credential, fee/cap, subscription-credit use, deployment or publication is authorized. Stop for:
 
-- E0 not actually merged or the next milestone Task Contract not independently approved;
+- S0 not merged or the next milestone Task Contract not independently approved;
 - alignment/renderer choice requiring unapproved cloud/model/dependency effects;
 - generic Provider registry or frontend stack rewrite;
 - professional editor/fourth view;
@@ -254,4 +287,4 @@ No video-generation LLM/API, credential, fee/cap, subscription-credit use, deplo
 - loss/overwrite of the protected H4 candidate;
 - weakening Source/Script/Alignment/Sample/Final exact gates.
 
-Issue #143 integrates E0 documentation only and does not dispatch Luna. After E0 merge, proceed only to E1 planning/startup review.
+Issue #148 plans the Script-input amendment only and does not dispatch Luna. After approval/merge of a future authoritative Goal amendment, proceed first to one S1 Task Contract; E1 remains paused until an exact approved Script exists through that path.

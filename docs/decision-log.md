@@ -489,3 +489,44 @@ Rejected because the product needs three review/control surfaces, not a professi
 The Product Owner approved the exact v1.3 Goal and E0 activation on 2026-08-24. Issue #143 therefore owns one nine-file authoritative docs PR including `GOAL.md`. E0 may commit/push/review/merge those docs and truthfully park the superseded H4 Issues after merge. No Luna dispatch, feature code, UI change, dependency install, HyperFrames/alignment run, Provider/API/model/credential/fee/cap action, external clip generation/import, deployment or publication is authorized.
 
 Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE. Its exact six-file dirty candidate and repo-external evidence stay preserved for a later line-level salvage/compatibility review; E0 neither resets nor merges them. E1 becomes eligible for planning only after E0 actually merges and still requires an independently approved Task Contract before code or Luna dispatch.
+
+## Decision D-011 — Move v1.3 Script authoring outside the application
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted; amended exact Goal/defaults approved; S0 docs-only integration in progress; feature implementation unauthorized |
+| Decision Date | 2026-08-24 |
+| Decision Owner | Product Owner |
+| Applies To | Knowledge Video Editorial MVP v1.3 Script input planning and Issue #148 |
+| Preserves | D-008, D-009, D-010 and all accepted historical evidence |
+
+### Context
+
+E0 established the narration-led editorial spine. Subsequent E1 prerequisite work exposed a product-boundary problem: private deterministic `_OfflineRuntime` behavior was being asked both to author the initial Script and to behave like a general natural-language revision engine. The paused #145 candidate and NOT_PLANNED #146/#147 selector candidates showed that more fixed conditions would produce fragile, fixture-shaped behavior rather than honest writing intelligence.
+
+The application already has useful exact owners: a locked Source Record with repository URL/identity, commit SHA, ordered file path/blob identities and unit locators; immutable Script Versions; exact Script Decisions; and durable restart/replay. Those owners do not require the application itself to write the Script.
+
+### Decision
+
+1. Make a Creator-authored Script Package the approved v1.3 primary Script input. The creator authors it outside the application using ChatGPT, Codex or an independent content workflow.
+2. Use one configured directory and fixed `creator-script.json` with explicit same-origin intake/re-import. Do not scan Desktop/Downloads/latest, accept browser paths or add a generic file manager.
+3. Freeze schema v1 to the exact top-level fields `schema`, `version`, `script_package_id`, `source`, `claims`, `narration_units`, `creator_provenance`, `revision_note`. Current Source Record must be GitHub; package repository URL/identity/commit equal its fields, while ordered unique `{path, blob_sha}` pairs project first occurrences from its units. This is package-owned projection, not SourceRecord payload equality or a generic schema change.
+4. Make top-level claims the only evidence owners as exact `{claim_id, statement, evidence_locators}`. Narration units contain exact `{unit_id, text, claim_ids}`, resolve at least one in-package claim and never duplicate locators.
+5. Treat creator provenance as creator-declared, not authenticated: required declared name/role/tool and optional tool version/session/project. Exclude raw prompts, secrets, local input paths and implicit latest.
+6. Define canonical logical equivalence as parsed JSON-value equality: whitespace/object-key order do not participate; array order and every accepted field/nested value do. Persist the full validated canonical package under each Script Version's exact `script_package` payload/provenance binding. First acceptance locks one `script_package_id`; same ID/same value replays the exact Script/Decision, same ID/changed value selects the next unapproved Version with prior lineage, and a different ID conflicts. Old Decisions remain historical and never approve a changed Version; E1 stays closed until its new Decision.
+7. Limit automated validation to structure, exact Source identity, locator membership and reference completeness. Do not claim automatic semantic fact-checking.
+8. Keep v1.3 human Script approve/reject as the semantic and teaching-quality gate. Reject requires bounded context and external revision/re-import. Historical revise Decisions stay readable but cannot invoke `_OfflineRuntime` or qualify the current v1.3 Script; do not delete the legacy Decision type.
+9. Make E1 consume only the exact approved Script. E1 owns Whole Narration, Acoustic Alignment and SRT, not Script authoring or revision.
+10. Preserve protected/rejected H4/#145/#146/#147 candidates as evidence. Do not copy, cherry-pick or relabel them as the approved implementation.
+
+### Alternatives
+
+- **Bounded Start form/textarea:** possible later, but not recommended for the first slice because it mixes authoring and review and increases partial-input/UI risk.
+- **Application-controlled LLM:** deferred and unauthorized because it requires separate Provider/model/credential/fee/cap and Attempt/Budget decisions.
+- **Continue deterministic special-case revision:** rejected as the v1.3 primary product boundary because it presents fixed branching as general authoring intelligence.
+
+### Consequences and authorization boundary
+
+The first implementation milestone after S0 becomes explicit package intake/re-import, exact Source membership, immutable Script Versioning and human Decision. Exactly three SSR views remain. No new Provider registry, semantic claim engine, fourth view, SPA, file manager, dependency, credential, fee, deployment or publication is implied.
+
+The Product Owner approved this decision's amended exact Goal, all eight defaults and S0 docs-only activation on 2026-08-24. Issue #148 therefore owns exactly ten docs including `GOAL.md`, writes the amended Goal **APPROVED / ACTIVE** and S0 **IN PROGRESS**, and may use one docs PR. Only its actual merge makes S0 **COMPLETE** and permits S1 planning; no status-only PR. There is no active feature implementation milestone; #145 remains paused and no Luna dispatch or feature PR is authorized.
