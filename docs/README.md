@@ -18,15 +18,17 @@ Read in this order:
 
 - **FAST-MVP v1.1** — completed historical family with accepted local Source-to-Publish evidence.
 - **Creator Handoff MVP v1.2** — H0–H3.5 are implemented/accepted foundation capabilities; H4 never completed. The six-external-MP4 generation/import acceptance path is PARKED by D-010, while its exact lineage, handoff, import and restart behavior remain reusable evidence.
-- **Knowledge Video Editorial MVP v1.3** — exact Goal is **APPROVED / ACTIVE**. Issue #143 owns the E0 nine-doc authority integration; feature implementation remains unauthorized until later milestone Task gates.
+- **Knowledge Video Editorial MVP v1.3** — E0 is complete at `main@47ac1e3` through Issue #143 / PR #144. The Product Owner approved the Creator-authored Script Package amended exact Goal, eight defaults and S0 docs-only activation. Issue #148 is integrating that authority; no feature implementation milestone is active.
 
-`GOAL.md` now records the approved v1.3 objective and current E0 docs-only milestone. E0 merge remains pending and must not be prewritten as complete. After E0 merge, only E1 planning/Task Contract review becomes available; no feature code or Luna dispatch is implied. Creator Handoff H4 stays PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
+`GOAL.md` now records the approved amended v1.3 execution truth with S0 **IN PROGRESS / DOCS ONLY**. It does not authorize S1/E1 implementation or the older `_OfflineRuntime` Script-authoring path. Creator Handoff H4 stays PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
 
 ## 3. Approved primary direction
 
-The approved primary chain is Source → approved Script → Whole Narration → phrase-level millisecond Acoustic Alignment → human-approved Visual Edit Plan → deterministic A/B-roll → 15–20 second Sample Video gate → full render → named-human Final Review → Publish Package.
+The approved amended chain is Source → explicit Creator-authored Script Package intake → exact human-approved Script Version → Whole Narration → phrase-level millisecond Acoustic Alignment → human-approved Visual Edit Plan → deterministic A/B-roll → 15–20 second Sample Video gate → full render → named-human Final Review → Publish Package.
 
-The approved Goal contract, conflict audit, terms, milestones and stop conditions are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md).
+The current Goal contract remains in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md). The approved Script-input amendment, alternatives and defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
+
+The approved contract freezes one evidence owner (top-level claims), a package-owned ordered file projection derived from GitHub SourceRecord units without changing SourceRecord, one canonical JSON-value rule and one `script_package_id` lineage. Every Script Version persistently owns the complete canonical package; changed imports require a new Decision. The #148 S0 contract owns exactly ten docs including `GOAL.md`; only the merged authoritative docs PR permits S1 planning.
 
 ## 4. Conflict rule
 
@@ -42,7 +44,7 @@ An approved Goal does not bypass milestone entry gates. Label docs-PR merge stat
 
 ## 5. Historical material
 
-Older PRDs, phase plans, D-008/D-009, Creator Handoff contracts, closed Issues/PRs and H4 repo-external evidence remain audit history. D-010 changes the approved near-term primary path; it does not delete or relabel that history.
+Older PRDs, phase plans, D-008/D-009, Creator Handoff contracts, closed Issues/PRs and H4 repo-external evidence remain audit history. D-010 changes the approved editorial path; D-011 changes Script ownership without deleting or relabelling that history.
 
 ## 6. Update rules
 

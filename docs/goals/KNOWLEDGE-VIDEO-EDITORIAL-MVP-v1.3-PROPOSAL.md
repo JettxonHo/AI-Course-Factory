@@ -4,26 +4,27 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **APPROVED / ACTIVE — E0 DOCS ONLY; FEATURE IMPLEMENTATION UNAUTHORIZED** |
+| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 DOCS ONLY IN PROGRESS; FEATURE IMPLEMENTATION UNAUTHORIZED** |
 | Product direction | Approved by Product Owner on 2026-08-24 |
 | Exact Goal | Approved by Product Owner on 2026-08-24 |
-| Activation Issue | #143, one nine-doc E0 PR; merge pending |
-| Baseline | `main@d301efd8494029e8b8eae5001050974a67778937` |
+| E0 evidence | Issue #143 CLOSED; PR #144 MERGED; main@47ac1e3 |
+| Script-input authority integration | Issue #148; exact amended Goal/defaults approved; S0 docs PR/merge pending |
+| Baseline | `main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307` |
 | Preserves | FAST-MVP v1.1 completed history; Creator Handoff v1.2 implementation/evidence; protected H4/#142 candidate |
 
-This contract records the approved near-term product direction and exact Goal. Current authorization is limited to E0 documentation integration. It does not authorize feature implementation, install HyperFrames, select an alignment engine, call a Provider, consume subscription credits, change dependencies or complete Creator Handoff H4.
+This contract records the approved amended exact v1.3 Goal, the completed E0 baseline and the S0 docs-only authority integration now in progress. The Creator-authored Script Package contract and eight approved defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
 
-Transition authority is explicit: `GOAL.md` now records v1.3 as APPROVED / ACTIVE with E0 docs-only IN PROGRESS. Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE. E0 merge is not yet a fact; after it merges, authorization advances only to E1 planning/Task Contract review.
+Transition authority is explicit: `GOAL.md` now records the approved Creator-authored Script Package amendment and S0 **IN PROGRESS / DOCS ONLY**. There is no active feature implementation milestone. The former in-application Script-authoring path and paused E1 candidate remain unauthorized; Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
 
-## 2. Approved exact Goal
+## 2. Approved amended exact Goal
 
-> Deliver one local Knowledge Video Editorial flow that turns the supported exact public GitHub source into an approved grounded Script, one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
+> Deliver one local Knowledge Video Editorial flow that acquires the supported exact public GitHub source; accepts a Creator-authored Script Package whose ordered narration units bind exact source locators and claim evidence; commits and human-approves one immutable Script Version; produces one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
 
-The Product Owner explicitly approved this exact wording and E0 activation on 2026-08-24. Approval activates the Goal and E0 governance work; it does not authorize E1 feature code or Luna dispatch.
+The Product Owner explicitly approved this exact amended wording, all eight Script-input defaults and S0 docs-only activation on 2026-08-24. Approval activates the amended Goal and S0 governance work; it does not authorize S1/E1 feature code or Luna dispatch.
 
 ## 3. Why the rebaseline is needed
 
-Creator Handoff v1.2 proved useful foundations: live grounded Source, exact Script/Storyboard decisions, deterministic narration and handoff files, creator-import lineage, restart/replay, a Chinese three-view workspace and a traceable Publish Package. H4 also produced an independently accepted Final-checklist correction and a source-grounded six-beat content correction, but no accepted final creator video.
+Creator Handoff v1.2 proved useful foundations: live exact Source, immutable Script/Storyboard decisions, deterministic narration and handoff files, creator-import lineage, restart/replay, a Chinese three-view workspace and a traceable Publish Package. H4 also produced preserved checklist/content candidates, but no accepted final creator video. The #145/#146/#147 Script experiments demonstrated that private deterministic authoring/revision is not a credible general product boundary; those candidates remain rejected or paused evidence.
 
 The remaining product problem is editorial control, not another external generation handoff. Six separately generated MP4s make motion quality, teaching evidence and rhythm depend on an external video model before the application has established a coherent narration clock or edit plan. The new direction moves those decisions into an application-owned editorial spine and uses deterministic production for the MVP.
 
@@ -33,9 +34,9 @@ The remaining product problem is editorial control, not another external generat
 
 | Existing fact or module | Reuse in v1.3 |
 | --- | --- |
-| Live GitHub Source Record, exact commit/blob/locators and grounded Knowledge | Remain the factual basis of Script and visual evidence. |
-| Script Version plus approve/reject/revise Decisions | Remain the mandatory content gate. |
-| Protected H4 exact-source content correction | Candidate input to the later Script/editorial slice after explicit disposition; never discard it. |
+| Live GitHub Source Record, exact commit/blob/units/locators | Remains the membership and identity basis for imported Script evidence. |
+| Script Version plus approve/reject Decisions | Remain the mandatory immutable content gate. |
+| Protected H4 and rejected #145/#146/#147 candidates | Preserve as evidence; do not use/copy as the primary Script authoring implementation. |
 | Generic immutable Artifact repository and exact References | Own Whole Narration, Acoustic Alignment, Visual Edit Plan, Sample Video and Final Video facts. |
 | Workspace and SQLite restart/replay discipline | Remain the local persistence boundary. |
 | Local GPT-SoVITS runtime/reference | Candidate substrate for one continuous narration; it is not yet proof that the one-shot contract works. |
@@ -58,11 +59,15 @@ The remaining product problem is editorial control, not another external generat
 
 - FAST-MVP v1.1 remains `COMPLETE / GOAL_APPROVED` local evidence.
 - Creator Handoff v1.2 H0–H3.5 produced accepted reusable code and evidence. It is not relabelled complete because H4 never passed.
-- D-008 and D-009 remain historical accepted decisions. D-010 changes the near-term primary path without deleting their rationale or evidence.
+- D-008 and D-009 remain historical accepted decisions. D-010 changes the editorial path; D-011 changes Script input ownership without deleting their rationale or evidence.
 - Existing H3 creator-import Artifacts remain readable. No migration or deletion is implied.
 
 ## 5. Canonical terms
 
+- **Creator-authored Script Package** — explicit schema-v1 external input locked by one `script_package_id`; repository URL/identity/commit equal the GitHub Source Record and ordered `{path, blob_sha}` files are a package-owned unique projection from its units, not a new SourceRecord field.
+- **Script Package Claim** — the sole evidence owner, exact `{claim_id, statement, evidence_locators}`. Narration units contain only `{unit_id, text, claim_ids}` and inherit locators through resolved claim IDs.
+- **Creator-declared Provenance** — declared `creator_declared_name`, `creator_role`, `tool_name` and optional tool/session/project facts; never authenticated identity.
+- **Script Version** — immutable application-owned Artifact that persistently owns the complete validated canonical `script_package` binding and is subject to exact human approve/reject Decision.
 - **Whole Narration** — one continuous application-owned narration audio Artifact for the exact approved Script, generated once and replayed durably.
 - **Acoustic Alignment** — immutable phrase intervals in milliseconds bound to exact approved narration text and Whole Narration; after one declared punctuation/whitespace normalization, ordered phrase text covers that narration character-for-character. Intervals form the sole continuous audiovisual clock: first start `0`, adjacent end/start equal, no overlap, and final end equals exact audio duration.
 - **Visual Edit Plan** — human-reviewable immutable plan bound to the exact Script, Whole Narration and Acoustic Alignment. Every shot/range records A-roll or B-roll plus the reason, selected assets or gaps, camera/motion/graphics, overlays and evidence intent. Claim-bearing or information-dense content defaults to B-roll unless the plan records an exception reason.
@@ -120,13 +125,25 @@ Lucide, React Bits, 21st.dev, Magic UI and shadcn may be implementation resource
 
 ### E0 — Truth rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** through Issue #143; PR/merge pending.
+Status: **COMPLETE** at `main@47ac1e3`; Issue #143 CLOSED, PR #144 MERGED.
 
-Record D-010, preserve v1.1/v1.2 history, park H4 external clips and integrate the approved exact v1.3 Goal in one nine-doc PR. No feature code.
+Recorded D-010, preserved v1.1/v1.2 history and parked H4 external clips without claiming H4 complete.
+
+### S0 — Creator Script input rebaseline
+
+Status: **IN PROGRESS / DOCS ONLY** through Issue #148; amended exact Goal and defaults approved.
+
+Define the Creator-authored Script Package, single evidence ownership, exact Source shape, canonical logical equivalence, locked package ID, explicit intake/re-import, immutable Script Version and human semantic Decision ownership. This exact ten-doc candidate writes `GOAL.md` as **APPROVED / ACTIVE** while S0 remains **IN PROGRESS** until merge.
+
+Issue #148 owns exactly ten docs including `GOAL.md`. One docs PR integrates the approved amended Goal/defaults with S0 **IN PROGRESS**. Only the actual merge makes S0 **COMPLETE** and permits S1 planning; no status-only PR.
+
+### S1 — Creator Script Package intake
+
+After S0 merge and one independently approved Task Contract, implement the smallest explicit intake/re-import vertical. E1 remains paused until S1 produces one exact approved Script.
 
 ### E1 — Narrative clock
 
-From the exact approved Script, commit one durable Whole Narration and phrase-level millisecond Acoustic Alignment; derive canonical SRT; prove safe failure, restart/replay and human inspectability. After a declared punctuation/whitespace normalization, phrase text must cover the approved narration character-for-character in order. Chinese phrases default to 5–15 Han characters or an equivalent short phrase, subject to later engine-task validation, and cannot collapse to sentence/paragraph granularity. The accepted clock must be nonnegative, strictly ordered, non-overlapping and continuous from `0` through exact audio duration by allocating engine-reported leading/trailing silence or gaps to adjacent phrases. A Task Contract must validate a local alignment runtime and whole-narration TTS behavior without changing the core dependency set by default.
+From the exact human-approved imported Script, commit one durable Whole Narration and phrase-level millisecond Acoustic Alignment; derive canonical SRT; prove safe failure, restart/replay and human inspectability. E1 consumes Script and does not author/revise it. After a declared punctuation/whitespace normalization, phrase text must cover the approved narration character-for-character in order. Chinese phrases default to 5–15 Han characters or an equivalent short phrase, subject to later engine-task validation, and cannot collapse to sentence/paragraph granularity. The accepted clock must be nonnegative, strictly ordered, non-overlapping and continuous from `0` through exact audio duration by allocating engine-reported leading/trailing silence or gaps to adjacent phrases.
 
 ### E2 — Visual Edit Plan and asset readiness
 
@@ -142,7 +159,7 @@ Render the complete video from the approved inputs, complete named-human normal-
 
 ## 10. Goal acceptance gates
 
-1. Source/claim/Script lineage and Script approval are exact.
+1. Creator package GitHub identity equals the Source Record, its files project ordered-unique unit path/blob pairs, and claim locators exactly match unit locators; the immutable Script Version retains the full canonical package binding and receives the human semantic/teaching Decision.
 2. Whole Narration is one continuous audio fact with byte-stable replay; per-Scene inference cannot masquerade as it.
 3. After declared punctuation/whitespace normalization, Acoustic Alignment phrase text covers the exact approved narration character-for-character in order. Chinese phrases default to 5–15 Han characters or equivalent short phrases and cannot degrade to whole sentences/paragraphs. Intervals are nonnegative, strictly ordered, non-overlapping and continuous: first start `0`, every prior end equals the next start, and final end equals exact audio duration. Leading/trailing silence and gaps are assigned to adjacent phrases under the declared pause-allocation policy; SRT is derived only after validation. ASR may propose timestamps but cannot replace approved display text.
 4. Visual Edit Plan covers every aligned shot/range and states A-roll/B-roll role plus rationale, evidence intent, assets/gaps, overlays and motion without implicit latest inputs. Claim-bearing or information-dense ranges default to B-roll unless an explicit exception is recorded; every B-roll range binds exact narration/alignment and teaching evidence/claim.
@@ -159,7 +176,7 @@ The current dirty branch `codex/141-creator-handoff-h4-acceptance` remains untou
 
 After exact v1.3 Goal approval, a separate disposition review must classify lines rather than cherry-pick the branch wholesale:
 
-- **Reuse candidate:** source-grounded Script/Knowledge improvements and exact Final findings/replay behavior.
+- **Preserved evidence:** source-grounded Script/Knowledge experiments and exact Final findings/replay behavior; none is automatically reused.
 - **Compatibility evidence:** creator-import Final tests and prior handoff/import lineage.
 - **Parked path:** external six-MP4 generation/import acceptance and Scene-2 replacement as the primary Goal.
 
@@ -167,7 +184,7 @@ No reset, cleanup, overwrite, implicit merge or H4 completion claim is permitted
 
 ## 12. Authorization and stop conditions
 
-This approved Goal contract does not authorize feature implementation. E0 is docs only. Stop before E1 coding/Luna dispatch until E0 has actually merged and one bounded E1 Task Contract startup gate is independently approved.
+This approved amended Goal does not authorize feature implementation. Stop before S1/E1 coding or Luna dispatch until S0 is actually merged and one bounded S1 Task Contract startup gate is independently approved.
 
 Later Task Contracts must independently validate:
 
@@ -181,4 +198,4 @@ Return to Product Owner review for a general Provider registry, cloud image/vide
 
 ## 13. Docs-first candidate boundary
 
-Issue #143 owns exactly nine documentation files: the independently reviewed planning candidate plus `GOAL.md`. No tests or full regression are required for this E0 docs-only candidate; `git diff --check`, Goal/authority/stale-wording checks and exact docs ownership are sufficient. The branch must not prewrite PR merge, Issue closure or E0 completion.
+The current Issue #148 candidate owns exactly ten documentation files including `GOAL.md`. No tests or full regression are required; `git diff --check`, authority/schema/default wording checks and exact ownership are sufficient. It records the approved amended Goal and S0 **IN PROGRESS**, but must not prewrite S0 completion, PR merge or Issue closure.

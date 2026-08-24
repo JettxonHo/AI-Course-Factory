@@ -7,8 +7,8 @@
 | Status | **APPROVED / ACTIVE** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-24 |
-| Activation task | E0 Issue #143 on `codex/143-knowledge-video-editorial-rebaseline`; docs PR/merge pending |
-| Planning baseline | `main@d301efd8494029e8b8eae5001050974a67778937` |
+| Activation task | S0 Issue #148 on `codex/148-creator-script-package-docs`; docs PR/merge pending |
+| Planning baseline | `main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307` |
 | Goal type | Local single-user Knowledge Video Editorial MVP |
 | Preserves | FAST-MVP v1.1 `COMPLETE / GOAL_APPROVED`; Creator Handoff v1.2 H0–H3.5 accepted foundation/history |
 
@@ -16,7 +16,7 @@ This Goal supersedes Creator Handoff v1.2 only as the active primary production 
 
 ## 2. Exact Goal
 
-Deliver one local Knowledge Video Editorial flow that turns the supported exact public GitHub source into an approved grounded Script, one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
+Deliver one local Knowledge Video Editorial flow that acquires the supported exact public GitHub source; accepts a Creator-authored Script Package whose ordered narration units bind exact source locators and claim evidence; commits and human-approves one immutable Script Version; produces one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
 
 Success is one intelligible, evidence-backed and well-paced local knowledge video. Codec, FFprobe, alignment metrics, screenshots and automated tests remain technical evidence; they cannot replace named-human review of teaching fidelity, narration completeness/naturalness, visual evidence/continuity and edit rhythm at normal playback speed.
 
@@ -24,7 +24,8 @@ Success is one intelligible, evidence-backed and well-paced local knowledge vide
 
 ```text
 exact Source
-  -> approved grounded Script
+  -> explicit Creator-authored Script Package intake
+  -> exact human-approved immutable Script Version
   -> one continuous Whole Narration
   -> phrase-level millisecond Acoustic Alignment
   -> human-approved Visual Edit Plan
@@ -52,6 +53,8 @@ Acoustic Alignment is the sole continuous audiovisual clock. After one declared 
 ## 5. Stable Ownership and Compatibility
 
 - Keep exact public GitHub Source commit/blob/locators, grounded Knowledge and Script Decision semantics.
+- Make the Creator-authored Script Package the v1.3 primary Script input. The application validates its structure and exact Source membership, commits immutable Script Versions and records exact human approve/reject Decisions; it does not act as a general Script author or natural-language revision engine.
+- Persist the complete validated canonical `script_package` binding on every accepted Script Version. Top-level claims exclusively own evidence locators; narration units bind claims by ID. Changed valid imports create an unapproved next Version with exact prior lineage, while canonical replay creates no Version or state mutation.
 - Keep immutable Artifact Versions/References, exact Decisions, Task selection, local Workspace and restart/replay ownership.
 - Keep Narration, Alignment and SRT application-owned. A renderer or external platform cannot replace these truths.
 - Keep exactly three lightweight local SSR/Jinja control views: Content & Audio; Visual Planning & Production; Final Review & Delivery.
@@ -63,19 +66,33 @@ Acoustic Alignment is the sole continuous audiovisual clock. After one declared 
 
 ### E0 — Truth rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** (Issue #143; merge pending)
+Status: **COMPLETE** at `main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307`; Issue #143 CLOSED, PR #144 MERGED.
 
-Outcome: make this exact Goal the repository execution truth; record D-010, the narration-led editorial chain, A/B-roll semantics, continuous Alignment clock, v1.2/H4 disposition and implementation stop conditions in one nine-file authoritative docs PR.
+Outcome: established the narration-led editorial chain, A/B-roll semantics, continuous Alignment clock, v1.2/H4 disposition and implementation stop conditions through D-010.
 
-Exit: the exact nine-doc Diff is independently reviewed and merged; Issue #143 closes with actual Git/GitHub facts. No feature code, dependency or runtime action belongs to E0.
+### S0 — Creator Script input rebaseline
+
+Status: **IN PROGRESS / DOCS ONLY** through Issue #148; docs PR/merge pending.
+
+Outcome: make this amended exact Goal, D-011, Creator-authored Script Package schema/lineage/intake semantics and the approved defaults below the repository execution truth in one exact ten-file docs change.
+
+Exit: the exact ten-doc Diff is independently reviewed and merged; Issue #148 closes with actual Git/GitHub facts. No feature code, UI, test, dependency, Luna or runtime action belongs to S0.
+
+### S1 — Creator Script Package intake
+
+Status: **BLOCKED ON S0 MERGE; PLANNING ONLY AFTER S0**.
+
+Outcome: explicitly intake/re-import one fixed `creator-script.json`, validate exact Source membership, commit/select immutable Script Versions and record exact human approve/reject Decisions with restart/idempotency evidence.
+
+Entry: after S0 merges, create one bounded S1 Issue/Task Contract with exact ownership, RED/focused/full gates, compatibility and exact Luna route. S1 coding/Luna dispatch remains unauthorized until that startup gate is independently approved.
 
 ### E1 — Narrative clock
 
-Status: **BLOCKED ON E0 MERGE; PLANNING ONLY AFTER E0**
+Status: **PENDING S1**
 
 Outcome: from the exact approved Script, produce one durable Whole Narration, one validated Acoustic Alignment and canonical SRT through the existing control surface.
 
-Entry: after E0 merges, create one bounded E1 Issue/Task Contract with exact ownership, runtime/dependency evaluation, RED/focused/full gates, restart compatibility and exact Luna route. E1 coding/Luna dispatch remains unauthorized until that startup gate is independently approved.
+Entry: only an exact human-approved Creator-authored Script Version from S1 can enter E1. E1 owns narration/alignment/SRT and does not author or revise Script.
 
 ### E2 — Visual Edit Plan and asset readiness
 
@@ -95,38 +112,48 @@ Status: **PENDING E3**
 
 Outcome: render the complete video from approved exact inputs, complete named-human normal-speed review, export the traceable package and prove restart/replay.
 
-## 7. Authorized Scope
+## 7. Approved Script-input defaults
 
-Current authorization is E0 only:
+1. Use one operator-configured directory plus fixed `creator-script.json`.
+2. Use JSON schema version 1.
+3. Trigger intake/re-import through one explicit same-origin Start-page POST with no path or upload field.
+4. Require creator-declared provenance; require the `revision_note` field while allowing its bounded note value to be `null`.
+5. Automatically validate exact Source identity, the ordered file projection and locator membership.
+6. Leave semantic support and teaching quality exclusively to an exact human Script Decision.
+7. Use canonical JSON-value equivalence and one locked `script_package_id` lifecycle.
+8. Expose approve/reject only for v1.3; keep legacy revise readable but unable to invoke authoring or qualify a current v1.3 Script.
 
-- update the exact nine documentation files owned by Issue #143;
+## 8. Authorized Scope
+
+Current authorization is S0 only:
+
+- update the exact ten documentation files owned by Issue #148, including this `GOAL.md`;
 - independently review the docs Diff and run ownership/authority/stale-wording/`git diff --check` gates;
-- commit, push, create one ready docs PR, merge after review and close Issue #143;
-- truthfully comment/close Issues #141/#142 as PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE while preserving their dirty branch and evidence.
+- commit, push, create one ready docs PR, merge after review and close Issue #148.
 
-After E0 merge, authorization advances only to E1 planning and one Task Contract startup review. It does not directly authorize E1 code or Luna dispatch.
+After S0 merge, authorization advances only to S1 planning and one Task Contract startup review. It does not directly authorize S1/E1 code or Luna dispatch.
 
-## 8. Explicit Non-goals
+## 9. Explicit Non-goals
 
 - video-generation LLM/API in the MVP primary path;
 - automated Jimeng/Kling/Seedance operation, external six-MP4 generation/import or subscription-credit use;
 - generic Provider registry, ImageGeneration Provider/model/credential/fee/cap choice or paid call;
-- HyperFrames/alignment runtime installation during E0;
+- HyperFrames/alignment runtime installation during S0;
 - professional timeline editor, generic asset manager, dashboard, SPA, fourth view or frontend framework migration;
 - multiple users/sources/tasks, auth, deployment or publication;
 - broad Artifact/Decision/Workflow/schema rewrite;
 - treating ASR/alignment scores, codec checks or fixtures as named-human acceptance.
 
-## 9. Agent and Review Rules
+## 10. Agent and Review Rules
 
 - Main controller: configured `gpt-5.6-sol / xhigh`; owns investigation, Task Contracts, dispatch, actual Diff review and runtime/product evidence.
 - Implementation: exact `luna-worker`, configured `gpt-5.6-luna / max`; no Terra/default fallback and no self-approval.
-- Every E1–E4 implementation milestone requires one bounded Issue/Task Contract and independent startup approval before dispatch.
+- Every S1/E1–E4 implementation milestone requires one bounded Issue/Task Contract and independent startup approval before dispatch.
 - Use RED/focused iteration during implementation and one final full regression before merge. Fake/runtime/technical evidence remains separate from named-human product acceptance.
 - Stop for any Provider/model/credential/fee/cap, dependency/stack expansion, deployment/publication, broad public-contract rewrite or loss of protected H4 work.
 
-## 10. Completion Definition
+## 11. Completion Definition
 
-Knowledge Video Editorial MVP v1.3 is complete only when E0–E4 are complete and one fresh browser-driven local run proves exact Source and approved Script lineage, one continuous Narration, validated continuous Acoustic Alignment/canonical SRT, an approved evidence-backed Visual Edit Plan, an approved A-roll/B-roll Sample, full deterministic rendering, restart/replay, named-human normal-speed findings bound to the exact Final Video and one traceable Publish Package.
+Knowledge Video Editorial MVP v1.3 is complete only when S0, S1 and E1–E4 are complete and one fresh browser-driven local run proves exact Source and approved Creator-authored Script Package lineage, one continuous Narration, validated continuous Acoustic Alignment/canonical SRT, an approved evidence-backed Visual Edit Plan, an approved A-roll/B-roll Sample, full deterministic rendering, restart/replay, named-human normal-speed findings bound to the exact Final Video and one traceable Publish Package.
 
 This Goal is local single-user MVP evidence only. It does not establish cloud Provider execution, paid economics, deployment, publication, adoption or production operations.
