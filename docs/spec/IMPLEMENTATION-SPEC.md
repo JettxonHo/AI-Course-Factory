@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **MBL GOAL APPROVED / ACTIVE — B0 DOCS ONLY IN PROGRESS; FEATURE IMPLEMENTATION UNAUTHORIZED** |
+| Status | **MBL GOAL APPROVED / ACTIVE — B0 COMPLETE; B1 IMPLEMENTATION IN PROGRESS** |
 | Product direction | Three-video manual Douyin production/publication/feedback loop approved by Product Owner, 2026-08-27 |
 | Exact Goal | Approved by Product Owner, 2026-08-27 |
 | Product contract | docs/product/PRD.md |
 | System contract | docs/spec/SYSTEM-SPEC.md |
-| Planning baseline | main@1a7692894bce6ebea3d88263da67713b426ba59e |
-| Planning Issue | #152, exact 11-doc B0 rebaseline |
-| Runtime baseline | Python >=3.12,<3.13; no runtime change in B0 |
+| Planning baseline | main@bd4d44a2e9c710d26aea8c531328ae6ec7fefda4 |
+| Planning Issue | #154, exact 15-path B1 readiness implementation |
+| Runtime baseline | Python >=3.12,<3.13; no dependency or runtime change in B1 |
 
-S1 Creator Script Package intake is merged through Issue #150 / PR #151 with final 476/476 regression evidence. Issue #152 authorizes only its exact 11-doc change; B1–B6, Provider execution, credentials, fees, media production, publication and broad repository/schema changes remain unauthorized.
+S1 Creator Script Package intake is merged through Issue #150 / PR #151 with final 476/476 regression evidence. B0 is merged through Issue #152 / PR #153. Issue #154 authorizes only its exact 15-path source/UI/test/truth-tail change; B2–B6, Provider execution, credentials, fees, media production, publication and broad repository/schema changes remain unauthorized.
 
 ## 2. Current implementation audit
 
@@ -34,7 +34,7 @@ S1 Creator Script Package intake is merged through Issue #150 / PR #151 with fin
 
 The current merged code implements Creator-authored Script Package intake/re-import and exact creator Decisions. It does not implement the exact Computer Vision source choice, Doubao Whole Narration, short-phrase clock, MBL Visual Edit Plan, approved Xiaotudou family, HyperFrames Sample/full rendering, manual Publication Record or Performance Snapshots. Dirty/rejected candidates do not change that fact.
 
-Knowledge Video Editorial E0/S0/S1 remain accepted foundation. B0 records the new business-loop authority; no B1–B6 code, Provider work or protected-candidate integration is authorized.
+Knowledge Video Editorial E0/S0/S1 remain accepted foundation. B1 adds only the fixed Computer Vision source seam, three package readiness proof and Xiaotudou future gate context; no B2–B6 code, Provider work or protected-candidate integration is authorized.
 
 ## 3. Recommended physical direction
 
@@ -217,11 +217,11 @@ These facts remain implemented foundation. The old E1–E4 milestones did not co
 
 ### B0 — Business-loop authority rebaseline
 
-Issue #152 owns exactly 11 docs, appends D-012 and records the approved MBL Goal. No code/test/runtime/media/external action. Only actual merge permits B1 planning.
+Issue #152 owned exactly 11 docs, appended D-012 and recorded the approved MBL Goal; it is complete through merged PR #153. No code/test/runtime/media/external action belonged to B0.
 
 ### B1 — Series/source and Creator Package readiness
 
-One bounded Issue/PR adds only the exact Computer Vision file selection/acquisition needed for the first series, proves three package contracts can bind its locators and freezes the three-candidate Xiaotudou approval boundary. No generic source browser or character generation is implied until its Task authorizes the exact slice.
+Issue #154 is the approved bounded implementation candidate. It adds only the exact Computer Vision file selection/acquisition needed for the first series, proves three package contracts can bind its locators and freezes the three-candidate Xiaotudou approval boundary. No generic source browser or character generation is included.
 
 ### B2 — Doubao Whole Narration and short-phrase clock
 
@@ -247,7 +247,7 @@ Controller-owned product acceptance produces and manually publishes all three fr
 
 The dirty branch codex/141-creator-handoff-h4-acceptance remains at d301efd with six files and Diff SHA f6b6d331a26f5a426566f04c978d1dd3684615cffb0a808f13fbaf145f803171.
 
-Issue #152 uses a clean separate worktree at current `origin/main`. No file from protected/rejected dirty branches is copied into this candidate. The paused #145 worktree also remains protected with Diff SHA `df724e19daedae3038ed25b1c94e5fa05149cc3cbb88dc0f0f32197d91662e0d`.
+B0 Issue #152 used a clean separate worktree at the then-current `origin/main`. B1 Issue #154 uses its own clean worktree at `main@bd4d44a2e9c710d26aea8c531328ae6ec7fefda4`; no file from protected/rejected dirty branches is copied into this candidate. The paused #145 worktree also remains protected with Diff SHA `df724e19daedae3038ed25b1c94e5fa05149cc3cbb88dc0f0f32197d91662e0d`.
 
 Any future salvage requires a separate line-level disposition:
 
@@ -260,18 +260,28 @@ Do not cherry-pick or merge the candidate wholesale before that review.
 
 ## 12. Verification strategy
 
-### Issue #152 docs-only integration
+### B0 Issue #152 docs-only integration (historical)
 
 - exact 11-doc ownership and no runtime/test/dependency path;
 - exact Chinese Goal equality across Issue #152, `GOAL.md` and the new MBL contract;
 - D-012 append-only after D-011, preserving D-008–D-011;
 - S1 COMPLETE truth: Issue #150 CLOSED, PR #151 MERGED, `main@1a769289`, 476/476;
-- current B0 IN PROGRESS and B1–B6 implementation-unauthorized wording;
+- current B0 COMPLETE and B1 IN PROGRESS wording, with B2–B6 implementation unauthorized;
 - Episode 1 exact Provider/voice/two-call/CNY 2 cap without any Provider call/credential;
 - Episodes 2–3 explicit later fee gates and manual-publication execution gates;
 - protected H4/#145 Diff identities unchanged;
 - stale-current-authority, publication-completion and performance-claim scans;
-- `git diff --check`; no full regression for docs-only B0.
+- `git diff --check`; no full regression was run for the docs-only B0 milestone (the worker did not run one).
+
+### B1 Issue #154 implementation evidence
+
+- exact 15-path ownership and no application/script-package, connector, schema, Workflow, dependency, CSS, Provider or media edits;
+- public RED chronology for the historical source path, fresh Start copy and absent three-root proof;
+- fixed Computer Vision source acquisition, exact package source projection/locators and three distinct package IDs;
+- restart/replay from each fresh root with zero duplicate Script Version, Decision, Budget Authorization or Provider Attempt writes;
+- source-only `script_review / approve_script` gate with no fabricated Product Owner Decision;
+- fixed three-candidate Xiaotudou boundary visible as future context only, with no asset creation/import/approval;
+- focused compatibility, compileall, `git diff --check` and exact ownership/prohibited scans; final full regression, live GitHub smoke, browser acceptance and merge remain controller-owned.
 
 ### Later code tasks
 
@@ -297,9 +307,9 @@ Risk-specific evidence:
 
 ## 13. External authorization and stop conditions
 
-No B1–B6 implementation, credential, paid call, ImageGen/HyperFrames media action, deployment or publication is authorized by B0. Stop for:
+No B2–B6 implementation, credential, paid call, ImageGen/HyperFrames media action, deployment or publication is authorized by B1. Stop for:
 
-- B0 not merged or the next milestone Task Contract not independently approved;
+- B0 not merged or the approved B1 Task Contract scope changing;
 - any Doubao call without exact Provider/voice/preflight/Budget/Attempt/cap/credential confirmation;
 - any Episode 2–3 paid call without its later cap;
 - clock/renderer choice requiring unapproved cloud/model/dependency effects;
@@ -310,4 +320,4 @@ No B1–B6 implementation, credential, paid call, ImageGen/HyperFrames media act
 - loss/overwrite of protected H4/#145/#146/#147 candidates;
 - weakening Source/Script/Clock/Sample/Final/Publication exact gates.
 
-Issue #152 uses no worker. Actual B0 merge permits B1 planning only. Every feature Task uses exact `luna-worker` after startup approval, with final full regression, real boundary evidence, browser review and merge owned by the main controller.
+Issue #152 used no worker. Issue #154 uses the exact `luna-worker` route after startup approval; final full regression, real boundary evidence, browser review and merge remain owned by the main controller.

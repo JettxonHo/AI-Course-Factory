@@ -6,18 +6,19 @@ Observed: 2026-08-27 (Asia/Shanghai)
 
 | Fact | Current evidence |
 | --- | --- |
-| Current merged baseline | `main@1a7692894bce6ebea3d88263da67713b426ba59e` |
+| Current merged baseline | `main@bd4d44a2e9c710d26aea8c531328ae6ec7fefda4` |
 | S1 | **COMPLETE**; Issue #150 CLOSED, PR #151 MERGED, final full regression 476/476 |
 | Current approved Goal | Knowledge Video Business Loop MBL v1.0 **APPROVED / ACTIVE** |
-| Active task | B0 Issue #152, exact 11-doc authority rebaseline |
-| B0 | **IN PROGRESS / DOCS ONLY**; docs PR pending |
-| B1–B6 | **PENDING B0 MERGE / IMPLEMENTATION UNAUTHORIZED** |
+| Active task | B1 Issue #154, exact Computer Vision source and three-package readiness |
+| B0 | **COMPLETE**; Issue #152 CLOSED, PR #153 MERGED |
+| B1 | **IN PROGRESS**; bounded implementation candidate on `codex/154-computer-vision-series-readiness` |
+| B2–B6 | **PENDING B1 / IMPLEMENTATION UNAUTHORIZED** |
 | v1.3 disposition | E0/S0/S1 accepted foundation; E1–E4 not complete; superseded only as active Goal |
 | Issue #145 | OPEN/PAUSED protected Narrative Clock candidate; do not resume, merge or copy wholesale |
 | Creator Handoff H4 | PARKED / NOT COMPLETE; protected six-file candidate preserved |
 | Provider/publication | No current call/render/publication action; Episode 1 cap is approved for a later B2 execution gate only |
 
-This file reports facts rather than granting scope. Product Owner approval on 2026-08-27 authorizes B0 documentation integration and the normal docs PR lifecycle. It does not authorize B1–B6 implementation, Luna, credentials, paid calls, ImageGen, HyperFrames, media production, Douyin publication, deployment or performance claims.
+This file reports facts rather than granting scope. B0 was approved and merged through PR #153. The independently approved Issue #154 authorizes only its bounded B1 implementation candidate and exact verification; it does not authorize B2–B6, credentials, paid calls, ImageGen, HyperFrames, media production, Douyin publication, deployment or performance claims.
 
 ## 2. Newly approved MBL direction
 
@@ -48,9 +49,9 @@ The original root worktree remains on `codex/141-creator-handoff-h4-acceptance@d
 
 ### Paused #145 candidate
 
-The protected #145 worktree remains on `codex/145-whole-narration-alignment@47ac1e3` with an unmerged candidate and Diff SHA-256 `df724e19daedae3038ed25b1c94e5fa05149cc3cbb88dc0f0f32197d91662e0d`. `git diff --check` passes. Issue #145 stays OPEN/PAUSED during B0. B2 must start from current main and explicitly classify reusable lines; no wholesale cherry-pick or implicit resume is permitted.
+The protected #145 worktree remains on `codex/145-whole-narration-alignment@47ac1e3` with an unmerged candidate and Diff SHA-256 `df724e19daedae3038ed25b1c94e5fa05149cc3cbb88dc0f0f32197d91662e0d`. `git diff --check` passes. Issue #145 stays OPEN/PAUSED during B0 and B1. B2 must start from current main and explicitly classify reusable lines; no wholesale cherry-pick or implicit resume is permitted.
 
-#146/#147 remain CLOSED/NOT_PLANNED with their rejected two-file candidates preserved. B0 touches none of these worktrees.
+#146/#147 remain CLOSED/NOT_PLANNED with their rejected two-file candidates preserved. B0 and B1 touch none of these worktrees.
 
 ## 5. B0 ownership and evidence
 
@@ -68,25 +69,28 @@ Issue #152 owns exactly 11 documentation paths:
 10. `docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md`
 11. new `docs/goals/KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md`
 
-Required B0 evidence is exact ownership, exact Goal equality across Issue/Goal/contract, D-012 append-only placement, S1 merged-truth reconciliation, stale-authority scans and `git diff --check`. B0 is docs-only, so no code tests or full regression are run.
+Required B0 evidence was exact ownership, exact Goal equality across Issue/Goal/contract, D-012 append-only placement, S1 merged-truth reconciliation, stale-authority scans and `git diff --check`; Issue #152 / PR #153 is complete. B0 was docs-only, so no code tests or full regression were run for that milestone.
 
-## 6. Current authorization
+## 6. B1 ownership and evidence
+
+Issue #154 owns at most the exact 15 paths listed in its Task Contract: the existing facade, Start web seam/template, source fixture, focused application/web tests, one new readiness integration test, and six truth-tail docs. It does not authorize `application/script_package.py`, the GitHub connector, PRD/System Spec, repositories/schema/Workflow, dependencies/locks, CSS, other templates/tests, protected candidates, B2–B6, Provider/credentials/fees, ImageGen/HyperFrames/media/publication or external runtime effects.
+
+Required B1 evidence is the public RED chronology, fixed source selection/acquisition, exact three-package source binding, restart/replay with zero duplicate Script/Decision/Budget/Attempt state, source-only `script_review / approve_script` gate, future-only Xiaotudou boundary, focused compatibility checks, compileall, `git diff --check` and exact ownership/prohibited scans. Final full regression, live GitHub smoke, browser acceptance and merge remain controller-owned.
+
+## 7. Current authorization
 
 Authorized now:
 
-- edit/review the exact 11 B0 docs;
-- open and merge one docs PR after independent checks;
-- record B0 candidate truth as **IN PROGRESS**, never prewrite merge or completion.
+- implement Issue #154's exact bounded B1 candidate and run its focused/compatibility verification;
+- update this truth tail with B0 merged facts and B1 in-progress candidate facts;
+- hand off the actual Diff; final full regression, live smoke, browser evidence, commit/push/PR/merge and Issue closure remain controller-owned.
 
 Not authorized now:
 
-- B1–B6 code, UI, tests or dependency changes;
-- Luna dispatch;
-- Source-path implementation, Script package creation or character generation;
-- provider credentials, Doubao paid calls or any fee beyond future exact execution gates;
-- ImageGen, HyperFrames/FFmpeg production or media acceptance;
-- Douyin login, publication, API use or manual performance entry;
-- deployment, standalone commercial distribution or claims of MBL completion;
+- B2–B6 code, UI, tests or dependency changes;
+- Doubao/provider credentials, paid calls or any fee beyond future exact execution gates;
+- ImageGen, Xiaotudou image creation/import/approval, HyperFrames/FFmpeg rendering, media production or character generation;
+- deployment, Douyin publication or performance entry;
 - reset/cleanup/merge of protected H4/#145/#146/#147 candidates.
 
-Actual B0 merge permits only B1 planning and one independently reviewed Task Contract. It does not authorize B1 implementation.
+Actual B0 merge permits the independently approved B1 Issue #154 implementation only; B2–B6 remain gated.

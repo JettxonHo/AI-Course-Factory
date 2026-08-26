@@ -7,7 +7,7 @@ AI Course Factory 是一个本地优先的知识视频制作应用。它把公�
 - FAST-MVP v1.1 与 Creator Handoff v1.2 H0–H3.5 是保留的本地历史/基础能力；Creator Handoff H4 从未完成。
 - Knowledge Video Editorial MVP v1.3 已完成 E0、S0 与 S1。Creator-authored Script Package intake/re-import、immutable Script Version、exact approve/reject Decision、restart/replay 已通过 Issue #150 / PR #151 合并到 `main@1a769289`，最终回归 476/476。
 - v1.3 没有完成 Narrative Clock、Visual Edit Plan、Sample、full render 或发布；Issue #145 仍 OPEN/PAUSED，其未合并候选不得恢复或整包复用。
-- Product Owner 于 2026-08-27 批准 **Knowledge Video Business Loop MBL v1.0** exact Goal。Issue #152 只执行 B0 docs-first authority rebaseline；B1–B6 代码、Provider 调用、媒体生产和抖音发布仍未授权。
+- Product Owner 于 2026-08-27 批准 **Knowledge Video Business Loop MBL v1.0** exact Goal。B0 Issue #152 / PR #153 已合并；B1 Issue #154 正在执行精确的 Computer Vision 来源与三份 Creator Package readiness，B2–B6 代码、Provider 调用、媒体生产和抖音发布仍未授权。
 
 批准的 MBL 主链是：
 
@@ -29,7 +29,7 @@ exact Computer Vision Source
 
 首轮固定为三条“AI 如何看懂画面”系列，使用 `microsoft/AI-For-Beginners/lessons/4-ComputerVision/06-IntroCV/README.md` 的 exact commit/blob/locator 事实。每条 60–90 秒；第 1 条验证完整生产/发布/反馈路径，三条建立首个账号基线。数据不好可以否定内容假设，但不否定业务闭环已被真实执行。
 
-AI Course Factory 是业务控制台，不是专业剪辑器。当前 MBL 允许 Codex 在应用外完成脚本与静态素材生产，豆包“刘飞 2.0”承担整篇旁白，HyperFrames/FFmpeg 通过后续 bounded adapter 负责确定性渲染。稳定生产合同必须允许将来替换为独立模型/API；B0 不调用任何 Provider、ImageGen、HyperFrames 或抖音能力。
+AI Course Factory 是业务控制台，不是专业剪辑器。当前 MBL 允许 Codex 在应用外完成脚本与静态素材生产，豆包“刘飞 2.0”承担整篇旁白，HyperFrames/FFmpeg 通过后续 bounded adapter 负责确定性渲染。稳定生产合同必须允许将来替换为独立模型/API；B1 不调用任何 Provider、ImageGen、HyperFrames 或抖音能力。
 
 现行权威见 [Knowledge Video Business Loop MBL v1.0](docs/goals/KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md) 与 [GOAL.md](GOAL.md)。[v1.3 Goal Contract](docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md) 和 [Creator Script 重基线](docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md) 保留为 S1 基础合同/历史。
 
@@ -68,7 +68,7 @@ Codex 和开发者按以下顺序阅读：
 PYTHONPATH=src uv run python -m unittest discover -s tests -v
 ```
 
-B0 Issue #152 是 exact 11-doc change，只运行文档一致性、ownership 与 `git diff --check`；docs-only 不重跑 full regression。后续每个 feature milestone 仍须 focused checks、浏览器/真实边界证据及 merge 前一次 full regression。
+B0 Issue #152 / PR #153 是已合并的 exact 11-doc change。B1 Issue #154 运行 focused RED/compatibility checks、compileall、ownership 与 `git diff --check`；浏览器/真实边界证据及 merge 前一次 full regression 仍由 controller 负责。
 
 ## 权威文档
 

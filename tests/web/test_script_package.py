@@ -11,7 +11,10 @@ from ai_course_factory.application import CourseFactoryApplication
 from ai_course_factory.web import create_app
 
 from tests.application.test_script_package import _package
-from tests.source_fixture import FixtureSourceConnector, SUPPORTED_REPOSITORY_URL
+from tests.source_fixture import (
+    FixtureSourceConnector,
+    SUPPORTED_REPOSITORY_URL,
+)
 
 
 class CreatorScriptPackageWebTests(unittest.TestCase):
@@ -23,9 +26,20 @@ class CreatorScriptPackageWebTests(unittest.TestCase):
                     "/start/source", data={"repository_url": SUPPORTED_REPOSITORY_URL}, headers={"host": "127.0.0.1", "origin": "http://127.0.0.1"}, follow_redirects=False
                 )
                 self.assertEqual(started.status_code, 303)
-                locator = "microsoft/AI-For-Beginners@0123456789abcdef0123456789abcdef01234567:lessons/1-Intro/README.md#L1-L2"
-                locator_2 = "microsoft/AI-For-Beginners@0123456789abcdef0123456789abcdef01234567:lessons/1-Intro/README.md#L3-L5"
+                # The ASGI request owns its facade connection on its worker
+                # thread; reopen the persisted task in this test thread and
+                # derive locators from the actual ApplicationView.
+                with CourseFactoryApplication(
+                    Path(directory),
+                    source_connector=FixtureSourceConnector(),
+                    script_package_directory=package_dir,
+                ) as started_application:
+                    started_view = started_application.inspect().view
+                    self.assertIsNotNone(started_view)
+                    self.assertGreaterEqual(len(started_view.source_evidence), 2)
+                    locator, locator_2 = started_view.source_evidence[:2]
                 package = _package(locator=locator)
+                package["script_package_id"] = "computer-vision-episode-02-preprocessing"
                 package["claims"] = [
                     {"claim_id": "claim-1", "statement": "<b>Unsafe & claim</b>", "evidence_locators": [locator, locator_2]},
                     {"claim_id": "claim-2", "statement": "Second ordered claim", "evidence_locators": [locator_2]},
@@ -49,6 +63,8 @@ class CreatorScriptPackageWebTests(unittest.TestCase):
                 rendered = client.get("/")
                 self.assertEqual(rendered.status_code, 200)
                 html = rendered.text
+                self.assertIn("AI 如何看懂画面 · computer-vision-episode-02-preprocessing", html)
+                self.assertNotIn("第 01 集", html)
                 self.assertIn("claim-1", html)
                 self.assertIn("claim-2", html)
                 self.assertLess(html.index("claim-1"), html.index("claim-2"))

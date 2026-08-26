@@ -35,7 +35,7 @@
         <label class="field" for="repository-url">公开 GitHub 仓库地址
           <input id="repository-url" name="repository_url" type="url" value="{{ repository_url }}" maxlength="128" autocomplete="url" required>
         </label>
-        <p class="decision-copy">本地 Demo 目前只支持 AI-For-Beginners Lesson 1。不会扫描其他目录或猜测来源。</p>
+        <p class="decision-copy">本地 Demo 目前只支持 AI-For-Beginners 的 Computer Vision 课程：<code>lessons/4-ComputerVision/06-IntroCV/README.md</code>。不会扫描其他路径或猜测来源。</p>
         <div class="action-row action-row-end"><button class="button button-primary" type="submit">锁定课程来源</button></div>
       </form>
     </aside>
@@ -46,6 +46,7 @@
         <div><dt>记录方式</dt><dd>固定上游提交与定位</dd></div>
         <div><dt>下一步</dt><dd>读取脚本并确认</dd></div>
       </dl>
+      <p class="section-note">角色边界：后续 B3 才会由 Product Owner 从三个 Xiaotudou 候选中选择；当前不创建、导入或批准任何角色图片。</p>
     </aside>
   </div>
 </section>
@@ -66,7 +67,7 @@
       <header class="task-heading">
         <div>
           <p class="eyebrow">当前任务</p>
-          <h2 id="task-title">小土豆学 AI · 第 01 集</h2>
+          {% if view.creator_script_package_id %}<h2 id="task-title">AI 如何看懂画面 · {{ view.creator_script_package_id }}</h2>{% else %}<h2 id="task-title">AI 如何看懂画面 · Computer Vision</h2>{% endif %}
           {% if view.script_reference %}<p class="stage-context">脚本版本：{{ view.script_reference.identity }} v{{ view.script_reference.version }}</p>{% else %}<p class="stage-context">当前尚未导入 Creator-authored Script Package。</p>{% endif %}
         </div>
       </header>
@@ -165,6 +166,7 @@
           <div><dt>主要定位</dt><dd class="break-anywhere">{{ view.source_locator }}</dd></div>
           <div class="facts-wide"><dt>来源证据</dt><dd>{% for item in view.source_evidence %}<span class="evidence-line">{{ item }}</span>{% endfor %}</dd></div>
         </dl>
+        <p class="section-note">角色边界：后续 B3 才会由 Product Owner 从三个 Xiaotudou 候选中选择；当前不创建、导入或批准任何角色图片。</p>
       </details>
 
       {% if view.prompt_cards %}

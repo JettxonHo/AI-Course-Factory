@@ -19,9 +19,9 @@ Read in this order:
 - **FAST-MVP v1.1** — completed historical family with accepted local Source-to-Publish evidence.
 - **Creator Handoff MVP v1.2** — H0–H3.5 are implemented/accepted foundation capabilities; H4 never completed. The six-external-MP4 generation/import acceptance path is PARKED by D-010, while its exact lineage, handoff, import and restart behavior remain reusable evidence.
 - **Knowledge Video Editorial MVP v1.3** — accepted foundation through E0/S0/S1. S1 Creator Script Package intake/review is complete at `main@1a7692894bce6ebea3d88263da67713b426ba59e` through Issue #150 / PR #151; E1–E4 were not completed.
-- **Knowledge Video Business Loop MBL v1.0** — Product Owner approved the exact Goal on 2026-08-27. Issue #152 owns B0 docs-only authority integration; B1–B6 implementation remains unauthorized.
+- **Knowledge Video Business Loop MBL v1.0** — Product Owner approved the exact Goal on 2026-08-27. B0 Issue #152 / PR #153 is merged; B1 Issue #154 owns the bounded Computer Vision source and Creator Package readiness implementation, while B2–B6 remain unauthorized.
 
-`GOAL.md` records MBL **APPROVED / ACTIVE** with B0 **IN PROGRESS / DOCS ONLY**. B0 changes no code and performs no Provider call, media production or publication. Creator Handoff H4 and Issue #145 remain parked/paused protected evidence, not implementation inputs.
+`GOAL.md` records MBL **APPROVED / ACTIVE** with B0 **COMPLETE** and B1 **IN PROGRESS** through Issue #154. B1 changes only the bounded source/UI/test seam and performs no Provider call, media production or publication. Creator Handoff H4 and Issue #145 remain parked/paused protected evidence, not implementation inputs.
 
 ## 3. Approved primary direction
 

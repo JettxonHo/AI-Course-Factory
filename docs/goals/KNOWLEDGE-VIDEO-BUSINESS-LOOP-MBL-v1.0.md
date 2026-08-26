@@ -4,11 +4,11 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **GOAL APPROVED / ACTIVE — B0 DOCS ONLY IN PROGRESS** |
+| Status | **GOAL APPROVED / ACTIVE — B0 COMPLETE; B1 IMPLEMENTATION IN PROGRESS** |
 | Product Owner approval | 2026-08-27 |
-| Recording task | Issue #152 |
-| Baseline | `main@1a7692894bce6ebea3d88263da67713b426ba59e` |
-| Implementation | **UNAUTHORIZED** until a later milestone Task Contract passes its startup gate |
+| Recording task | Issue #152 / PR #153 merged; B1 Issue #154 |
+| Baseline | `main@bd4d44a2e9c710d26aea8c531328ae6ec7fefda4` |
+| Implementation | **B1 AUTHORIZED / IN PROGRESS** through the approved Issue #154 Task Contract; B2–B6 remain gated |
 
 Knowledge Video Editorial MVP v1.3 remains accepted foundation through S1 Creator Script Package intake. It did not complete its Narrative Clock, Visual Edit Plan, Sample, full-render or named-human acceptance milestones, and it explicitly excluded publication. This contract keeps the trustworthy foundation and changes the active objective from “one local finished-video proof” to a small real production-and-feedback loop.
 
@@ -16,7 +16,7 @@ Knowledge Video Editorial MVP v1.3 remains accepted foundation through S1 Creato
 
 基于一个精确的公开 GitHub 课程来源和 Creator-authored Script Package，通过 Codex 辅助生产、豆包“刘飞 2.0”整篇旁白、短语级时间轴、人工批准的 A/B-roll 视觉编排、Codex 生图与 HyperFrames 确定性渲染，生成并人工批准 60–90 秒抖音知识视频；手工发布后回收 72 小时与 7 天数据，并连续完成三条“AI 如何看懂画面”系列视频，形成可复盘的最小业务闭环。
 
-This exact wording is also recorded in `GOAL.md` and Issue #152. The Goal is deliberately a business-loop contract, not a claim of product-market fit or a promise to automate publication.
+This exact wording is also recorded in `GOAL.md` and Issue #152. The Goal is deliberately a business-loop contract, not a claim of product-market fit or a promise to automate publication. B1 implementation remains bounded by Issue #154; this status does not authorize later milestones or external effects.
 
 ## 3. First-principles boundary
 
@@ -58,7 +58,7 @@ Generating an MP4 without publication is a production loop, not a business loop.
 - File: `lessons/4-ComputerVision/06-IntroCV/README.md`.
 - Runtime intake locks an exact commit, blob and source locators. No contract hard-codes a floating `main` as downstream truth.
 
-The primary lesson currently requires a bounded source-path expansion because merged S1 code supports the historical Lesson 1 path. B0 records that need; B1 must freeze its smallest public seam and cannot introduce a generic repository browser, arbitrary path field or file manager.
+The primary lesson required a bounded source-path expansion because merged S1 code supported the historical Lesson 1 path. B0 recorded that need; B1 freezes the smallest public seam and does not introduce a generic repository browser, arbitrary path field or file manager.
 
 ### 5.2 Series and cadence
 
@@ -203,14 +203,14 @@ Metrics may be poor. That closes the business loop while rejecting the current c
 ## 9. Preserved and parked work
 
 - S1 is complete through Issue #150 / PR #151 at `main@1a7692894bce6ebea3d88263da67713b426ba59e`; its 476-test regression is accepted foundation evidence.
-- Issue #145 remains OPEN/PAUSED during B0. Its protected 35-path working candidate is not merged, copied or resumed; B2 must start from current main and conduct an explicit line-level salvage/reimplementation review.
+- Issue #145 remains OPEN/PAUSED during B0 and B1. Its protected 35-path working candidate is not merged, copied or resumed; B2 must start from current main and conduct an explicit line-level salvage/reimplementation review.
 - #146/#147 remain CLOSED/NOT_PLANNED with preserved rejected candidates.
 - H4 remains PARKED/NOT COMPLETE with its protected six-file candidate intact.
 - Creator Handoff media/history remains readable but cannot satisfy MBL acceptance by relabelling.
 
 ## 10. B0 authorization boundary
 
-Issue #152 owns exactly 11 documentation files. B0 may create one docs PR and, after independent review, merge it. It may not:
+Issue #152 owned exactly 11 documentation files and is complete through merged PR #153. B0 did not:
 
 - change code, tests, UI, dependencies or runtime configuration;
 - dispatch Luna;
@@ -220,4 +220,4 @@ Issue #152 owns exactly 11 documentation files. B0 may create one docs PR and, a
 - close B1–B6 as complete;
 - reset, clean, overwrite, cherry-pick or merge protected candidates.
 
-Actual B0 merge makes this Goal the active repository authority and permits only B1 planning. It does not authorize B1 implementation.
+Actual B0 merge made this Goal the active repository authority. Approved Issue #154 now authorizes the bounded B1 implementation; it does not authorize B2–B6 or any external/paid/media action.

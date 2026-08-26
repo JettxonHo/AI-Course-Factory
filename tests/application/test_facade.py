@@ -27,6 +27,18 @@ def _app(directory: str | Path, **kwargs: object) -> CourseFactoryApplication:
 
 
 class CourseFactoryApplicationTests(unittest.TestCase):
+    def test_b1_source_start_requests_the_fixed_computer_vision_lesson(self) -> None:
+        """Fresh-task source start requests the fixed Computer Vision lesson."""
+        expected_path = "lessons/4-ComputerVision/06-IntroCV/README.md"
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = CourseFactoryApplication(Path(directory), source_connector=connector)
+
+            result = app.start_source(SUPPORTED_REPOSITORY_URL)
+
+            self.assertEqual(result.status, "success")
+            self.assertEqual(connector.calls, [(SUPPORTED_REPOSITORY_URL, (expected_path,))])
+
     def test_fresh_create_or_open_requires_source_before_initializing_demo(self) -> None:
         with TemporaryDirectory() as directory:
             app = CourseFactoryApplication(Path(directory), source_connector=FixtureSourceConnector())
