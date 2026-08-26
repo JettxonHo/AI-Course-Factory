@@ -18,17 +18,18 @@ Read in this order:
 
 - **FAST-MVP v1.1** — completed historical family with accepted local Source-to-Publish evidence.
 - **Creator Handoff MVP v1.2** — H0–H3.5 are implemented/accepted foundation capabilities; H4 never completed. The six-external-MP4 generation/import acceptance path is PARKED by D-010, while its exact lineage, handoff, import and restart behavior remain reusable evidence.
-- **Knowledge Video Editorial MVP v1.3** — E0 is complete through Issue #143 / PR #144; S0 is complete at `main@597f3a03e582cbccc099ad0810e17b0262a80d51` through Issue #148 / PR #149. Issue #150 is the active bounded S1 Creator Script Package intake/review implementation.
+- **Knowledge Video Editorial MVP v1.3** — accepted foundation through E0/S0/S1. S1 Creator Script Package intake/review is complete at `main@1a7692894bce6ebea3d88263da67713b426ba59e` through Issue #150 / PR #151; E1–E4 were not completed.
+- **Knowledge Video Business Loop MBL v1.0** — Product Owner approved the exact Goal on 2026-08-27. Issue #152 owns B0 docs-only authority integration; B1–B6 implementation remains unauthorized.
 
-`GOAL.md` records S0 **COMPLETE** and S1 **IN PROGRESS** through Issue #150. S1 does not authorize E1/E2, Provider/model/credential/fee/deploy, or the older `_OfflineRuntime` Script-authoring path. Creator Handoff H4 stays PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
+`GOAL.md` records MBL **APPROVED / ACTIVE** with B0 **IN PROGRESS / DOCS ONLY**. B0 changes no code and performs no Provider call, media production or publication. Creator Handoff H4 and Issue #145 remain parked/paused protected evidence, not implementation inputs.
 
 ## 3. Approved primary direction
 
-The approved amended chain is Source → explicit Creator-authored Script Package intake → exact human-approved Script Version → Whole Narration → phrase-level millisecond Acoustic Alignment → human-approved Visual Edit Plan → deterministic A/B-roll → 15–20 second Sample Video gate → full render → named-human Final Review → Publish Package.
+The approved chain is exact Computer Vision Source → explicit Creator-authored Script Package → exact approved Script → Doubao Liu Fei 2.0 Whole Narration → short-phrase continuous clock/SRT → evidence-bound A/B-roll Visual Edit Plan → Codex creator assets → HyperFrames Sample/full render → named-human review → publish-ready package → manual Douyin publication → 72-hour/7-day feedback.
 
-The current Goal contract remains in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md). The approved Script-input amendment, alternatives and defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
+The current Goal contract is [KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md](goals/KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md). The v1.3 [Goal Contract](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md) and [Script-input Rebaseline](goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md) remain authoritative for the implemented S1 foundation unless the MBL contract explicitly changes a downstream outcome.
 
-The approved contract freezes one evidence owner (top-level claims), a package-owned ordered file projection derived from GitHub SourceRecord units without changing SourceRecord, one canonical JSON-value rule and one `script_package_id` lineage. Every Script Version persistently owns the complete canonical package; changed imports require a new Decision. S1 Issue #150 owns the exact 34-path implementation slice; the main controller owns final full regression and merge gates.
+The Script Package contract still freezes one evidence owner, exact Source projection, canonical JSON-value rule and one `script_package_id` lineage. MBL adds real publication and feedback truth without weakening those invariants. Manual Douyin facts are creator-declared and bound to exact Final Versions; no platform API is implied.
 
 ## 4. Conflict rule
 
@@ -44,7 +45,7 @@ An approved Goal does not bypass milestone entry gates. Label docs-PR merge stat
 
 ## 5. Historical material
 
-Older PRDs, phase plans, D-008/D-009, Creator Handoff contracts, closed Issues/PRs and H4 repo-external evidence remain audit history. D-010 changes the approved editorial path; D-011 changes Script ownership without deleting or relabelling that history.
+Older PRDs, phase plans, D-008/D-009, Creator Handoff contracts, closed Issues/PRs and H4 repo-external evidence remain audit history. D-010 changes the editorial path, D-011 changes Script ownership and D-012 changes the active completion target from local output evidence to a three-video publication/feedback loop without deleting prior facts.
 
 ## 6. Update rules
 

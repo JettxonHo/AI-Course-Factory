@@ -1,26 +1,27 @@
-# Knowledge Video Editorial MVP v1.3 — Approved Goal Contract
+# Knowledge Video Editorial MVP v1.3 — Historical Foundation Contract
 
 ## 1. Contract state
 
 | Field | Value |
 | --- | --- |
-| Status | **AMENDED GOAL APPROVED / ACTIVE — S0 COMPLETE; S1 CREATOR SCRIPT PACKAGE IN PROGRESS** |
+| Status | **HISTORICAL FOUNDATION — S0 AND S1 COMPLETE; SUPERSEDED AS ACTIVE GOAL BY KNOWLEDGE VIDEO BUSINESS LOOP MBL v1.0** |
 | Product direction | Approved by Product Owner on 2026-08-24 |
 | Exact Goal | Approved by Product Owner on 2026-08-24 |
 | E0 evidence | Issue #143 CLOSED; PR #144 MERGED; main@47ac1e3 |
-| Script-input authority integration | Issue #148 / PR #149 merged; S1 Issue #150 implementation in progress |
-| Baseline | `main@597f3a03e582cbccc099ad0810e17b0262a80d51` |
+| Script-input authority integration | Issue #148 / PR #149 and Issue #150 / PR #151 merged; S1 COMPLETE |
+| Accepted foundation baseline | `main@1a7692894bce6ebea3d88263da67713b426ba59e` |
+| Current authority | [Knowledge Video Business Loop MBL v1.0](KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md) |
 | Preserves | FAST-MVP v1.1 completed history; Creator Handoff v1.2 implementation/evidence; protected H4/#142 candidate |
 
-This contract records the approved amended exact v1.3 Goal, the completed E0 baseline and the merged S0 authority integration. The Creator-authored Script Package contract and eight approved defaults are in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md).
+This contract preserves the approved amended exact v1.3 Goal, the completed E0/S0 governance baseline and the merged S1 Creator-authored Script Package intake. The Creator-authored Script Package contract and eight approved defaults remain in [KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md](KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md). They are reusable foundations, not the current completion target.
 
-Transition authority is explicit: `GOAL.md` records S0 **COMPLETE** and S1 **IN PROGRESS** through Issue #150. The former in-application Script-authoring path and paused E1 candidate remain unauthorized; Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
+Transition authority is explicit: S1 completed through Issue #150 / PR #151 at `main@1a7692894bce6ebea3d88263da67713b426ba59e`, with final regression `476/476`. `GOAL.md` and the MBL v1.0 contract now own the active outcome: three manually published Douyin videos plus 72-hour and 7-day feedback. The former in-application Script-authoring path and paused #145 E1 candidate remain unauthorized; Creator Handoff H4 remains PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE.
 
 ## 2. Approved amended exact Goal
 
 > Deliver one local Knowledge Video Editorial flow that acquires the supported exact public GitHub source; accepts a Creator-authored Script Package whose ordered narration units bind exact source locators and claim evidence; commits and human-approves one immutable Script Version; produces one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
 
-The Product Owner explicitly approved this exact amended wording and all eight Script-input defaults on 2026-08-24. S0 docs authority is merged through PR #149; Issue #150 is the separately approved S1 feature slice and does not authorize E1/E2 or Provider/model/credential/fee/deploy work.
+The Product Owner explicitly approved this exact amended wording and all eight Script-input defaults on 2026-08-24. S0 docs authority merged through PR #149 and S1 implementation merged through PR #151. This wording is retained as historical authority for the accepted Script-input foundation; it does not replace the current MBL v1.0 Goal or authorize B1-B6 implementation, Provider/model/credential/fee/deploy/publication work.
 
 ## 3. Why the rebaseline is needed
 
@@ -28,7 +29,7 @@ Creator Handoff v1.2 proved useful foundations: live exact Source, immutable Scr
 
 The remaining product problem is editorial control, not another external generation handoff. Six separately generated MP4s make motion quality, teaching evidence and rhythm depend on an external video model before the application has established a coherent narration clock or edit plan. The new direction moves those decisions into an application-owned editorial spine and uses deterministic production for the MVP.
 
-## 4. Current contract audit
+## 4. Historical contract audit and reusable foundation
 
 ### Reuse without reopening
 
@@ -39,7 +40,7 @@ The remaining product problem is editorial control, not another external generat
 | Protected H4 and rejected #145/#146/#147 candidates | Preserve as evidence; do not use/copy as the primary Script authoring implementation. |
 | Generic immutable Artifact repository and exact References | Own Whole Narration, Acoustic Alignment, Visual Edit Plan, Sample Video and Final Video facts. |
 | Workspace and SQLite restart/replay discipline | Remain the local persistence boundary. |
-| Local GPT-SoVITS runtime/reference | Candidate substrate for one continuous narration; it is not yet proof that the one-shot contract works. |
+| Local GPT-SoVITS runtime/reference | Historical narration substrate only; it is not the approved MBL Doubao “刘飞 2.0” choice or proof of that Whole Narration contract. |
 | Final Video Decision context/findings | Reuse for named-human final acceptance; preserve the protected nonempty checklist correction. |
 | Publish Package | Continue as post-approval delivery, with expanded editorial lineage. |
 | Exactly three zh-CN SSR/Jinja views | Remain the Human-in-the-loop control surface. |
@@ -139,7 +140,9 @@ Issue #148 owned exactly ten docs including `GOAL.md`; PR #149 merged them. S1 p
 
 ### S1 — Creator Script Package intake
 
-Issue #150 implements the smallest explicit intake/re-import vertical. E1 remains paused until S1 produces one exact approved Script.
+Status: **COMPLETE** at `main@1a7692894bce6ebea3d88263da67713b426ba59e`; Issue #150 CLOSED, PR #151 MERGED, final regression `476/476`.
+
+The smallest explicit intake/re-import vertical now accepts and human-approves exact Creator-authored Script Package Versions with durable replay. This is an accepted MBL foundation; it does not itself complete narration, rendering, publication or feedback.
 
 ### E1 — Narrative clock
 
@@ -174,28 +177,28 @@ Render the complete video from the approved inputs, complete named-human normal-
 
 The current dirty branch `codex/141-creator-handoff-h4-acceptance` remains untouched at `d301efd` with exact six-file Diff SHA-256 `f6b6d331a26f5a426566f04c978d1dd3684615cffb0a808f13fbaf145f803171`.
 
-After exact v1.3 Goal approval, a separate disposition review must classify lines rather than cherry-pick the branch wholesale:
+The v1.3 disposition kept the branch as protected evidence rather than cherry-picking it wholesale. Any future reuse still requires line-level classification:
 
 - **Preserved evidence:** source-grounded Script/Knowledge experiments and exact Final findings/replay behavior; none is automatically reused.
 - **Compatibility evidence:** creator-import Final tests and prior handoff/import lineage.
 - **Parked path:** external six-MP4 generation/import acceptance and Scene-2 replacement as the primary Goal.
 
-No reset, cleanup, overwrite, implicit merge or H4 completion claim is permitted. Issue #141/#142 remain open until the Product Owner approves an explicit close/park/disposition action.
+No reset, cleanup, overwrite, implicit merge or H4 completion claim is permitted. Issues #141/#142 were closed as `NOT_PLANNED`, not as H4 completion; the protected dirty evidence remains preserved.
 
-## 12. Authorization and stop conditions
+## 12. Historical authorization and current stop conditions
 
-S1 Issue #150 authorizes only its exact 34-path implementation and exact Luna route. Stop before E1/E2 coding, Provider/model/credential/fee/deploy, generic repository/schema changes or protected-candidate reuse.
+Issue #150 authorized and completed only its exact S1 intake slice. Current implementation authority comes exclusively from the MBL v1.0 contract and its next independently approved Task Contract. B0 is docs-only: stop before B1-B6 coding, Doubao credentials/paid calls, Codex ImageGen/HyperFrames media execution, deployment/publication, generic repository/schema changes or protected-candidate reuse.
 
 Later Task Contracts must independently validate:
 
 - the local phrase-alignment engine/runtime and its quality/latency evidence;
 - whether HyperFrames satisfies the deterministic renderer boundary or one equivalent is better;
-- how approved local GPT-SoVITS produces one continuous narration without pulling its heavy dependencies into core Python 3.12;
+- how the separately authorized Doubao “刘飞 2.0” adapter produces one continuous narration under the approved at-most-two-call/CNY 2 Episode 1 cap;
 - the exact Sample Video interval and approval binding;
 - additive Artifact/Decision/state/view contracts and backward-readable v1.2 facts.
 
-Return to Product Owner review for a general Provider registry, cloud image/video API, model/credentials/fees/cap, new frontend stack, professional editor, fourth view, broad Artifact/Workflow rewrite, deployment, publication or weakening of exact Source/Script/Final invariants.
+Return to Product Owner review for B1-B6 Task Contracts, Episodes 2–3 paid-call caps, a general Provider registry, cloud image/video API, model/credentials/fees beyond the frozen Episode 1 boundary, a new frontend stack, professional editor, fourth view, broad Artifact/Workflow rewrite, automated Douyin publication or weakening of exact Source/Script/Final invariants.
 
-## 13. Docs-first candidate boundary
+## 13. Historical completion evidence
 
-Issue #150 owns exactly 34 paths and requires RED/focused/compatibility checks, compileall, diff-check and exact ownership review. Final full regression, fresh smoke, browser evidence and merge/Issue-close facts remain controller-owned and pending.
+Issue #150 changed 29 files inside its approved 34-path allowlist. Fresh live Source v1/v2 import, approval, restart and replay passed with zero Budget/Authorization/Attempt rows; desktop/mobile browser acceptance passed; final regression passed `476/476`; PR #151 merged and Issue #150 closed. These facts establish the Script-input foundation only. They do not prove MBL Whole Narration, visual planning, HyperFrames rendering, Douyin publication or feedback.

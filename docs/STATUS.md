@@ -2,107 +2,91 @@
 
 ## 1. Snapshot
 
-Observed: 2026-08-24 (Asia/Shanghai)
+Observed: 2026-08-27 (Asia/Shanghai)
 
 | Fact | Current evidence |
 | --- | --- |
-| Current merged baseline | main@597f3a03e582cbccc099ad0810e17b0262a80d51 |
-| H3.5 | Issue #139 CLOSED; PR #140 MERGED; accepted focused 31/31 and full 462/462 evidence |
-| Current approved Goal file | Knowledge Video Editorial MVP v1.3 is recorded in GOAL.md as **APPROVED / ACTIVE** |
-| Prior Goal disposition | Creator Handoff H0–H3.5 remain foundation history; H4 is PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE |
-| E0 | **COMPLETE**; Issue #143 CLOSED, PR #144 MERGED |
-| S0 | **COMPLETE**; Issue #148 CLOSED, PR #149 MERGED |
-| Active milestone | **S1 IN PROGRESS** through Issue #150; final merge/evidence pending |
-| New direction | Product Owner approved the Creator-authored Script Package amended exact Goal and eight defaults on 2026-08-24; S0 merged through PR #149 |
-| v1.3 state | Amended Goal **APPROVED / ACTIVE**; S0 **COMPLETE**; S1 Issue #150 implementation in progress |
-| Current task | Issue #150, exact Creator Script Package intake/review vertical |
-| E1 | Issue #145 remains OPEN/PAUSED; do not resume its dirty candidate |
-| Rejected prerequisites | #146 and #147 CLOSED / NOT_PLANNED; their dirty candidates remain preserved evidence, not implementation inputs |
-| H4 Issues | #141 and #142 CLOSED / NOT_PLANNED; PARKED / SUPERSEDED AS PRIMARY PATH / NOT COMPLETE |
-| External clips | Do not generate/import scene-1.mp4…scene-6.mp4 or scene-2-replacement.mp4; no Jimeng/Kling/Seedance credits authorized |
-| Provider boundary | No video-generation LLM/API, credentials, fee/cap change or deployment authorized |
+| Current merged baseline | `main@1a7692894bce6ebea3d88263da67713b426ba59e` |
+| S1 | **COMPLETE**; Issue #150 CLOSED, PR #151 MERGED, final full regression 476/476 |
+| Current approved Goal | Knowledge Video Business Loop MBL v1.0 **APPROVED / ACTIVE** |
+| Active task | B0 Issue #152, exact 11-doc authority rebaseline |
+| B0 | **IN PROGRESS / DOCS ONLY**; docs PR pending |
+| B1–B6 | **PENDING B0 MERGE / IMPLEMENTATION UNAUTHORIZED** |
+| v1.3 disposition | E0/S0/S1 accepted foundation; E1–E4 not complete; superseded only as active Goal |
+| Issue #145 | OPEN/PAUSED protected Narrative Clock candidate; do not resume, merge or copy wholesale |
+| Creator Handoff H4 | PARKED / NOT COMPLETE; protected six-file candidate preserved |
+| Provider/publication | No current call/render/publication action; Episode 1 cap is approved for a later B2 execution gate only |
 
-This file reports facts. E0 and S0 are merged and complete. Product Owner approval of the Creator-authored Script Package amended exact Goal and eight defaults, followed by merged PR #149, authorizes the independently approved Issue #150 S1 implementation slice. It does not authorize E1/E2, Provider/model/credential/fee/deploy, or resumption of the paused #145 candidate.
+This file reports facts rather than granting scope. Product Owner approval on 2026-08-27 authorizes B0 documentation integration and the normal docs PR lifecycle. It does not authorize B1–B6 implementation, Luna, credentials, paid calls, ImageGen, HyperFrames, media production, Douyin publication, deployment or performance claims.
 
-Current #150 truth: S0 is **COMPLETE** at `main@597f3a03e582cbccc099ad0810e17b0262a80d51`; S1 is **IN PROGRESS** with exact 34-path ownership. The contract treats package files as a projection from SourceRecord units and stores the complete canonical package on each Script Version so restart/re-import compares every accepted field; changed Versions do not inherit Decisions. Final merge and full evidence remain pending.
+## 2. Newly approved MBL direction
 
-## 2. Protected in-flight H4 candidate
+The exact Goal is:
 
-The original worktree remains on codex/141-creator-handoff-h4-acceptance@d301efd with exact six dirty files:
+> 基于一个精确的公开 GitHub 课程来源和 Creator-authored Script Package，通过 Codex 辅助生产、豆包“刘飞 2.0”整篇旁白、短语级时间轴、人工批准的 A/B-roll 视觉编排、Codex 生图与 HyperFrames 确定性渲染，生成并人工批准 60–90 秒抖音知识视频；手工发布后回收 72 小时与 7 天数据，并连续完成三条“AI 如何看懂画面”系列视频，形成可复盘的最小业务闭环。
 
-1. src/ai_course_factory/agents/scene_generation_contract.py
-2. src/ai_course_factory/application/facade.py
-3. src/ai_course_factory/web/templates/final.html
-4. tests/application/test_creator_scene_import.py
-5. tests/application/test_facade.py
-6. tests/web/test_creator_scene_import.py
+The approved first experiment uses the exact Computer Vision lesson file `lessons/4-ComputerVision/06-IntroCV/README.md`, three 60–90 second episodes, manual publication to the Product Owner's Douyin account and round-one watchability metrics. One episode proves the path; all three establish the first baseline. Weak performance can close the loop while rejecting the content hypothesis.
 
-The protected Diff SHA-256 is f6b6d331a26f5a426566f04c978d1dd3684615cffb0a808f13fbaf145f803171; git diff --check passes. It contains independently reviewed Final checklist behavior plus exact-source Script/Storyboard content corrections. It must not be reset, cleaned, overwritten, silently merged or described as H4 completion.
+## 3. Implemented and reusable foundation
 
-Issue #150 runs in a separate clean worktree/branch so the protected candidate remains byte-for-byte unchanged. This S1 candidate performs no line-level salvage.
+- live public GitHub Source acquisition with exact repository/commit/blob/unit/locator facts;
+- schema-v1 Creator-authored Script Package intake/re-import with exact Source membership and complete canonical package binding;
+- immutable Script Versions/prior references and exact creator approve/reject Decisions;
+- restart/replay with zero duplicate Script/Decision state mutation;
+- generic immutable Artifact repository, SQLite Task/Decision state and local Workspace;
+- existing local narration/media/FFmpeg/Publish Package foundations and v1.2 compatibility facts;
+- exactly three Simplified-Chinese SSR/Jinja control views under D-009;
+- final S1 repository evidence: Issue #150 CLOSED, PR #151 MERGED, `main@1a769289`, 476/476 regression.
 
-## 3. Implemented and reusable facts
+These facts do not prove Doubao Whole Narration, short-phrase timing, the MBL Visual Edit Plan, approved Xiaotudou assets, HyperFrames Sample/full render, named-human Final acceptance, publication or audience feedback.
 
-- live public GitHub Source acquisition at one exact commit, normalized Source units and exact claim locators;
-- normalized Source units, exact locators, immutable Script Versions and exact Script decisions;
-- Character, Storyboard, Timeline and Scene Generation Contract history;
-- generic immutable Artifact repository, SQLite Decisions/Task state and filesystem Workspace;
-- local GPT-SoVITS boundary, deterministic narration/handoff files and restart replay;
-- creator-import Scene Clip lineage, atomic explicit-directory import/re-import and committed local composition;
-- exact Final Video decisions and deterministic Publish Package;
-- exactly three fixed Simplified-Chinese SSR/Jinja views under D-009.
+## 4. Protected work
 
-These are reusable implementation facts. They do not prove Whole Narration, Acoustic Alignment, Visual Edit Plan, a deterministic Sample Video or v1.3 Final acceptance.
+### H4 candidate
 
-## 4. Historical family truth
+The original root worktree remains on `codex/141-creator-handoff-h4-acceptance@d301efd` with exact six dirty files and Diff SHA-256 `f6b6d331a26f5a426566f04c978d1dd3684615cffb0a808f13fbaf145f803171`. `git diff --check` passes. It must not be reset, cleaned, overwritten or described as H4 completion.
 
-- FAST-MVP v1.1 remains **COMPLETE / GOAL_APPROVED** local evidence.
-- Creator Handoff v1.2 H0–H3.5 remain accepted implementation/foundation facts.
-- Creator Handoff H4 never passed a real final human-quality run and v1.2 must not be relabelled complete.
-- D-008/D-009 and repo-external H4 evidence remain preserved. D-010 changes the approved primary path without rewriting history.
+### Paused #145 candidate
 
-## 5. Approved editorial direction
+The protected #145 worktree remains on `codex/145-whole-narration-alignment@47ac1e3` with an unmerged candidate and Diff SHA-256 `df724e19daedae3038ed25b1c94e5fa05149cc3cbb88dc0f0f32197d91662e0d`. `git diff --check` passes. Issue #145 stays OPEN/PAUSED during B0. B2 must start from current main and explicitly classify reusable lines; no wholesale cherry-pick or implicit resume is permitted.
 
-The approved amended chain is:
+#146/#147 remain CLOSED/NOT_PLANNED with their rejected two-file candidates preserved. B0 touches none of these worktrees.
 
-~~~text
-exact Source -> Creator-authored Script Package intake
--> exact human-approved Script Version -> Whole Narration
--> phrase-level millisecond Acoustic Alignment
--> approved Visual Edit Plan -> deterministic A/B-roll
--> approved 15–20 second Sample Video -> full render
--> named-human Final Review -> Publish Package
-~~~
+## 5. B0 ownership and evidence
 
-Codex Desktop ImageGen supplies external creator-owned static assets. Narration, Alignment and SRT remain application-owned. HyperFrames or an equivalent deterministic renderer still requires an approved later Task Contract; nothing is installed or selected by Issue #150.
+Issue #152 owns exactly 11 documentation paths:
+
+1. `GOAL.md`
+2. `README.md`
+3. `docs/README.md`
+4. `docs/STATUS.md`
+5. `docs/decision-log.md`
+6. `docs/product/PRD.md`
+7. `docs/spec/SYSTEM-SPEC.md`
+8. `docs/spec/IMPLEMENTATION-SPEC.md`
+9. `docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-PROPOSAL.md`
+10. `docs/goals/KNOWLEDGE-VIDEO-EDITORIAL-MVP-v1.3-SCRIPT-INPUT-REBASELINE.md`
+11. new `docs/goals/KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md`
+
+Required B0 evidence is exact ownership, exact Goal equality across Issue/Goal/contract, D-012 append-only placement, S1 merged-truth reconciliation, stale-authority scans and `git diff --check`. B0 is docs-only, so no code tests or full regression are run.
 
 ## 6. Current authorization
 
-Authorized:
+Authorized now:
 
-- Issue #150's exact 34-path S1 Creator Script Package intake/review implementation;
-- focused RED/compatibility checks, compileall, diff-check and ownership review; final full regression, smoke, browser evidence and merge remain controller-owned.
+- edit/review the exact 11 B0 docs;
+- open and merge one docs PR after independent checks;
+- record B0 candidate truth as **IN PROGRESS**, never prewrite merge or completion.
 
-Not authorized:
+Not authorized now:
 
-- E1/E2 feature implementation or unrelated Luna work;
-- HyperFrames/alignment dependency installation or runtime use;
-- unrelated UI/source/test/dependency edits outside Issue #150's exact 34-path ownership;
-- external video generation/import, Provider/API/model/credentials/fees/cap;
-- resuming #145 or copying #146/#147 rejected code;
-- deployment or publication.
+- B1–B6 code, UI, tests or dependency changes;
+- Luna dispatch;
+- Source-path implementation, Script package creation or character generation;
+- provider credentials, Doubao paid calls or any fee beyond future exact execution gates;
+- ImageGen, HyperFrames/FFmpeg production or media acceptance;
+- Douyin login, publication, API use or manual performance entry;
+- deployment, standalone commercial distribution or claims of MBL completion;
+- reset/cleanup/merge of protected H4/#145/#146/#147 candidates.
 
-Historical v1.2 implementation remains readable, but neither it nor the protected dirty candidate grants permission to resume H4.
-
-## 7. Issue #150 evidence boundary
-
-Issue #150 requires focused product/integration tests and compatibility checks; the controller owns one fresh repo-external local smoke, browser evidence and the full regression once before merge. Required worker evidence is:
-
-- exact 34-path ownership including the six truth docs;
-- exact amended Goal, eight approved defaults, S0 **COMPLETE** and S1 **IN PROGRESS** truth;
-- one top-level claim/evidence owner, exact Source shape, canonical logical equivalence and locked package-ID lifecycle;
-- creator provenance labelled declared rather than authenticated, and v1.3 approve/reject separated from readable legacy revise;
-- consistent E0-complete, S0-complete, S1-in-progress and E1/E2-implementation-unauthorized wording;
-- preserved D-008/D-009 and H4 history;
-- stale/contradiction review;
-- git diff --check.
+Actual B0 merge permits only B1 planning and one independently reviewed Task Contract. It does not authorize B1 implementation.
