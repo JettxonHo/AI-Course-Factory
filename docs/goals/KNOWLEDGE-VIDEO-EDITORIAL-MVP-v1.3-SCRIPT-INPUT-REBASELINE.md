@@ -1,17 +1,18 @@
-# Knowledge Video Editorial MVP v1.3 — Creator-authored Script Input Rebaseline
+# Knowledge Video Editorial MVP v1.3 — Historical Creator-authored Script Input Rebaseline
 
 ## 1. Status and authority
 
 | Field | Value |
 | --- | --- |
-| Status | **APPROVED / ACTIVE GOAL AMENDMENT — S0 DOCS ONLY IN PROGRESS; FEATURE IMPLEMENTATION UNAUTHORIZED** |
+| Status | **HISTORICAL APPROVED FOUNDATION — S0 AND S1 COMPLETE; SUPERSEDED AS ACTIVE GOAL BY KNOWLEDGE VIDEO BUSINESS LOOP MBL v1.0** |
 | Direction | Creator-authored Script Package amended Goal/defaults approved by Product Owner, 2026-08-24 |
 | Exact amended Goal | Approved by Product Owner, 2026-08-24 |
-| Planning Issue | #148 |
-| Baseline | main@47ac1e3333a2b1f4927baf6bf6de1c44950d9307 |
-| Current implementation milestone | None; S0 is documentation governance only |
+| Governance Issue | #148 CLOSED; PR #149 MERGED |
+| Intake implementation | Issue #150 CLOSED; PR #151 MERGED |
+| Accepted foundation baseline | main@1a7692894bce6ebea3d88263da67713b426ba59e |
+| Current authority | [Knowledge Video Business Loop MBL v1.0](KNOWLEDGE-VIDEO-BUSINESS-LOOP-MBL-v1.0.md) |
 
-E0 is complete through Issue #143 / PR #144. The Product Owner approved this amended exact Goal, all eight defaults and S0 docs-only activation. `GOAL.md` now records the amended execution truth while S0 remains **IN PROGRESS** until the Issue #148 docs PR actually merges. This amendment retires the old in-application Script-authoring/revision path from the v1.3 primary flow and does not authorize code, UI, tests, dependencies, Luna, Provider calls, credentials, fees, deployment or publication.
+E0 completed through Issue #143 / PR #144, S0 through Issue #148 / PR #149, and the S1 intake implementation through Issue #150 / PR #151 with final regression `476/476`. This contract preserves the Product Owner-approved amended Goal and eight defaults as the accepted Script-input foundation. The active outcome is now the MBL v1.0 Goal, which reuses this intake contract and separately governs narration, visual production, manual Douyin publication and feedback. The old in-application Script-authoring/revision path remains retired from the primary flow.
 
 ## 2. Problem and current-contract audit
 
@@ -22,7 +23,7 @@ The application already owns useful exact seams:
 - durable Task state, repository restart/replay and exactly three local SSR/Jinja views;
 - downstream Whole Narration/Alignment planning that can consume one exact approved Script.
 
-The current primary Script behavior conflicts with the approved direction:
+At the time of this rebaseline, the previous primary Script behavior conflicted with the approved direction:
 
 - private deterministic `_OfflineRuntime` creates the initial Script during Source processing;
 - natural-language `revision_context` is treated as if it were a general writing/revision engine;
@@ -150,11 +151,11 @@ Deferred and not authorized. It would require a separate Provider/model/credenti
 
 No fourth view, SPA, generic file manager, browser path field, upload manager or application writing editor is introduced.
 
-## 6. Approved amended exact Goal
+## 6. Historical approved amended exact Goal
 
 > Deliver one local Knowledge Video Editorial flow that acquires the supported exact public GitHub source; accepts a Creator-authored Script Package whose ordered narration units bind exact source locators and claim evidence; commits and human-approves one immutable Script Version; produces one continuous narration, phrase-level millisecond Acoustic Alignment, a human-approved Visual Edit Plan, deterministic A-roll/B-roll production, an approved 15–20 second Sample Video, a fully rendered Final Video, and a named-human-approved traceable Publish Package through exactly three lightweight server-rendered views.
 
-This wording is the Product Owner-approved exact Goal.
+This wording was the Product Owner-approved exact v1.3 Goal and remains historical authority for the accepted Script-input foundation. It is superseded as the active completion target by the exact MBL v1.0 Goal.
 
 ## 7. Approved milestone sequence
 
@@ -162,6 +163,8 @@ This wording is the Product Owner-approved exact Goal.
 - **S1 — Creator Script Package intake:** explicit directory/file preflight, exact Source membership, immutable Version/re-import, human Decision, SSR evidence and restart/idempotency.
 - **E1 — Narrative clock:** consume exact approved Script; Whole Narration, continuous phrase Alignment and canonical SRT. E1 does not author Script.
 - **E2–E4:** retain Visual Edit Plan/static assets, deterministic Sample gate, full render, named-human Final Review and Publish Package.
+
+Historical completion truth: S0 and S1 are complete. The former E1-E4 sequence is not active implementation authority; the MBL contract reclassifies the remaining work as B2-B6 around the frozen three-video Douyin loop.
 
 ## 8. Approved defaults and Product Owner decisions
 
@@ -176,10 +179,10 @@ Approved defaults:
 7. canonical logical equivalence and the locked `script_package_id` lifecycle described above;
 8. v1.3 exposes approve/reject only; legacy revise remains readable and cannot invoke authoring.
 
-The Product Owner approved the exact Goal and all eight defaults on 2026-08-24. Issue #148 therefore owns exactly ten docs—the independently reviewed nine plus `GOAL.md`. This single docs candidate writes the amended Goal as **APPROVED / ACTIVE** and S0 as **IN PROGRESS**. Only after the PR actually merges may S0 be recorded **COMPLETE** and S1 planning begin; no status-only PR is created. Any request for browser authoring, application-controlled LLM, Provider/model/credential/fee/cap, automatic semantic verification or a different intake boundary is a separate decision.
+The Product Owner approved the exact v1.3 Goal and all eight defaults on 2026-08-24. Issue #148 / PR #149 merged the ten-doc authority set, and Issue #150 / PR #151 completed the S1 intake implementation. These defaults remain binding for the MBL Script-input foundation. Any request for browser authoring, application-controlled LLM, automatic semantic verification or a different intake boundary remains a separate decision; narration Provider/model/credential/fee/cap authority now follows the exact MBL contract.
 
-## 9. Stop conditions
+## 9. Historical boundary and current stop conditions
 
-Stop before implementation until S0 actually merges and one S1 Task Contract is independently approved; also stop if intake requires a generic repository/schema/Workflow rewrite, evidence-locator membership cannot be checked against the exact Source Record, or scope expands to Provider execution, semantic fact-checking, a fourth view, SPA/file manager, credentials, fees, deployment or publication.
+The S0 and S1 gates described above are complete. Do not reopen or weaken their exact Source, package identity, canonical-value, immutable Version, Decision or replay invariants.
 
-Issue #148 is docs-only. It may update the exact ten authoritative docs and complete one docs PR, but it must not dispatch Luna, run feature/full tests, create an implementation PR or claim S0/E1 complete before the docs merge.
+Current work must stop unless authorized by the MBL v1.0 milestone contract. In particular, this historical document does not authorize B1-B6 code, Provider execution, semantic fact-checking, a fourth view, SPA/file manager, credentials/fees beyond the explicitly approved MBL cap, deployment, automated publication or reuse of protected dirty candidates.

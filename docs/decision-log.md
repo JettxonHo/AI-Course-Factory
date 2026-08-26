@@ -530,3 +530,73 @@ The application already has useful exact owners: a locked Source Record with rep
 The first implementation milestone after S0 becomes explicit package intake/re-import, exact Source membership, immutable Script Versioning and human Decision. Exactly three SSR views remain. No new Provider registry, semantic claim engine, fourth view, SPA, file manager, dependency, credential, fee, deployment or publication is implied.
 
 The Product Owner approved this decision's amended exact Goal, all eight defaults and S0 docs-only activation on 2026-08-24. Issue #148 therefore owns exactly ten docs including `GOAL.md`, writes the amended Goal **APPROVED / ACTIVE** and S0 **IN PROGRESS**, and may use one docs PR. Only its actual merge makes S0 **COMPLETE** and permits S1 planning; no status-only PR. There is no active feature implementation milestone; #145 remains paused and no Luna dispatch or feature PR is authorized.
+
+## Decision D-012 — Make a real three-video Douyin feedback loop the active completion target
+
+| Field | Value |
+| --- | --- |
+| Status | Accepted; exact MBL Goal approved and B0 docs-only activation in progress |
+| Decision Date | 2026-08-27 |
+| Decision Owner | Product Owner |
+| Applies To | Knowledge Video Business Loop MBL v1.0 and Issue #152 |
+| Preserves | D-008 through D-011; S1 Creator Script Package implementation; all protected candidates/history |
+| Supersedes | D-010 only as the active completion target; its narration-led editorial spine remains the production foundation |
+
+### Context
+
+Knowledge Video Editorial v1.3 correctly re-established Source/Script truth, moved authoring outside the application and completed S1 Creator Script Package intake. Its remaining Goal ended at a local Publish Package and explicitly excluded publication/adoption. The separate Codex Video Workflow demonstrated useful whole-narration, caption, A/B-roll, HyperFrames and review methods, but its episode-specific files and dirty production worktree are not a stable product module.
+
+The Product Owner's immediate question is no longer whether the repository can create another technically valid artifact. It is whether one repeatable system can turn trusted course content into adult-oriented Douyin videos, pass human review, reach a real account and return decision-grade feedback. Building an independent image/video Provider stack before that evidence would optimize infrastructure before validating the business path; keeping production completely outside AI Course Factory would lose exact review and feedback lineage.
+
+### Decision
+
+1. Adopt the exact Knowledge Video Business Loop Goal approved on 2026-08-27 and make a three-video Douyin experiment the active completion target.
+2. Preserve S1 Creator-authored Script Package intake as the only primary Script boundary. Codex authors one package per episode outside the application; AI Course Factory validates, versions and records the human Decision.
+3. Support exactly `microsoft/AI-For-Beginners/lessons/4-ComputerVision/06-IntroCV/README.md` for the first series through a later bounded Task. Bind acquired exact commit/blob/locators; do not add a generic source browser or arbitrary path input.
+4. Freeze the first series to three 60–90 second adult Simplified-Chinese episodes: image/pixels/classification-detection, preprocessing and motion detection/optical flow.
+5. Use Doubao Speech Synthesis 2.0 voice “刘飞 2.0” as the primary MBL TTS. Whole narration is one call per attempt. Episode 1 has at most two paid calls and a total CNY 2 hard cap; Episodes 2–3 require later explicit authorizations. No automatic retry or credential persistence.
+6. Use a continuous short-phrase clock, normally 5–15 Chinese characters or an equivalent phrase, with approved Script text as canonical display. Word-level alignment is not an MBL requirement.
+7. Require one evidence-bound A/B-roll Visual Edit Plan. B-roll carries knowledge/evidence and targets approximately 65–75 percent; every narration range owns a corresponding visual purpose.
+8. Freeze Xiaotudou as an adult rough monochrome hand-drawn knowledge editor. Generate three silhouette candidates, require Product Owner selection, then use one fixed model sheet and limited-animation pose pack; no lip sync or video-model redraw.
+9. Use warm-white/black-line A-roll, charcoal/white B-roll and restrained cobalt knowledge emphasis. Stable short-phrase subtitles and sparse synchronized labels have distinct roles.
+10. Treat exact source assets, Codex ImageGen outputs and deterministic local graphics as explicit creator assets. Unknown web assets and video-generation models are outside the primary path.
+11. Keep AI Course Factory as the review/business control plane. Extract stable production contracts and methods from Codex Video Workflow without copying its episode HTML, temporary media tree or dirty worktree. Put HyperFrames/FFmpeg behind replaceable deterministic adapters.
+12. Require one exact 15–20 second representative Sample with hook, Xiaotudou A-roll, photo-to-pixel B-roll, real narration, subtitles and an A-to-B transition before full rendering.
+13. Make the Product Owner the named final reviewer at 1.0x. Content, narration, picture correspondence, synchronization, rhythm and character consistency must all pass before a publish-ready package exists.
+14. Publish manually to the Product Owner's own Douyin account. Add creator-declared Publication and Performance facts to the existing Final Review/Delivery control surface rather than adding a platform API or fourth view.
+15. Use 72-hour 5-second-retention/average-watch-time/completion-rate values plus a 7-day archive. One video proves the path; three establish the first baseline. Weak metrics may close the loop while rejecting the content hypothesis.
+
+### Alternatives considered
+
+#### Complete the old local MVP before discussing publication
+
+Rejected because a local package is not the user's current completion target. The reusable editorial spine remains, but the Goal must include real delivery and feedback so engineering choices serve the business loop.
+
+#### Build standalone image/video Provider APIs first
+
+Rejected for the first loop because Codex can supply current creator production while stable contracts preserve later replacement. Provider integration before real feedback adds credentials, fees and reliability surface without proving value.
+
+#### Keep the entire production workflow in Codex folders
+
+Rejected because review targets, exact lineage, publication identity and feedback would remain fragmented and non-repeatable. Codex is the current executor; AI Course Factory remains the system of business truth.
+
+#### Turn the frontend into a professional editor
+
+Rejected because the product requires three clear decision/control surfaces, not a timeline editor, asset manager, dashboard, SPA or fourth route.
+
+#### Judge success from the first video
+
+Rejected because it conflates path validation with a content baseline. Three comparable publications are the smallest approved experiment, while still not proving product-market fit.
+
+### Consequences
+
+- Publication and manually entered feedback become first-class future product facts bound to exact Final Versions.
+- Doubao replaces GPT-SoVITS as the primary MBL narration choice, but only within explicit Budget/Attempt/cap gates. The paused #145 candidate cannot be merged wholesale.
+- HyperFrames becomes the selected MBL renderer direction behind a bounded adapter rather than merely one evaluation candidate; dependency and execution still require a separate Task Contract.
+- Codex remains an acknowledged current production dependency. Stable contracts must permit future independent image/model adapters without changing business ownership.
+- The existing three SSR views remain. The Final Review/Delivery view gains publication/feedback responsibility only through a later bounded feature task.
+- MBL completion reports a real loop and first baseline, not product-market fit, commercial demand, scalable economics, deployment or automated publishing.
+
+### Authorization boundary
+
+Issue #152 owns exactly 11 docs and may complete one docs PR. B0 changes no code, tests, UI, dependencies or runtime; it performs no Provider/ImageGen/HyperFrames/media/publication action and dispatches no Luna. Actual B0 merge permits B1 planning only. Every B1–B6 implementation slice requires its own approved Task Contract, exact ownership and exact Luna route. Credentials, paid calls, fee/cap changes and every manual publication remain separately confirmed external-effect gates.
