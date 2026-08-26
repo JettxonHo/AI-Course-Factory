@@ -59,6 +59,24 @@ def _legacy_client(directory: str, **kwargs: object) -> TestClient:
 
 
 class OfflineWorkspaceWebTests(unittest.TestCase):
+    def test_b1_fresh_start_advertises_the_fixed_computer_vision_lesson(self) -> None:
+        """Fresh Start advertises the fixed Computer Vision lesson and future asset gate."""
+        with TemporaryDirectory() as directory:
+            connector = FixtureSourceConnector()
+            app = create_app(Path(directory), source_connector=connector)
+            client = TestClient(app, base_url="http://127.0.0.1")
+
+            response = client.get("/")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("lessons/4-ComputerVision/06-IntroCV/README.md", response.text)
+            self.assertNotIn('name="source_path"', response.text)
+            self.assertNotIn("Lesson 1", response.text)
+            self.assertIn("三个 Xiaotudou 候选", response.text)
+            self.assertIn("不创建、导入或批准任何角色图片", response.text)
+            self.assertNotIn("approve_character", response.text)
+            self.assertEqual(connector.calls, [])
+
     def test_fresh_get_renders_source_intake_without_connector_or_task_write(self) -> None:
         with TemporaryDirectory() as directory:
             connector = FixtureSourceConnector()
@@ -105,7 +123,9 @@ class OfflineWorkspaceWebTests(unittest.TestCase):
             start = client.get("/")
             self.assertIn(SUPPORTED_REPOSITORY_URL, start.text)
             self.assertIn("0123456789abcdef0123456789abcdef01234567", start.text)
-            self.assertIn("lessons/1-Intro/README.md", start.text)
+            self.assertIn("lessons/4-ComputerVision/06-IntroCV/README.md", start.text)
+            self.assertIn("三个 Xiaotudou 候选", start.text)
+            self.assertNotIn("approve_character", start.text)
             self.assertIn("Creator-authored Script Package", start.text)
             self.assertIn("import_creator_script", start.text)
             self.assertEqual(len(connector.calls), 1)

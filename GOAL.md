@@ -4,17 +4,17 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **APPROVED / ACTIVE — B0 DOCS ONLY IN PROGRESS** |
+| Status | **APPROVED / ACTIVE — B0 COMPLETE; B1 IMPLEMENTATION IN PROGRESS** |
 | Approved by | Product Owner |
 | Approval date | 2026-08-27 |
-| Activation task | B0 Issue #152; docs PR pending |
-| Planning baseline | `main@1a7692894bce6ebea3d88263da67713b426ba59e` |
+| Activation task | B0 Issue #152 / PR #153 merged; B1 Issue #154 on `codex/154-computer-vision-series-readiness` |
+| Planning baseline | `main@bd4d44a2e9c710d26aea8c531328ae6ec7fefda4` |
 | Goal type | Local single-user, Codex-assisted Knowledge Video Business Loop |
 | Preserves | FAST-MVP v1.1 history; Creator Handoff v1.2 H0–H3.5 foundation; Knowledge Video Editorial v1.3 E0/S0/S1 accepted implementation |
 
 Knowledge Video Editorial MVP v1.3 remains accepted foundation through S1 Creator Script Package intake. It did not complete E1–E4 or prove publication, audience response or business feedback. This Goal supersedes v1.3 only as the active delivery objective; it does not delete or relabel that history.
 
-The protected H4 six-file candidate and the paused #145 Narrative Clock candidate remain untouched evidence. B0 neither resumes nor merges them.
+The protected H4 six-file candidate and the paused #145 Narrative Clock candidate remain untouched evidence. B0 neither resumed nor merged them; B1 does not copy or resume them.
 
 ## 2. Exact Goal
 
@@ -108,15 +108,19 @@ Every episode is 60–90 seconds and uses a distinct Creator-authored Script Pac
 
 ### B0 — Authority rebaseline
 
-Status: **IN PROGRESS / DOCS ONLY** through Issue #152; docs PR pending.
+Status: **COMPLETE** at `main@bd4d44a2e9c710d26aea8c531328ae6ec7fefda4`; Issue #152 CLOSED, PR #153 MERGED.
 
-Outcome: make this exact Goal, D-012, the first three-video experiment, paid-call boundary, manual-publication truth and B1–B6 gates the repository authority without changing code or performing external actions.
+Outcome: made this exact Goal, D-012, the first three-video experiment, paid-call boundary, manual-publication truth and B1–B6 gates the repository authority without changing code or performing external actions.
+
+Exit: the exact 11-doc B0 Diff was independently reviewed and merged; B1 owns the next bounded feature slice.
 
 ### B1 — Series/source and Creator Package readiness
 
-Status: **PENDING B0 MERGE**.
+Status: **IN PROGRESS** through Issue #154; bounded implementation candidate on `codex/154-computer-vision-series-readiness`.
 
-Outcome: add bounded support for the exact Computer Vision source, prove three episode package contracts can bind its exact locators, and freeze the Xiaotudou candidate/approval boundary. B1 planning requires a separate Issue/Task Contract; no code is authorized by B0.
+Outcome: add bounded support for the exact Computer Vision source, prove three episode package contracts can bind its exact locators, and freeze the Xiaotudou candidate/approval boundary. Final merge and closure evidence remain pending.
+
+Entry: B0 merged through PR #153; Issue #154 is the independently approved bounded Task Contract with exact 15-path ownership, RED/focused gates and prohibited scope.
 
 ### B2 — Whole Narration and phrase clock
 
@@ -150,14 +154,13 @@ Outcome: produce, approve and manually publish the three fresh episodes, archive
 
 ## 7. Current Authorization
 
-Only B0 Issue #152 is currently authorized:
+B1 Issue #154 is currently authorized:
 
-- edit the exact 11 documentation paths frozen in the Issue;
-- append D-012 and update S1 merged truth;
-- run docs consistency, ownership and diff checks;
-- use the normal docs PR lifecycle.
+- implement only its exact 15-path source, web, fixture/test and truth-tail ownership;
+- run public RED/focused compatibility checks, compileall, diff-check and exact ownership/prohibited scans;
+- keep final full regression, live GitHub smoke, browser acceptance, commit, push, PR, merge and Issue closure controller-owned.
 
-B0 does **not** authorize B1–B6 code, Luna, tests/full regression, credentials, paid calls, model/runtime installation, ImageGen, HyperFrames render, media production, Douyin publication, deployment or performance claims.
+B1 does **not** authorize B2–B6 code, Doubao or other Provider credentials/calls/fees, ImageGen, HyperFrames/FFmpeg rendering, media production, Douyin publication, deployment, performance claims or protected-candidate reuse.
 
 ## 8. Explicit Non-goals
 
