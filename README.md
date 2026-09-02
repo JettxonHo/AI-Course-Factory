@@ -4,6 +4,8 @@
 
 AI Course Factory 把公开 GitHub 仓库中的可追溯知识，转成**经人工审核**的脚本、配音、视觉编排与成片发布包——核心命题是"AI 生成内容的每一帧都能回溯到来源，且成本可控"。
 
+<img src="docs/assets/readme/acf-flow.png" alt="把一篇教程变成一条可溯源的 60 秒短视频" width="100%">
+
 已验证事实（均可追溯到仓库验收记录）：
 
 | 事实 | 数值 | 阶段 |
@@ -15,6 +17,10 @@ AI Course Factory 把公开 GitHub 仓库中的可追溯知识，转成**经人�
 | 当前方向 | Knowledge Video Business Loop MBL v1.0（豆包"刘飞 2.0"旁白 + 确定性渲染 + 抖音发布闭环）：B0 已合并，B1 来源就绪进行中，B2–B6 未授权 | GOAL.md / Issue #152–#154 |
 
 注意口径：60 秒成片与 52+422 测试属于 FAST-MVP v1.1 的**历史交付事实**；当前主链已重基线为 MBL v1.0，H4 外部视频生成从未完成，不应被读成现行能力。
+
+<img src="docs/assets/readme/home.png" alt="AI Course Factory 首页：锁定课程来源、逐段核对脚本" width="100%">
+
+本地实跑首页（1440×900，2026-09）。
 
 AI Course Factory 是一个本地优先的知识视频制作应用。它把公开 GitHub 仓库中的可追溯知识，转成经过人工审核的脚本、音频、视觉编排、视频和可导出的发布包。
 
