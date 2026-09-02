@@ -1,8 +1,26 @@
 # AI Course Factory
 
+## 对访客：这个项目验证了什么
+
+AI Course Factory 把公开 GitHub 仓库中的可追溯知识，转成**经人工审核**的脚本、配音、视觉编排与成片发布包——核心命题是"AI 生成内容的每一帧都能回溯到来源，且成本可控"。
+
+已验证事实（均可追溯到仓库验收记录）：
+
+| 事实 | 数值 | 阶段 |
+|---|---|---|
+| 首个端到端成片 | 1 条 60 秒、6 场景视频 + 6 段 GPT-SoVITS 配音 + 4 文件发布包，来源锁定 12 处 GitHub 原文 | FAST-MVP v1.1（历史交付） |
+| 测试规模 | 52 项聚焦测试 + 422 项回归测试通过 | FAST-MVP v1.1 验收 |
+| 生成成本控制 | Scene 2 定点替换复用其余 5 个场景与全部 6 段音频，**新增 TTS 调用为 0**；两次进程重启后视频 / 字幕 / ZIP 字节一致 | FAST-MVP v1.1 验收 |
+| 创作者脚本审核基线 | Creator Script Package 导入、不可变 Script Version、人工 approve/reject、重启可重放；最终回归 476/476 | v1.3 S1（Issue #150 / PR #151） |
+| 当前方向 | Knowledge Video Business Loop MBL v1.0（豆包"刘飞 2.0"旁白 + 确定性渲染 + 抖音发布闭环）：B0 已合并，B1 来源就绪进行中，B2–B6 未授权 | GOAL.md / Issue #152–#154 |
+
+注意口径：60 秒成片与 52+422 测试属于 FAST-MVP v1.1 的**历史交付事实**；当前主链已重基线为 MBL v1.0，H4 外部视频生成从未完成，不应被读成现行能力。
+
 AI Course Factory 是一个本地优先的知识视频制作应用。它把公开 GitHub 仓库中的可追溯知识，转成经过人工审核的脚本、音频、视觉编排、视频和可导出的发布包。
 
 ## 当前产品真相
+
+访客可先读上方"对访客"一节；本节是与 GOAL.md 对齐的权威 current truth，措辞以门禁状态为准。
 
 - FAST-MVP v1.1 与 Creator Handoff v1.2 H0–H3.5 是保留的本地历史/基础能力；Creator Handoff H4 从未完成。
 - Knowledge Video Editorial MVP v1.3 已完成 E0、S0 与 S1。Creator-authored Script Package intake/re-import、immutable Script Version、exact approve/reject Decision、restart/replay 已通过 Issue #150 / PR #151 合并到 `main@1a769289`，最终回归 476/476。
